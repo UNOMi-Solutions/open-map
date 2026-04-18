@@ -39,8 +39,14 @@ router.get('/test', (req, res) => {
     res.json(testResponse);
 });
 
-// Declare OpenAI client — reads OPENAI_API_KEY from env automatically
-const client = new OpenAI();
+// Lazy OpenAI client — only initialized on first use so missing key won't crash startup
+let _openaiClient = null;
+function getOpenAIClient() {
+  if (!_openaiClient) {
+    _openaiClient = new OpenAI();
+  }
+  return _openaiClient;
+}
 
 // Array of all state abbreviations
 // Ensures separation of date for ease of parsing on map
