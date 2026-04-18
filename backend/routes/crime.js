@@ -1,6 +1,3 @@
-// Import OpenAI Library for data collection
-import OpenAI from "openai";
-
 // Import dotenv for hidden variables
 import dotenv from "dotenv";
 dotenv.config();
@@ -39,14 +36,6 @@ router.get('/test', (req, res) => {
     res.json(testResponse);
 });
 
-// Lazy OpenAI client — only initialized on first use so missing key won't crash startup
-let _openaiClient = null;
-function getOpenAIClient() {
-  if (!_openaiClient) {
-    _openaiClient = new OpenAI();
-  }
-  return _openaiClient;
-}
 
 // Array of all state abbreviations
 // Ensures separation of date for ease of parsing on map
