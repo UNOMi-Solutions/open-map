@@ -1,0 +1,3033 @@
+{
+  "source": "https://www.govtrack.us/api/v2/role (current representatives, 50 states only)",
+  "note": "Excludes non-voting House delegates (DC, PR, GU, AS, MP, VI). Count is below 435 when seats are vacant.",
+  "votingSeatsApportioned": 435,
+  "fetchedAt": "2026-04-01T00:10:23.801Z",
+  "count": 432,
+  "districts": {
+    "AL-4": {
+      "party": "Republican",
+      "name": "Rep. Robert Aderholt [R-AL4]",
+      "description": "Representative for Alabama's 4th congressional district",
+      "website": "https://aderholt.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400004-200px.jpeg"
+    },
+    "FL-12": {
+      "party": "Republican",
+      "name": "Rep. Gus Bilirakis [R-FL12]",
+      "description": "Representative for Florida's 12th congressional district",
+      "website": "https://bilirakis.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412250-200px.jpeg"
+    },
+    "GA-2": {
+      "party": "Democrat",
+      "name": "Rep. Sanford Bishop [D-GA2]",
+      "description": "Representative for Georgia's 2nd congressional district",
+      "website": "https://bishop.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400030-200px.jpeg"
+    },
+    "FL-16": {
+      "party": "Republican",
+      "name": "Rep. Vern Buchanan [R-FL16]",
+      "description": "Representative for Florida's 16th congressional district",
+      "website": "https://buchanan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412196-200px.jpeg"
+    },
+    "CA-41": {
+      "party": "Republican",
+      "name": "Rep. Ken Calvert [R-CA41]",
+      "description": "Representative for California's 41st congressional district",
+      "website": "https://calvert.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400057-200px.jpeg"
+    },
+    "IN-7": {
+      "party": "Democrat",
+      "name": "Rep. André Carson [D-IN7]",
+      "description": "Representative for Indiana's 7th congressional district",
+      "website": "https://carson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412258-200px.jpeg"
+    },
+    "TX-31": {
+      "party": "Republican",
+      "name": "Rep. John R. Carter [R-TX31]",
+      "description": "Representative for Texas's 31st congressional district",
+      "website": "https://carter.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400068-200px.jpeg"
+    },
+    "FL-14": {
+      "party": "Democrat",
+      "name": "Rep. Kathy Castor [D-FL14]",
+      "description": "Representative for Florida's 14th congressional district",
+      "website": "https://castor.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412195-200px.jpeg"
+    },
+    "CA-28": {
+      "party": "Democrat",
+      "name": "Rep. Judy Chu [D-CA28]",
+      "description": "Representative for California's 28th congressional district",
+      "website": "https://chu.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412379-200px.jpeg"
+    },
+    "NY-9": {
+      "party": "Democrat",
+      "name": "Rep. Yvette Clarke [D-NY9]",
+      "description": "Representative for New York's 9th congressional district",
+      "website": "https://clarke.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412221-200px.jpeg"
+    },
+    "MO-5": {
+      "party": "Democrat",
+      "name": "Rep. Emanuel Cleaver [D-MO5]",
+      "description": "Representative for Missouri's 5th congressional district",
+      "website": "https://cleaver.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400639-200px.jpeg"
+    },
+    "SC-6": {
+      "party": "Democrat",
+      "name": "Rep. James “Jim” Clyburn [D-SC6]",
+      "description": "Representative for South Carolina's 6th congressional district",
+      "website": "https://clyburn.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400075-200px.jpeg"
+    },
+    "TN-9": {
+      "party": "Democrat",
+      "name": "Rep. Steve Cohen [D-TN9]",
+      "description": "Representative for Tennessee's 9th congressional district",
+      "website": "https://cohen.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412236-200px.jpeg"
+    },
+    "OK-4": {
+      "party": "Republican",
+      "name": "Rep. Tom Cole [R-OK4]",
+      "description": "Representative for Oklahoma's 4th congressional district",
+      "website": "https://cole.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400077-200px.jpeg"
+    },
+    "CA-21": {
+      "party": "Democrat",
+      "name": "Rep. Jim Costa [D-CA21]",
+      "description": "Representative for California's 21st congressional district",
+      "website": "https://costa.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400618-200px.jpeg"
+    },
+    "CT-2": {
+      "party": "Democrat",
+      "name": "Rep. Joe Courtney [D-CT2]",
+      "description": "Representative for Connecticut's 2nd congressional district",
+      "website": "https://courtney.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412193-200px.jpeg"
+    },
+    "AR-1": {
+      "party": "Republican",
+      "name": "Rep. Eric “Rick” Crawford [R-AR1]",
+      "description": "Representative for Arkansas's 1st congressional district",
+      "website": "https://crawford.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412400-200px.jpeg"
+    },
+    "TX-28": {
+      "party": "Democrat",
+      "name": "Rep. Henry Cuellar [D-TX28]",
+      "description": "Representative for Texas's 28th congressional district",
+      "website": "https://cuellar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400657-200px.jpeg"
+    },
+    "IL-7": {
+      "party": "Democrat",
+      "name": "Rep. Danny Davis [D-IL7]",
+      "description": "Representative for Illinois's 7th congressional district",
+      "website": "https://davis.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400093-200px.jpeg"
+    },
+    "CO-1": {
+      "party": "Democrat",
+      "name": "Rep. Diana DeGette [D-CO1]",
+      "description": "Representative for Colorado's 1st congressional district",
+      "website": "https://degette.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400101-200px.jpeg"
+    },
+    "CT-3": {
+      "party": "Democrat",
+      "name": "Rep. Rosa DeLauro [D-CT3]",
+      "description": "Representative for Connecticut's 3rd congressional district",
+      "website": "https://delauro.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400103-200px.jpeg"
+    },
+    "TN-4": {
+      "party": "Republican",
+      "name": "Rep. Scott DesJarlais [R-TN4]",
+      "description": "Representative for Tennessee's 4th congressional district",
+      "website": "https://desjarlais.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412477-200px.jpeg"
+    },
+    "FL-26": {
+      "party": "Republican",
+      "name": "Rep. Mario Diaz-Balart [R-FL26]",
+      "description": "Representative for Florida's 26th congressional district",
+      "website": "https://mariodiazbalart.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400108-200px.jpeg"
+    },
+    "TX-37": {
+      "party": "Democrat",
+      "name": "Rep. Lloyd Doggett [D-TX37]",
+      "description": "Representative for Texas's 37th congressional district",
+      "website": "https://doggett.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400111-200px.jpeg"
+    },
+    "TN-3": {
+      "party": "Republican",
+      "name": "Rep. Charles “Chuck” Fleischmann [R-TN3]",
+      "description": "Representative for Tennessee's 3rd congressional district",
+      "website": "https://fleischmann.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412476-200px.jpeg"
+    },
+    "NC-5": {
+      "party": "Republican",
+      "name": "Rep. Virginia Foxx [R-NC5]",
+      "description": "Representative for North Carolina's 5th congressional district",
+      "website": "https://foxx.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400643-200px.jpeg"
+    },
+    "CA-8": {
+      "party": "Democrat",
+      "name": "Rep. John Garamendi [D-CA8]",
+      "description": "Representative for California's 8th congressional district",
+      "website": "https://garamendi.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412382-200px.jpeg"
+    },
+    "AZ-9": {
+      "party": "Republican",
+      "name": "Rep. Paul Gosar [R-AZ9]",
+      "description": "Representative for Arizona's 9th congressional district",
+      "website": "https://gosar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412397-200px.jpeg"
+    },
+    "MO-6": {
+      "party": "Republican",
+      "name": "Rep. Sam Graves [R-MO6]",
+      "description": "Representative for Missouri's 6th congressional district",
+      "website": "https://graves.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400158-200px.jpeg"
+    },
+    "TX-9": {
+      "party": "Democrat",
+      "name": "Rep. Al Green [D-TX9]",
+      "description": "Representative for Texas's 9th congressional district",
+      "website": "https://algreen.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400653-200px.jpeg"
+    },
+    "VA-9": {
+      "party": "Republican",
+      "name": "Rep. Morgan Griffith [R-VA9]",
+      "description": "Representative for Virginia's 9th congressional district",
+      "website": "https://morgangriffith.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412485-200px.jpeg"
+    },
+    "KY-2": {
+      "party": "Republican",
+      "name": "Rep. Brett Guthrie [R-KY2]",
+      "description": "Representative for Kentucky's 2nd congressional district",
+      "website": "https://guthrie.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412278-200px.jpeg"
+    },
+    "MD-1": {
+      "party": "Republican",
+      "name": "Rep. Andy Harris [R-MD1]",
+      "description": "Representative for Maryland's 1st congressional district",
+      "website": "https://harris.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412434-200px.jpeg"
+    },
+    "CT-4": {
+      "party": "Democrat",
+      "name": "Rep. James “Jim” Himes [D-CT4]",
+      "description": "Representative for Connecticut's 4th congressional district",
+      "website": "https://himes.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412282-200px.jpeg"
+    },
+    "MD-5": {
+      "party": "Democrat",
+      "name": "Rep. Steny Hoyer [D-MD5]",
+      "description": "Representative for Maryland's 5th congressional district",
+      "website": "https://hoyer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400189-200px.jpeg"
+    },
+    "MI-4": {
+      "party": "Republican",
+      "name": "Rep. Bill Huizenga [R-MI4]",
+      "description": "Representative for Michigan's 4th congressional district",
+      "website": "https://huizenga.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412437-200px.jpeg"
+    },
+    "GA-4": {
+      "party": "Democrat",
+      "name": "Rep. Henry C. “Hank” Johnson [D-GA4]",
+      "description": "Representative for Georgia's 4th congressional district",
+      "website": "https://hankjohnson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412199-200px.jpeg"
+    },
+    "OH-4": {
+      "party": "Republican",
+      "name": "Rep. Jim Jordan [R-OH4]",
+      "description": "Representative for Ohio's 4th congressional district",
+      "website": "https://jordan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412226-200px.jpeg"
+    },
+    "OH-9": {
+      "party": "Democrat",
+      "name": "Rep. Marcy Kaptur [D-OH9]",
+      "description": "Representative for Ohio's 9th congressional district",
+      "website": "https://kaptur.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400211-200px.jpeg"
+    },
+    "MA-9": {
+      "party": "Democrat",
+      "name": "Rep. William R. Keating [D-MA9]",
+      "description": "Representative for Massachusetts's 9th congressional district",
+      "website": "https://keating.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412435-200px.jpeg"
+    },
+    "PA-16": {
+      "party": "Republican",
+      "name": "Rep. Mike Kelly [R-PA16]",
+      "description": "Representative for Pennsylvania's 16th congressional district",
+      "website": "https://kelly.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412465-200px.jpeg"
+    },
+    "WA-2": {
+      "party": "Democrat",
+      "name": "Rep. Rick Larsen [D-WA2]",
+      "description": "Representative for Washington's 2nd congressional district",
+      "website": "https://larsen.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400232-200px.jpeg"
+    },
+    "CT-1": {
+      "party": "Democrat",
+      "name": "Rep. John Larson [D-CT1]",
+      "description": "Representative for Connecticut's 1st congressional district",
+      "website": "https://larson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400233-200px.jpeg"
+    },
+    "OH-5": {
+      "party": "Republican",
+      "name": "Rep. Robert Latta [R-OH5]",
+      "description": "Representative for Ohio's 5th congressional district",
+      "website": "https://latta.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412256-200px.jpeg"
+    },
+    "CA-18": {
+      "party": "Democrat",
+      "name": "Rep. Zoe Lofgren [D-CA18]",
+      "description": "Representative for California's 18th congressional district",
+      "website": "https://lofgren.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400245-200px.jpeg"
+    },
+    "OK-3": {
+      "party": "Republican",
+      "name": "Rep. Frank Lucas [R-OK3]",
+      "description": "Representative for Oklahoma's 3rd congressional district",
+      "website": "https://lucas.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400247-200px.jpeg"
+    },
+    "MA-8": {
+      "party": "Democrat",
+      "name": "Rep. Stephen Lynch [D-MA8]",
+      "description": "Representative for Massachusetts's 8th congressional district",
+      "website": "https://lynch.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400249-200px.jpeg"
+    },
+    "CA-7": {
+      "party": "Democrat",
+      "name": "Rep. Doris Matsui [D-CA7]",
+      "description": "Representative for California's 7th congressional district",
+      "website": "https://matsui.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400663-200px.jpeg"
+    },
+    "TX-10": {
+      "party": "Republican",
+      "name": "Rep. Michael McCaul [R-TX10]",
+      "description": "Representative for Texas's 10th congressional district",
+      "website": "https://mccaul.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400654-200px.jpeg"
+    },
+    "CA-5": {
+      "party": "Republican",
+      "name": "Rep. Tom McClintock [R-CA5]",
+      "description": "Representative for California's 5th congressional district",
+      "website": "https://mcclintock.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412295-200px.jpeg"
+    },
+    "MN-4": {
+      "party": "Democrat",
+      "name": "Rep. Betty McCollum [D-MN4]",
+      "description": "Representative for Minnesota's 4th congressional district",
+      "website": "https://mccollum.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400259-200px.jpeg"
+    },
+    "MA-2": {
+      "party": "Democrat",
+      "name": "Rep. James “Jim” McGovern [D-MA2]",
+      "description": "Representative for Massachusetts's 2nd congressional district",
+      "website": "https://mcgovern.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400263-200px.jpeg"
+    },
+    "NY-5": {
+      "party": "Democrat",
+      "name": "Rep. Gregory Meeks [D-NY5]",
+      "description": "Representative for New York's 5th congressional district",
+      "website": "https://meeks.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400271-200px.jpeg"
+    },
+    "WI-4": {
+      "party": "Democrat",
+      "name": "Rep. Gwen Moore [D-WI4]",
+      "description": "Representative for Wisconsin's 4th congressional district",
+      "website": "https://gwenmoore.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400661-200px.jpeg"
+    },
+    "NY-12": {
+      "party": "Democrat",
+      "name": "Rep. Jerrold Nadler [D-NY12]",
+      "description": "Representative for New York's 12th congressional district",
+      "website": "https://nadler.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400289-200px.jpeg"
+    },
+    "MA-1": {
+      "party": "Democrat",
+      "name": "Rep. Richard Neal [D-MA1]",
+      "description": "Representative for Massachusetts's 1st congressional district",
+      "website": "https://neal.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400291-200px.jpeg"
+    },
+    "NJ-6": {
+      "party": "Democrat",
+      "name": "Rep. Frank Pallone [D-NJ6]",
+      "description": "Representative for New Jersey's 6th congressional district",
+      "website": "https://pallone.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400308-200px.jpeg"
+    },
+    "CA-11": {
+      "party": "Democrat",
+      "name": "Rep. Nancy Pelosi [D-CA11]",
+      "description": "Representative for California's 11th congressional district",
+      "website": "https://pelosi.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400314-200px.jpeg"
+    },
+    "ME-1": {
+      "party": "Democrat",
+      "name": "Rep. Chellie Pingree [D-ME1]",
+      "description": "Representative for Maine's 1st congressional district",
+      "website": "https://pingree.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412307-200px.jpeg"
+    },
+    "IL-5": {
+      "party": "Democrat",
+      "name": "Rep. Mike Quigley [D-IL5]",
+      "description": "Representative for Illinois's 5th congressional district",
+      "website": "https://quigley.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412331-200px.jpeg"
+    },
+    "KY-5": {
+      "party": "Republican",
+      "name": "Rep. Harold “Hal” Rogers [R-KY5]",
+      "description": "Representative for Kentucky's 5th congressional district",
+      "website": "https://halrogers.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400340-200px.jpeg"
+    },
+    "AL-3": {
+      "party": "Republican",
+      "name": "Rep. Mike Rogers [R-AL3]",
+      "description": "Representative for Alabama's 3rd congressional district",
+      "website": "https://mikerogers.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400341-200px.jpeg"
+    },
+    "LA-1": {
+      "party": "Republican",
+      "name": "Rep. Steve Scalise [R-LA1]",
+      "description": "Representative for Louisiana's 1st congressional district",
+      "website": "https://scalise.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412261-200px.jpeg"
+    },
+    "IL-9": {
+      "party": "Democrat",
+      "name": "Rep. Janice “Jan” Schakowsky [D-IL9]",
+      "description": "Representative for Illinois's 9th congressional district",
+      "website": "https://schakowsky.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400360-200px.jpeg"
+    },
+    "AZ-1": {
+      "party": "Republican",
+      "name": "Rep. David Schweikert [R-AZ1]",
+      "description": "Representative for Arizona's 1st congressional district",
+      "website": "https://schweikert.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412399-200px.jpeg"
+    },
+    "GA-8": {
+      "party": "Republican",
+      "name": "Rep. Austin Scott [R-GA8]",
+      "description": "Representative for Georgia's 8th congressional district",
+      "website": "https://austinscott.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412417-200px.jpeg"
+    },
+    "GA-13": {
+      "party": "Democrat",
+      "name": "Rep. David Scott [D-GA13]",
+      "description": "Representative for Georgia's 13th congressional district",
+      "website": "https://davidscott.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400363-200px.jpeg"
+    },
+    "VA-3": {
+      "party": "Democrat",
+      "name": "Rep. Robert “Bobby” Scott [D-VA3]",
+      "description": "Representative for Virginia's 3rd congressional district",
+      "website": "https://bobbyscott.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400364-200px.jpeg"
+    },
+    "AL-7": {
+      "party": "Democrat",
+      "name": "Rep. Terri Sewell [D-AL7]",
+      "description": "Representative for Alabama's 7th congressional district",
+      "website": "https://sewell.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412396-200px.jpeg"
+    },
+    "CA-32": {
+      "party": "Democrat",
+      "name": "Rep. Brad Sherman [D-CA32]",
+      "description": "Representative for California's 32nd congressional district",
+      "website": "https://sherman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400371-200px.jpeg"
+    },
+    "ID-2": {
+      "party": "Republican",
+      "name": "Rep. Michael “Mike” Simpson [R-ID2]",
+      "description": "Representative for Idaho's 2nd congressional district",
+      "website": "https://simpson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400376-200px.jpeg"
+    },
+    "WA-9": {
+      "party": "Democrat",
+      "name": "Rep. Adam Smith [D-WA9]",
+      "description": "Representative for Washington's 9th congressional district",
+      "website": "https://adamsmith.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400379-200px.jpeg"
+    },
+    "NE-3": {
+      "party": "Republican",
+      "name": "Rep. Adrian Smith [R-NE3]",
+      "description": "Representative for Nebraska's 3rd congressional district",
+      "website": "https://adriansmith.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412217-200px.jpeg"
+    },
+    "NJ-4": {
+      "party": "Republican",
+      "name": "Rep. Christopher “Chris” Smith [R-NJ4]",
+      "description": "Representative for New Jersey's 4th congressional district",
+      "website": "https://chrissmith.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400380-200px.jpeg"
+    },
+    "CA-38": {
+      "party": "Democrat",
+      "name": "Rep. Linda Sánchez [D-CA38]",
+      "description": "Representative for California's 38th congressional district",
+      "website": "https://lindasanchez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400355-200px.jpeg"
+    },
+    "MS-2": {
+      "party": "Democrat",
+      "name": "Rep. Bennie Thompson [D-MS2]",
+      "description": "Representative for Mississippi's 2nd congressional district",
+      "website": "https://benniethompson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400402-200px.jpeg"
+    },
+    "CA-4": {
+      "party": "Democrat",
+      "name": "Rep. Mike Thompson [D-CA4]",
+      "description": "Representative for California's 4th congressional district",
+      "website": "https://mikethompson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400403-200px.jpeg"
+    },
+    "PA-15": {
+      "party": "Republican",
+      "name": "Rep. Glenn Thompson [R-PA15]",
+      "description": "Representative for Pennsylvania's 15th congressional district",
+      "website": "https://thompson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412317-200px.jpeg"
+    },
+    "NY-20": {
+      "party": "Democrat",
+      "name": "Rep. Paul Tonko [D-NY20]",
+      "description": "Representative for New York's 20th congressional district",
+      "website": "https://tonko.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412319-200px.jpeg"
+    },
+    "OH-10": {
+      "party": "Republican",
+      "name": "Rep. Michael Turner [R-OH10]",
+      "description": "Representative for Ohio's 10th congressional district",
+      "website": "https://turner.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400411-200px.jpeg"
+    },
+    "NY-7": {
+      "party": "Democrat",
+      "name": "Rep. Nydia Velázquez [D-NY7]",
+      "description": "Representative for New York's 7th congressional district",
+      "website": "https://velazquez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400416-200px.jpeg"
+    },
+    "MI-5": {
+      "party": "Republican",
+      "name": "Rep. Tim Walberg [R-MI5]",
+      "description": "Representative for Michigan's 5th congressional district",
+      "website": "https://walberg.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412213-200px.jpeg"
+    },
+    "FL-25": {
+      "party": "Democrat",
+      "name": "Rep. Debbie Wasserman Schultz [D-FL25]",
+      "description": "Representative for Florida's 25th congressional district",
+      "website": "https://wassermanschultz.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400623-200px.jpeg"
+    },
+    "CA-43": {
+      "party": "Democrat",
+      "name": "Rep. Maxine Waters [D-CA43]",
+      "description": "Representative for California's 43rd congressional district",
+      "website": "https://waters.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400422-200px.jpeg"
+    },
+    "FL-11": {
+      "party": "Republican",
+      "name": "Rep. Daniel Webster [R-FL11]",
+      "description": "Representative for Florida's 11th congressional district",
+      "website": "https://webster.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412410-200px.jpeg"
+    },
+    "SC-2": {
+      "party": "Republican",
+      "name": "Rep. Joe Wilson [R-SC2]",
+      "description": "Representative for South Carolina's 2nd congressional district",
+      "website": "https://joewilson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400433-200px.jpeg"
+    },
+    "FL-24": {
+      "party": "Democrat",
+      "name": "Rep. Frederica Wilson [D-FL24]",
+      "description": "Representative for Florida's 24th congressional district",
+      "website": "https://wilson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412412-200px.jpeg"
+    },
+    "VA-1": {
+      "party": "Republican",
+      "name": "Rep. Robert Wittman [R-VA1]",
+      "description": "Representative for Virginia's 1st congressional district",
+      "website": "https://wittman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412255-200px.jpeg"
+    },
+    "AR-3": {
+      "party": "Republican",
+      "name": "Rep. Steve Womack [R-AR3]",
+      "description": "Representative for Arkansas's 3rd congressional district",
+      "website": "https://womack.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412402-200px.jpeg"
+    },
+    "NV-2": {
+      "party": "Republican",
+      "name": "Rep. Mark Amodei [R-NV2]",
+      "description": "Representative for Nevada's 2nd congressional district",
+      "website": "https://amodei.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412500-200px.jpeg"
+    },
+    "OR-1": {
+      "party": "Democrat",
+      "name": "Rep. Suzanne Bonamici [D-OR1]",
+      "description": "Representative for Oregon's 1st congressional district",
+      "website": "https://bonamici.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412501-200px.jpeg"
+    },
+    "WA-1": {
+      "party": "Democrat",
+      "name": "Rep. Suzan DelBene [D-WA1]",
+      "description": "Representative for Washington's 1st congressional district",
+      "website": "https://delbene.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412505-200px.jpeg"
+    },
+    "KY-4": {
+      "party": "Republican",
+      "name": "Rep. Thomas Massie [R-KY4]",
+      "description": "Representative for Kentucky's 4th congressional district",
+      "website": "https://massie.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412503-200px.jpeg"
+    },
+    "IL-11": {
+      "party": "Democrat",
+      "name": "Rep. Bill Foster [D-IL11]",
+      "description": "Representative for Illinois's 11th congressional district",
+      "website": "https://foster.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412257-200px.jpeg"
+    },
+    "NV-1": {
+      "party": "Democrat",
+      "name": "Rep. Dina Titus [D-NV1]",
+      "description": "Representative for Nevada's 1st congressional district",
+      "website": "https://titus.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412318-200px.jpeg"
+    },
+    "CA-2": {
+      "party": "Democrat",
+      "name": "Rep. Jared Huffman [D-CA2]",
+      "description": "Representative for California's 2nd congressional district",
+      "website": "https://huffman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412511-200px.jpeg"
+    },
+    "CA-6": {
+      "party": "Democrat",
+      "name": "Rep. Ami Bera [D-CA6]",
+      "description": "Representative for California's 6th congressional district",
+      "website": "https://bera.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412512-200px.jpeg"
+    },
+    "CA-14": {
+      "party": "Democrat",
+      "name": "Rep. Eric Swalwell [D-CA14]",
+      "description": "Representative for California's 14th congressional district",
+      "website": "https://swalwell.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412514-200px.jpeg"
+    },
+    "CA-26": {
+      "party": "Democrat",
+      "name": "Rep. Julia Brownley [D-CA26]",
+      "description": "Representative for California's 26th congressional district",
+      "website": "https://juliabrownley.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412516-200px.jpeg"
+    },
+    "CA-25": {
+      "party": "Democrat",
+      "name": "Rep. Raul Ruiz [D-CA25]",
+      "description": "Representative for California's 25th congressional district",
+      "website": "https://ruiz.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412519-200px.jpeg"
+    },
+    "CA-39": {
+      "party": "Democrat",
+      "name": "Rep. Mark Takano [D-CA39]",
+      "description": "Representative for California's 39th congressional district",
+      "website": "https://takano.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412520-200px.jpeg"
+    },
+    "CA-52": {
+      "party": "Democrat",
+      "name": "Rep. Juan Vargas [D-CA52]",
+      "description": "Representative for California's 52nd congressional district",
+      "website": "https://vargas.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412522-200px.jpeg"
+    },
+    "CA-50": {
+      "party": "Democrat",
+      "name": "Rep. Scott Peters [D-CA50]",
+      "description": "Representative for California's 50th congressional district",
+      "website": "https://scottpeters.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412523-200px.jpeg"
+    },
+    "FL-22": {
+      "party": "Democrat",
+      "name": "Rep. Lois Frankel [D-FL22]",
+      "description": "Representative for Florida's 22nd congressional district",
+      "website": "https://frankel.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412529-200px.jpeg"
+    },
+    "KY-6": {
+      "party": "Republican",
+      "name": "Rep. Garland “Andy” Barr [R-KY6]",
+      "description": "Representative for Kentucky's 6th congressional district",
+      "website": "https://barr.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412541-200px.jpeg"
+    },
+    "MO-2": {
+      "party": "Republican",
+      "name": "Rep. Ann Wagner [R-MO2]",
+      "description": "Representative for Missouri's 2nd congressional district",
+      "website": "https://wagner.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412548-200px.jpeg"
+    },
+    "NC-9": {
+      "party": "Republican",
+      "name": "Rep. Richard Hudson [R-NC9]",
+      "description": "Representative for North Carolina's 9th congressional district",
+      "website": "https://hudson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412550-200px.jpeg"
+    },
+    "NY-6": {
+      "party": "Democrat",
+      "name": "Rep. Grace Meng [D-NY6]",
+      "description": "Representative for New York's 6th congressional district",
+      "website": "https://meng.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412560-200px.jpeg"
+    },
+    "NY-8": {
+      "party": "Democrat",
+      "name": "Rep. Hakeem Jeffries [D-NY8]",
+      "description": "Representative for New York's 8th congressional district",
+      "website": "https://jeffries.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412561-200px.jpeg"
+    },
+    "OH-3": {
+      "party": "Democrat",
+      "name": "Rep. Joyce Beatty [D-OH3]",
+      "description": "Representative for Ohio's 3rd congressional district",
+      "website": "https://beatty.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412565-200px.jpeg"
+    },
+    "OH-14": {
+      "party": "Republican",
+      "name": "Rep. David Joyce [R-OH14]",
+      "description": "Representative for Ohio's 14th congressional district",
+      "website": "https://joyce.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412566-200px.jpeg"
+    },
+    "PA-10": {
+      "party": "Republican",
+      "name": "Rep. Scott Perry [R-PA10]",
+      "description": "Representative for Pennsylvania's 10th congressional district",
+      "website": "https://perry.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412569-200px.jpeg"
+    },
+    "TX-14": {
+      "party": "Republican",
+      "name": "Rep. Randy Weber [R-TX14]",
+      "description": "Representative for Texas's 14th congressional district",
+      "website": "https://weber.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412574-200px.jpeg"
+    },
+    "TX-20": {
+      "party": "Democrat",
+      "name": "Rep. Joaquin Castro [D-TX20]",
+      "description": "Representative for Texas's 20th congressional district",
+      "website": "https://castro.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412576-200px.jpeg"
+    },
+    "TX-25": {
+      "party": "Republican",
+      "name": "Rep. Roger Williams [R-TX25]",
+      "description": "Representative for Texas's 25th congressional district",
+      "website": "https://williams.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412578-200px.jpeg"
+    },
+    "TX-33": {
+      "party": "Democrat",
+      "name": "Rep. Marc Veasey [D-TX33]",
+      "description": "Representative for Texas's 33rd congressional district",
+      "website": "https://veasey.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412579-200px.jpeg"
+    },
+    "WI-2": {
+      "party": "Democrat",
+      "name": "Rep. Mark Pocan [D-WI2]",
+      "description": "Representative for Wisconsin's 2nd congressional district",
+      "website": "https://pocan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412585-200px.jpeg"
+    },
+    "IL-2": {
+      "party": "Democrat",
+      "name": "Rep. Robin Kelly [D-IL2]",
+      "description": "Representative for Illinois's 2nd congressional district",
+      "website": "https://robinkelly.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412595-200px.jpeg"
+    },
+    "MO-8": {
+      "party": "Republican",
+      "name": "Rep. Jason Smith [R-MO8]",
+      "description": "Representative for Missouri's 8th congressional district",
+      "website": "https://jasonsmith.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412596-200px.jpeg"
+    },
+    "MA-5": {
+      "party": "Democrat",
+      "name": "Rep. Katherine Clark [D-MA5]",
+      "description": "Representative for Massachusetts's 5th congressional district",
+      "website": "https://katherineclark.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412600-200px.jpeg"
+    },
+    "NJ-1": {
+      "party": "Democrat",
+      "name": "Rep. Donald Norcross [D-NJ1]",
+      "description": "Representative for New Jersey's 1st congressional district",
+      "website": "https://norcross.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412606-200px.jpeg"
+    },
+    "NC-12": {
+      "party": "Democrat",
+      "name": "Rep. Alma Adams [D-NC12]",
+      "description": "Representative for North Carolina's 12th congressional district",
+      "website": "https://adams.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412607-200px.jpeg"
+    },
+    "AL-6": {
+      "party": "Republican",
+      "name": "Rep. Gary Palmer [R-AL6]",
+      "description": "Representative for Alabama's 6th congressional district",
+      "website": "https://palmer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412608-200px.jpeg"
+    },
+    "AR-2": {
+      "party": "Republican",
+      "name": "Rep. French Hill [R-AR2]",
+      "description": "Representative for Arkansas's 2nd congressional district",
+      "website": "https://hill.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412609-200px.jpeg"
+    },
+    "AR-4": {
+      "party": "Republican",
+      "name": "Rep. Bruce Westerman [R-AR4]",
+      "description": "Representative for Arkansas's 4th congressional district",
+      "website": "https://westerman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412610-200px.jpeg"
+    },
+    "CA-10": {
+      "party": "Democrat",
+      "name": "Rep. Mark DeSaulnier [D-CA10]",
+      "description": "Representative for California's 10th congressional district",
+      "website": "https://desaulnier.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412613-200px.jpeg"
+    },
+    "CA-33": {
+      "party": "Democrat",
+      "name": "Rep. Pete Aguilar [D-CA33]",
+      "description": "Representative for California's 33rd congressional district",
+      "website": "https://aguilar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412615-200px.jpeg"
+    },
+    "CA-36": {
+      "party": "Democrat",
+      "name": "Rep. Ted Lieu [D-CA36]",
+      "description": "Representative for California's 36th congressional district",
+      "website": "https://lieu.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412616-200px.jpeg"
+    },
+    "CA-35": {
+      "party": "Democrat",
+      "name": "Rep. Norma Torres [D-CA35]",
+      "description": "Representative for California's 35th congressional district",
+      "website": "https://torres.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412617-200px.jpeg"
+    },
+    "GA-1": {
+      "party": "Republican",
+      "name": "Rep. Earl “Buddy” Carter [R-GA1]",
+      "description": "Representative for Georgia's 1st congressional district",
+      "website": "https://buddycarter.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412622-200px.jpeg"
+    },
+    "GA-11": {
+      "party": "Republican",
+      "name": "Rep. Barry Loudermilk [R-GA11]",
+      "description": "Representative for Georgia's 11th congressional district",
+      "website": "https://loudermilk.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412624-200px.jpeg"
+    },
+    "GA-12": {
+      "party": "Republican",
+      "name": "Rep. Rick Allen [R-GA12]",
+      "description": "Representative for Georgia's 12th congressional district",
+      "website": "https://allen.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412625-200px.jpeg"
+    },
+    "IL-12": {
+      "party": "Republican",
+      "name": "Rep. Mike Bost [R-IL12]",
+      "description": "Representative for Illinois's 12th congressional district",
+      "website": "https://bost.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412629-200px.jpeg"
+    },
+    "MA-6": {
+      "party": "Democrat",
+      "name": "Rep. Seth Moulton [D-MA6]",
+      "description": "Representative for Massachusetts's 6th congressional district",
+      "website": "https://moulton.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412632-200px.jpeg"
+    },
+    "MI-2": {
+      "party": "Republican",
+      "name": "Rep. John Moolenaar [R-MI2]",
+      "description": "Representative for Michigan's 2nd congressional district",
+      "website": "https://moolenaar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412634-200px.jpeg"
+    },
+    "MI-6": {
+      "party": "Democrat",
+      "name": "Rep. Debbie Dingell [D-MI6]",
+      "description": "Representative for Michigan's 6th congressional district",
+      "website": "https://debbiedingell.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412637-200px.jpeg"
+    },
+    "MN-6": {
+      "party": "Republican",
+      "name": "Rep. Tom Emmer [R-MN6]",
+      "description": "Representative for Minnesota's 6th congressional district",
+      "website": "https://emmer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412639-200px.jpeg"
+    },
+    "NC-7": {
+      "party": "Republican",
+      "name": "Rep. David Rouzer [R-NC7]",
+      "description": "Representative for North Carolina's 7th congressional district",
+      "website": "https://rouzer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412641-200px.jpeg"
+    },
+    "NJ-12": {
+      "party": "Democrat",
+      "name": "Rep. Bonnie Watson Coleman [D-NJ12]",
+      "description": "Representative for New Jersey's 12th congressional district",
+      "website": "https://watsoncoleman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412644-200px.jpeg"
+    },
+    "NY-21": {
+      "party": "Republican",
+      "name": "Rep. Elise Stefanik [R-NY21]",
+      "description": "Representative for New York's 21st congressional district",
+      "website": "https://stefanik.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412648-200px.jpeg"
+    },
+    "PA-2": {
+      "party": "Democrat",
+      "name": "Rep. Brendan Boyle [D-PA2]",
+      "description": "Representative for Pennsylvania's 2nd congressional district",
+      "website": "https://boyle.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412652-200px.jpeg"
+    },
+    "TX-36": {
+      "party": "Republican",
+      "name": "Rep. Brian Babin [R-TX36]",
+      "description": "Representative for Texas's 36th congressional district",
+      "website": "https://babin.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412655-200px.jpeg"
+    },
+    "VA-8": {
+      "party": "Democrat",
+      "name": "Rep. Donald Beyer [D-VA8]",
+      "description": "Representative for Virginia's 8th congressional district",
+      "website": "https://beyer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412657-200px.jpeg"
+    },
+    "WA-4": {
+      "party": "Republican",
+      "name": "Rep. Dan Newhouse [R-WA4]",
+      "description": "Representative for Washington's 4th congressional district",
+      "website": "https://newhouse.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412660-200px.jpeg"
+    },
+    "WI-6": {
+      "party": "Republican",
+      "name": "Rep. Glenn Grothman [R-WI6]",
+      "description": "Representative for Wisconsin's 6th congressional district",
+      "website": "https://grothman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412661-200px.jpeg"
+    },
+    "MS-1": {
+      "party": "Republican",
+      "name": "Rep. Trent Kelly [R-MS1]",
+      "description": "Representative for Mississippi's 1st congressional district",
+      "website": "https://trentkelly.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412673-200px.jpeg"
+    },
+    "IL-16": {
+      "party": "Republican",
+      "name": "Rep. Darin LaHood [R-IL16]",
+      "description": "Representative for Illinois's 16th congressional district",
+      "website": "https://lahood.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412674-200px.jpeg"
+    },
+    "OH-8": {
+      "party": "Republican",
+      "name": "Rep. Warren Davidson [R-OH8]",
+      "description": "Representative for Ohio's 8th congressional district",
+      "website": "https://davidson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412675-200px.jpeg"
+    },
+    "KY-1": {
+      "party": "Republican",
+      "name": "Rep. James Comer [R-KY1]",
+      "description": "Representative for Kentucky's 1st congressional district",
+      "website": "https://comer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412676-200px.jpeg"
+    },
+    "PA-3": {
+      "party": "Democrat",
+      "name": "Rep. Dwight Evans [D-PA3]",
+      "description": "Representative for Pennsylvania's 3rd congressional district",
+      "website": "https://evans.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412677-200px.jpeg"
+    },
+    "IL-10": {
+      "party": "Democrat",
+      "name": "Rep. Bradley “Brad” Schneider [D-IL10]",
+      "description": "Representative for Illinois's 10th congressional district",
+      "website": "https://schneider.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412534-200px.jpeg"
+    },
+    "AZ-5": {
+      "party": "Republican",
+      "name": "Rep. Andy Biggs [R-AZ5]",
+      "description": "Representative for Arizona's 5th congressional district",
+      "website": "https://biggs.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412683-200px.jpeg"
+    },
+    "CA-17": {
+      "party": "Democrat",
+      "name": "Rep. Ro Khanna [D-CA17]",
+      "description": "Representative for California's 17th congressional district",
+      "website": "https://khanna.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412684-200px.jpeg"
+    },
+    "CA-19": {
+      "party": "Democrat",
+      "name": "Rep. Jimmy Panetta [D-CA19]",
+      "description": "Representative for California's 19th congressional district",
+      "website": "https://panetta.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412685-200px.jpeg"
+    },
+    "CA-24": {
+      "party": "Democrat",
+      "name": "Rep. Salud Carbajal [D-CA24]",
+      "description": "Representative for California's 24th congressional district",
+      "website": "https://carbajal.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412686-200px.jpeg"
+    },
+    "CA-44": {
+      "party": "Democrat",
+      "name": "Rep. Nanette Barragán [D-CA44]",
+      "description": "Representative for California's 44th congressional district",
+      "website": "https://barragan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412687-200px.jpeg"
+    },
+    "CA-46": {
+      "party": "Democrat",
+      "name": "Rep. Luis Correa [D-CA46]",
+      "description": "Representative for California's 46th congressional district",
+      "website": "https://correa.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412688-200px.jpeg"
+    },
+    "FL-2": {
+      "party": "Republican",
+      "name": "Rep. Neal Dunn [R-FL2]",
+      "description": "Representative for Florida's 2nd congressional district",
+      "website": "https://dunn.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412691-200px.jpeg"
+    },
+    "FL-5": {
+      "party": "Republican",
+      "name": "Rep. John Rutherford [R-FL5]",
+      "description": "Representative for Florida's 5th congressional district",
+      "website": "https://rutherford.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412692-200px.jpeg"
+    },
+    "FL-9": {
+      "party": "Democrat",
+      "name": "Rep. Darren Soto [D-FL9]",
+      "description": "Representative for Florida's 9th congressional district",
+      "website": "https://soto.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412695-200px.jpeg"
+    },
+    "FL-21": {
+      "party": "Republican",
+      "name": "Rep. Brian Mast [R-FL21]",
+      "description": "Representative for Florida's 21st congressional district",
+      "website": "https://mast.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412698-200px.jpeg"
+    },
+    "IL-8": {
+      "party": "Democrat",
+      "name": "Rep. Raja Krishnamoorthi [D-IL8]",
+      "description": "Representative for Illinois's 8th congressional district",
+      "website": "https://krishnamoorthi.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412701-200px.jpeg"
+    },
+    "LA-3": {
+      "party": "Republican",
+      "name": "Rep. Clay Higgins [R-LA3]",
+      "description": "Representative for Louisiana's 3rd congressional district",
+      "website": "https://clayhiggins.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412705-200px.jpeg"
+    },
+    "LA-4": {
+      "party": "Republican",
+      "name": "Rep. Mike Johnson [R-LA4]",
+      "description": "Representative for Louisiana's 4th congressional district",
+      "website": "https://mikejohnson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412706-200px.jpeg"
+    },
+    "MD-8": {
+      "party": "Democrat",
+      "name": "Rep. Jamie Raskin [D-MD8]",
+      "description": "Representative for Maryland's 8th congressional district",
+      "website": "https://raskin.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412708-200px.jpeg"
+    },
+    "MI-1": {
+      "party": "Republican",
+      "name": "Rep. Jack Bergman [R-MI1]",
+      "description": "Representative for Michigan's 1st congressional district",
+      "website": "https://bergman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412709-200px.jpeg"
+    },
+    "NE-2": {
+      "party": "Republican",
+      "name": "Rep. Don Bacon [R-NE2]",
+      "description": "Representative for Nebraska's 2nd congressional district",
+      "website": "https://bacon.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412713-200px.jpeg"
+    },
+    "NJ-5": {
+      "party": "Democrat",
+      "name": "Rep. Josh Gottheimer [D-NJ5]",
+      "description": "Representative for New Jersey's 5th congressional district",
+      "website": "https://gottheimer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412714-200px.jpeg"
+    },
+    "NY-13": {
+      "party": "Democrat",
+      "name": "Rep. Adriano Espaillat [D-NY13]",
+      "description": "Representative for New York's 13th congressional district",
+      "website": "https://espaillat.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412718-200px.jpeg"
+    },
+    "PA-1": {
+      "party": "Republican",
+      "name": "Rep. Brian Fitzpatrick [R-PA1]",
+      "description": "Representative for Pennsylvania's 1st congressional district",
+      "website": "https://fitzpatrick.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412721-200px.jpeg"
+    },
+    "PA-11": {
+      "party": "Republican",
+      "name": "Rep. Lloyd Smucker [R-PA11]",
+      "description": "Representative for Pennsylvania's 11th congressional district",
+      "website": "https://smucker.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412722-200px.jpeg"
+    },
+    "TN-8": {
+      "party": "Republican",
+      "name": "Rep. David Kustoff [R-TN8]",
+      "description": "Representative for Tennessee's 8th congressional district",
+      "website": "https://kustoff.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412724-200px.jpeg"
+    },
+    "TX-34": {
+      "party": "Democrat",
+      "name": "Rep. Vicente Gonzalez [D-TX34]",
+      "description": "Representative for Texas's 34th congressional district",
+      "website": "https://gonzalez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412725-200px.jpeg"
+    },
+    "TX-19": {
+      "party": "Republican",
+      "name": "Rep. Jodey Arrington [R-TX19]",
+      "description": "Representative for Texas's 19th congressional district",
+      "website": "https://arrington.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412726-200px.jpeg"
+    },
+    "WA-7": {
+      "party": "Democrat",
+      "name": "Rep. Pramila Jayapal [D-WA7]",
+      "description": "Representative for Washington's 7th congressional district",
+      "website": "https://jayapal.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412730-200px.jpeg"
+    },
+    "KS-4": {
+      "party": "Republican",
+      "name": "Rep. Ron Estes [R-KS4]",
+      "description": "Representative for Kansas's 4th congressional district",
+      "website": "https://estes.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412735-200px.jpeg"
+    },
+    "SC-5": {
+      "party": "Republican",
+      "name": "Rep. Ralph Norman [R-SC5]",
+      "description": "Representative for South Carolina's 5th congressional district",
+      "website": "https://norman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412738-200px.jpeg"
+    },
+    "CA-34": {
+      "party": "Democrat",
+      "name": "Rep. Jimmy Gomez [D-CA34]",
+      "description": "Representative for California's 34th congressional district",
+      "website": "https://gomez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412739-200px.jpeg"
+    },
+    "TX-27": {
+      "party": "Republican",
+      "name": "Rep. Michael Cloud [R-TX27]",
+      "description": "Representative for Texas's 27th congressional district",
+      "website": "https://cloud.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412746-200px.jpeg"
+    },
+    "OH-12": {
+      "party": "Republican",
+      "name": "Rep. Troy Balderson [R-OH12]",
+      "description": "Representative for Ohio's 12th congressional district",
+      "website": "https://balderson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412747-200px.jpeg"
+    },
+    "OK-1": {
+      "party": "Republican",
+      "name": "Rep. Kevin Hern [R-OK1]",
+      "description": "Representative for Oklahoma's 1st congressional district",
+      "website": "https://hern.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412748-200px.jpeg"
+    },
+    "NY-25": {
+      "party": "Democrat",
+      "name": "Rep. Joseph Morelle [D-NY25]",
+      "description": "Representative for New York's 25th congressional district",
+      "website": "https://morelle.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412749-200px.jpeg"
+    },
+    "PA-5": {
+      "party": "Democrat",
+      "name": "Rep. Mary Gay Scanlon [D-PA5]",
+      "description": "Representative for Pennsylvania's 5th congressional district",
+      "website": "https://scanlon.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412750-200px.jpeg"
+    },
+    "HI-1": {
+      "party": "Democrat",
+      "name": "Rep. Ed Case [D-HI1]",
+      "description": "Representative for Hawaii's 1st congressional district",
+      "website": "https://case.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400069-200px.jpeg"
+    },
+    "NV-4": {
+      "party": "Democrat",
+      "name": "Rep. Steven Horsford [D-NV4]",
+      "description": "Representative for Nevada's 4th congressional district",
+      "website": "https://horsford.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412559-200px.jpeg"
+    },
+    "AZ-4": {
+      "party": "Democrat",
+      "name": "Rep. Greg Stanton [D-AZ4]",
+      "description": "Representative for Arizona's 4th congressional district",
+      "website": "https://stanton.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412753-200px.jpeg"
+    },
+    "CA-9": {
+      "party": "Democrat",
+      "name": "Rep. Josh Harder [D-CA9]",
+      "description": "Representative for California's 9th congressional district",
+      "website": "https://harder.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412754-200px.jpeg"
+    },
+    "CA-49": {
+      "party": "Democrat",
+      "name": "Rep. Mike Levin [D-CA49]",
+      "description": "Representative for California's 49th congressional district",
+      "website": "https://levin.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412760-200px.jpeg"
+    },
+    "CO-2": {
+      "party": "Democrat",
+      "name": "Rep. Joe Neguse [D-CO2]",
+      "description": "Representative for Colorado's 2nd congressional district",
+      "website": "https://neguse.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412761-200px.jpeg"
+    },
+    "CO-6": {
+      "party": "Democrat",
+      "name": "Rep. Jason Crow [D-CO6]",
+      "description": "Representative for Colorado's 6th congressional district",
+      "website": "https://crow.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412762-200px.jpeg"
+    },
+    "CT-5": {
+      "party": "Democrat",
+      "name": "Rep. Jahana Hayes [D-CT5]",
+      "description": "Representative for Connecticut's 5th congressional district",
+      "website": "https://hayes.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412763-200px.jpeg"
+    },
+    "FL-17": {
+      "party": "Republican",
+      "name": "Rep. Gregory Steube [R-FL17]",
+      "description": "Representative for Florida's 17th congressional district",
+      "website": "https://steube.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412766-200px.jpeg"
+    },
+    "GA-6": {
+      "party": "Democrat",
+      "name": "Rep. Lucy McBath [D-GA6]",
+      "description": "Representative for Georgia's 6th congressional district",
+      "website": "https://mcbath.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412769-200px.jpeg"
+    },
+    "ID-1": {
+      "party": "Republican",
+      "name": "Rep. Russ Fulcher [R-ID1]",
+      "description": "Representative for Idaho's 1st congressional district",
+      "website": "https://fulcher.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412773-200px.jpeg"
+    },
+    "IL-4": {
+      "party": "Democrat",
+      "name": "Rep. Jesús “Chuy” García [D-IL4]",
+      "description": "Representative for Illinois's 4th congressional district",
+      "website": "https://chuygarcia.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412774-200px.jpeg"
+    },
+    "IL-6": {
+      "party": "Democrat",
+      "name": "Rep. Sean Casten [D-IL6]",
+      "description": "Representative for Illinois's 6th congressional district",
+      "website": "https://casten.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412775-200px.jpeg"
+    },
+    "IL-14": {
+      "party": "Democrat",
+      "name": "Rep. Lauren Underwood [D-IL14]",
+      "description": "Representative for Illinois's 14th congressional district",
+      "website": "https://underwood.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412776-200px.jpeg"
+    },
+    "IN-4": {
+      "party": "Republican",
+      "name": "Rep. James Baird [R-IN4]",
+      "description": "Representative for Indiana's 4th congressional district",
+      "website": "https://baird.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412777-200px.jpeg"
+    },
+    "KS-3": {
+      "party": "Democrat",
+      "name": "Rep. Sharice Davids [D-KS3]",
+      "description": "Representative for Kansas's 3rd congressional district",
+      "website": "https://davids.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412780-200px.jpeg"
+    },
+    "MA-3": {
+      "party": "Democrat",
+      "name": "Rep. Lori Trahan [D-MA3]",
+      "description": "Representative for Massachusetts's 3rd congressional district",
+      "website": "https://trahan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412781-200px.jpeg"
+    },
+    "MA-7": {
+      "party": "Democrat",
+      "name": "Rep. Ayanna Pressley [D-MA7]",
+      "description": "Representative for Massachusetts's 7th congressional district",
+      "website": "https://pressley.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412782-200px.jpeg"
+    },
+    "MI-11": {
+      "party": "Democrat",
+      "name": "Rep. Haley Stevens [D-MI11]",
+      "description": "Representative for Michigan's 11th congressional district",
+      "website": "https://stevens.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412786-200px.jpeg"
+    },
+    "MI-12": {
+      "party": "Democrat",
+      "name": "Rep. Rashida Tlaib [D-MI12]",
+      "description": "Representative for Michigan's 12th congressional district",
+      "website": "https://tlaib.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412787-200px.jpeg"
+    },
+    "MN-2": {
+      "party": "Democrat",
+      "name": "Rep. Angie Craig [D-MN2]",
+      "description": "Representative for Minnesota's 2nd congressional district",
+      "website": "https://craig.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412789-200px.jpeg"
+    },
+    "MN-5": {
+      "party": "Democrat",
+      "name": "Rep. Ilhan Omar [D-MN5]",
+      "description": "Representative for Minnesota's 5th congressional district",
+      "website": "https://omar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412791-200px.jpeg"
+    },
+    "MN-8": {
+      "party": "Republican",
+      "name": "Rep. Pete Stauber [R-MN8]",
+      "description": "Representative for Minnesota's 8th congressional district",
+      "website": "https://stauber.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412792-200px.jpeg"
+    },
+    "MS-3": {
+      "party": "Republican",
+      "name": "Rep. Michael Guest [R-MS3]",
+      "description": "Representative for Mississippi's 3rd congressional district",
+      "website": "https://guest.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412793-200px.jpeg"
+    },
+    "NH-1": {
+      "party": "Democrat",
+      "name": "Rep. Chris Pappas [D-NH1]",
+      "description": "Representative for New Hampshire's 1st congressional district",
+      "website": "https://pappas.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412795-200px.jpeg"
+    },
+    "NJ-2": {
+      "party": "Republican",
+      "name": "Rep. Jefferson Van Drew [R-NJ2]",
+      "description": "Representative for New Jersey's 2nd congressional district",
+      "website": "https://vandrew.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412796-200px.jpeg"
+    },
+    "NV-3": {
+      "party": "Democrat",
+      "name": "Rep. Susie Lee [D-NV3]",
+      "description": "Representative for Nevada's 3rd congressional district",
+      "website": "https://susielee.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412802-200px.jpeg"
+    },
+    "NY-14": {
+      "party": "Democrat",
+      "name": "Rep. Alexandria Ocasio-Cortez [D-NY14]",
+      "description": "Representative for New York's 14th congressional district",
+      "website": "https://ocasio-cortez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412804-200px.jpeg"
+    },
+    "PA-4": {
+      "party": "Democrat",
+      "name": "Rep. Madeleine Dean [D-PA4]",
+      "description": "Representative for Pennsylvania's 4th congressional district",
+      "website": "https://dean.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412809-200px.jpeg"
+    },
+    "PA-6": {
+      "party": "Democrat",
+      "name": "Rep. Chrissy Houlahan [D-PA6]",
+      "description": "Representative for Pennsylvania's 6th congressional district",
+      "website": "https://houlahan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412810-200px.jpeg"
+    },
+    "PA-9": {
+      "party": "Republican",
+      "name": "Rep. Daniel Meuser [R-PA9]",
+      "description": "Representative for Pennsylvania's 9th congressional district",
+      "website": "https://meuser.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412811-200px.jpeg"
+    },
+    "PA-13": {
+      "party": "Republican",
+      "name": "Rep. John Joyce [R-PA13]",
+      "description": "Representative for Pennsylvania's 13th congressional district",
+      "website": "https://johnjoyce.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412812-200px.jpeg"
+    },
+    "PA-14": {
+      "party": "Republican",
+      "name": "Rep. Guy Reschenthaler [R-PA14]",
+      "description": "Representative for Pennsylvania's 14th congressional district",
+      "website": "https://reschenthaler.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412813-200px.jpeg"
+    },
+    "SC-4": {
+      "party": "Republican",
+      "name": "Rep. William Timmons [R-SC4]",
+      "description": "Representative for South Carolina's 4th congressional district",
+      "website": "https://timmons.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412815-200px.jpeg"
+    },
+    "SD-0": {
+      "party": "Republican",
+      "name": "Rep. Dusty Johnson [R-SD]",
+      "description": "Representative for South Dakota At Large",
+      "website": "https://dustyjohnson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412816-200px.jpeg"
+    },
+    "TN-2": {
+      "party": "Republican",
+      "name": "Rep. Tim Burchett [R-TN2]",
+      "description": "Representative for Tennessee's 2nd congressional district",
+      "website": "https://burchett.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412817-200px.jpeg"
+    },
+    "TN-6": {
+      "party": "Republican",
+      "name": "Rep. John W. Rose [R-TN6]",
+      "description": "Representative for Tennessee's 6th congressional district",
+      "website": "https://johnrose.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412818-200px.jpeg"
+    },
+    "TX-2": {
+      "party": "Republican",
+      "name": "Rep. Dan Crenshaw [R-TX2]",
+      "description": "Representative for Texas's 2nd congressional district",
+      "website": "https://crenshaw.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412820-200px.jpeg"
+    },
+    "TX-5": {
+      "party": "Republican",
+      "name": "Rep. Lance Gooden [R-TX5]",
+      "description": "Representative for Texas's 5th congressional district",
+      "website": "https://gooden.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412822-200px.jpeg"
+    },
+    "TX-7": {
+      "party": "Democrat",
+      "name": "Rep. Lizzie Fletcher [D-TX7]",
+      "description": "Representative for Texas's 7th congressional district",
+      "website": "https://fletcher.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412824-200px.jpeg"
+    },
+    "TX-16": {
+      "party": "Democrat",
+      "name": "Rep. Veronica Escobar [D-TX16]",
+      "description": "Representative for Texas's 16th congressional district",
+      "website": "https://escobar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412825-200px.jpeg"
+    },
+    "TX-21": {
+      "party": "Republican",
+      "name": "Rep. Chip Roy [R-TX21]",
+      "description": "Representative for Texas's 21st congressional district",
+      "website": "https://roy.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412826-200px.jpeg"
+    },
+    "TX-29": {
+      "party": "Democrat",
+      "name": "Rep. Sylvia Garcia [D-TX29]",
+      "description": "Representative for Texas's 29th congressional district",
+      "website": "https://sylviagarcia.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412827-200px.jpeg"
+    },
+    "VA-6": {
+      "party": "Republican",
+      "name": "Rep. Ben Cline [R-VA6]",
+      "description": "Representative for Virginia's 6th congressional district",
+      "website": "https://cline.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412832-200px.jpeg"
+    },
+    "WA-8": {
+      "party": "Democrat",
+      "name": "Rep. Kim Schrier [D-WA8]",
+      "description": "Representative for Washington's 8th congressional district",
+      "website": "https://schrier.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412835-200px.jpeg"
+    },
+    "WI-1": {
+      "party": "Republican",
+      "name": "Rep. Bryan Steil [R-WI1]",
+      "description": "Representative for Wisconsin's 1st congressional district",
+      "website": "https://steil.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412836-200px.jpeg"
+    },
+    "WV-1": {
+      "party": "Republican",
+      "name": "Rep. Carol Miller [R-WV1]",
+      "description": "Representative for West Virginia's 1st congressional district",
+      "website": "https://miller.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412837-200px.jpeg"
+    },
+    "ME-2": {
+      "party": "Democrat",
+      "name": "Rep. Jared Golden [D-ME2]",
+      "description": "Representative for Maine's 2nd congressional district",
+      "website": "https://golden.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412842-200px.jpeg"
+    },
+    "NC-3": {
+      "party": "Republican",
+      "name": "Rep. Gregory Murphy [R-NC3]",
+      "description": "Representative for North Carolina's 3rd congressional district",
+      "website": "https://murphy.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412845-200px.jpeg"
+    },
+    "MD-7": {
+      "party": "Democrat",
+      "name": "Rep. Kweisi Mfume [D-MD7]",
+      "description": "Representative for Maryland's 7th congressional district",
+      "website": "https://mfume.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/407672-200px.jpeg"
+    },
+    "WI-7": {
+      "party": "Republican",
+      "name": "Rep. Thomas Tiffany [R-WI7]",
+      "description": "Representative for Wisconsin's 7th congressional district",
+      "website": "https://tiffany.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456791-200px.jpeg"
+    },
+    "CA-48": {
+      "party": "Republican",
+      "name": "Rep. Darrell Issa [R-CA48]",
+      "description": "Representative for California's 48th congressional district",
+      "website": "https://issa.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400196-200px.jpeg"
+    },
+    "TX-17": {
+      "party": "Republican",
+      "name": "Rep. Pete Sessions [R-TX17]",
+      "description": "Representative for Texas's 17th congressional district",
+      "website": "https://sessions.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/400367-200px.jpeg"
+    },
+    "CA-22": {
+      "party": "Republican",
+      "name": "Rep. David Valadao [R-CA22]",
+      "description": "Representative for California's 22nd congressional district",
+      "website": "https://valadao.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412515-200px.jpeg"
+    },
+    "AL-1": {
+      "party": "Republican",
+      "name": "Rep. Barry Moore [R-AL1]",
+      "description": "Representative for Alabama's 1st congressional district",
+      "website": "https://barrymoore.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456800-200px.jpeg"
+    },
+    "CA-23": {
+      "party": "Republican",
+      "name": "Rep. Jay Obernolte [R-CA23]",
+      "description": "Representative for California's 23rd congressional district",
+      "website": "https://obernolte.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456801-200px.jpeg"
+    },
+    "CA-40": {
+      "party": "Republican",
+      "name": "Rep. Young Kim [R-CA40]",
+      "description": "Representative for California's 40th congressional district",
+      "website": "https://youngkim.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456802-200px.jpeg"
+    },
+    "CA-51": {
+      "party": "Democrat",
+      "name": "Rep. Sara Jacobs [D-CA51]",
+      "description": "Representative for California's 51st congressional district",
+      "website": "https://sarajacobs.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456804-200px.jpeg"
+    },
+    "CO-4": {
+      "party": "Republican",
+      "name": "Rep. Lauren Boebert [R-CO4]",
+      "description": "Representative for Colorado's 4th congressional district",
+      "website": "https://boebert.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456805-200px.jpeg"
+    },
+    "FL-3": {
+      "party": "Republican",
+      "name": "Rep. Katherine “Kat” Cammack [R-FL3]",
+      "description": "Representative for Florida's 3rd congressional district",
+      "website": "https://cammack.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456806-200px.jpeg"
+    },
+    "FL-18": {
+      "party": "Republican",
+      "name": "Rep. Scott Franklin [R-FL18]",
+      "description": "Representative for Florida's 18th congressional district",
+      "website": "https://franklin.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456807-200px.jpeg"
+    },
+    "FL-19": {
+      "party": "Republican",
+      "name": "Rep. Byron Donalds [R-FL19]",
+      "description": "Representative for Florida's 19th congressional district",
+      "website": "https://donalds.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456808-200px.jpeg"
+    },
+    "FL-28": {
+      "party": "Republican",
+      "name": "Rep. Carlos Gimenez [R-FL28]",
+      "description": "Representative for Florida's 28th congressional district",
+      "website": "https://gimenez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456809-200px.jpeg"
+    },
+    "FL-27": {
+      "party": "Republican",
+      "name": "Rep. Maria Salazar [R-FL27]",
+      "description": "Representative for Florida's 27th congressional district",
+      "website": "https://salazar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456810-200px.jpeg"
+    },
+    "GA-5": {
+      "party": "Democrat",
+      "name": "Rep. Nikema Williams [D-GA5]",
+      "description": "Representative for Georgia's 5th congressional district",
+      "website": "https://nikemawilliams.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456811-200px.jpeg"
+    },
+    "GA-9": {
+      "party": "Republican",
+      "name": "Rep. Andrew Clyde [R-GA9]",
+      "description": "Representative for Georgia's 9th congressional district",
+      "website": "https://clyde.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456813-200px.jpeg"
+    },
+    "IA-2": {
+      "party": "Republican",
+      "name": "Rep. Ashley Hinson [R-IA2]",
+      "description": "Representative for Iowa's 2nd congressional district",
+      "website": "https://hinson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456816-200px.jpeg"
+    },
+    "IA-1": {
+      "party": "Republican",
+      "name": "Rep. Mariannette Miller-Meeks [R-IA1]",
+      "description": "Representative for Iowa's 1st congressional district",
+      "website": "https://millermeeks.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456817-200px.jpeg"
+    },
+    "IA-4": {
+      "party": "Republican",
+      "name": "Rep. Randy Feenstra [R-IA4]",
+      "description": "Representative for Iowa's 4th congressional district",
+      "website": "https://feenstra.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456818-200px.jpeg"
+    },
+    "IL-15": {
+      "party": "Republican",
+      "name": "Rep. Mary Miller [R-IL15]",
+      "description": "Representative for Illinois's 15th congressional district",
+      "website": "https://marymiller.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456820-200px.jpeg"
+    },
+    "IN-1": {
+      "party": "Democrat",
+      "name": "Rep. Frank Mrvan [D-IN1]",
+      "description": "Representative for Indiana's 1st congressional district",
+      "website": "https://mrvan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456821-200px.jpeg"
+    },
+    "IN-5": {
+      "party": "Republican",
+      "name": "Rep. Victoria Spartz [R-IN5]",
+      "description": "Representative for Indiana's 5th congressional district",
+      "website": "https://spartz.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456822-200px.jpeg"
+    },
+    "KS-1": {
+      "party": "Republican",
+      "name": "Rep. Tracey Mann [R-KS1]",
+      "description": "Representative for Kansas's 1st congressional district",
+      "website": "https://mann.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456823-200px.jpeg"
+    },
+    "MA-4": {
+      "party": "Democrat",
+      "name": "Rep. Jake Auchincloss [D-MA4]",
+      "description": "Representative for Massachusetts's 4th congressional district",
+      "website": "https://auchincloss.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456825-200px.jpeg"
+    },
+    "MI-9": {
+      "party": "Republican",
+      "name": "Rep. Lisa McClain [R-MI9]",
+      "description": "Representative for Michigan's 9th congressional district",
+      "website": "https://mcclain.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456827-200px.jpeg"
+    },
+    "MN-7": {
+      "party": "Republican",
+      "name": "Rep. Michelle Fischbach [R-MN7]",
+      "description": "Representative for Minnesota's 7th congressional district",
+      "website": "https://fischbach.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456828-200px.jpeg"
+    },
+    "NC-2": {
+      "party": "Democrat",
+      "name": "Rep. Deborah Ross [D-NC2]",
+      "description": "Representative for North Carolina's 2nd congressional district",
+      "website": "https://ross.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456831-200px.jpeg"
+    },
+    "NM-3": {
+      "party": "Democrat",
+      "name": "Rep. Teresa Leger Fernandez [D-NM3]",
+      "description": "Representative for New Mexico's 3rd congressional district",
+      "website": "https://fernandez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456835-200px.jpeg"
+    },
+    "NY-2": {
+      "party": "Republican",
+      "name": "Rep. Andrew Garbarino [R-NY2]",
+      "description": "Representative for New York's 2nd congressional district",
+      "website": "https://garbarino.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456836-200px.jpeg"
+    },
+    "NY-11": {
+      "party": "Republican",
+      "name": "Rep. Nicole Malliotakis [R-NY11]",
+      "description": "Representative for New York's 11th congressional district",
+      "website": "https://malliotakis.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456837-200px.jpeg"
+    },
+    "NY-15": {
+      "party": "Democrat",
+      "name": "Rep. Ritchie Torres [D-NY15]",
+      "description": "Representative for New York's 15th congressional district",
+      "website": "https://ritchietorres.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456838-200px.jpeg"
+    },
+    "OK-5": {
+      "party": "Republican",
+      "name": "Rep. Stephanie Bice [R-OK5]",
+      "description": "Representative for Oklahoma's 5th congressional district",
+      "website": "https://bice.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456841-200px.jpeg"
+    },
+    "OR-2": {
+      "party": "Republican",
+      "name": "Rep. Cliff Bentz [R-OR2]",
+      "description": "Representative for Oregon's 2nd congressional district",
+      "website": "https://bentz.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456842-200px.jpeg"
+    },
+    "SC-1": {
+      "party": "Republican",
+      "name": "Rep. Nancy Mace [R-SC1]",
+      "description": "Representative for South Carolina's 1st congressional district",
+      "website": "https://mace.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456843-200px.jpeg"
+    },
+    "TN-1": {
+      "party": "Republican",
+      "name": "Rep. Diana Harshbarger [R-TN1]",
+      "description": "Representative for Tennessee's 1st congressional district",
+      "website": "https://harshbarger.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456844-200px.jpeg"
+    },
+    "TX-4": {
+      "party": "Republican",
+      "name": "Rep. Patrick “Pat” Fallon [R-TX4]",
+      "description": "Representative for Texas's 4th congressional district",
+      "website": "https://fallon.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456845-200px.jpeg"
+    },
+    "TX-11": {
+      "party": "Republican",
+      "name": "Rep. August Pfluger [R-TX11]",
+      "description": "Representative for Texas's 11th congressional district",
+      "website": "https://pfluger.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456846-200px.jpeg"
+    },
+    "TX-13": {
+      "party": "Republican",
+      "name": "Rep. Ronny Jackson [R-TX13]",
+      "description": "Representative for Texas's 13th congressional district",
+      "website": "https://jackson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456847-200px.jpeg"
+    },
+    "TX-22": {
+      "party": "Republican",
+      "name": "Rep. Troy Nehls [R-TX22]",
+      "description": "Representative for Texas's 22nd congressional district",
+      "website": "https://nehls.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456848-200px.jpeg"
+    },
+    "TX-23": {
+      "party": "Republican",
+      "name": "Rep. Ernest “Tony” Gonzales [R-TX23]",
+      "description": "Representative for Texas's 23rd congressional district",
+      "website": "https://gonzales.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456849-200px.jpeg"
+    },
+    "TX-24": {
+      "party": "Republican",
+      "name": "Rep. Beth Van Duyne [R-TX24]",
+      "description": "Representative for Texas's 24th congressional district",
+      "website": "https://vanduyne.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456850-200px.jpeg"
+    },
+    "UT-1": {
+      "party": "Republican",
+      "name": "Rep. Blake Moore [R-UT1]",
+      "description": "Representative for Utah's 1st congressional district",
+      "website": "https://blakemoore.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456851-200px.jpeg"
+    },
+    "UT-4": {
+      "party": "Republican",
+      "name": "Rep. Clarence “Burgess” Owens [R-UT4]",
+      "description": "Representative for Utah's 4th congressional district",
+      "website": "https://owens.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456852-200px.jpeg"
+    },
+    "WA-10": {
+      "party": "Democrat",
+      "name": "Rep. Marilyn Strickland [D-WA10]",
+      "description": "Representative for Washington's 10th congressional district",
+      "website": "https://strickland.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456854-200px.jpeg"
+    },
+    "WI-5": {
+      "party": "Republican",
+      "name": "Rep. Scott Fitzgerald [R-WI5]",
+      "description": "Representative for Wisconsin's 5th congressional district",
+      "website": "https://fitzgerald.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456855-200px.jpeg"
+    },
+    "NY-24": {
+      "party": "Republican",
+      "name": "Rep. Claudia Tenney [R-NY24]",
+      "description": "Representative for New York's 24th congressional district",
+      "website": "https://tenney.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412720-200px.jpeg"
+    },
+    "LA-5": {
+      "party": "Republican",
+      "name": "Rep. Julia Letlow [R-LA5]",
+      "description": "Representative for Louisiana's 5th congressional district",
+      "website": "https://letlow.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456859-200px.jpeg"
+    },
+    "LA-2": {
+      "party": "Democrat",
+      "name": "Rep. Troy Carter [D-LA2]",
+      "description": "Representative for Louisiana's 2nd congressional district",
+      "website": "https://troycarter.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456860-200px.jpeg"
+    },
+    "NM-1": {
+      "party": "Democrat",
+      "name": "Rep. Melanie Stansbury [D-NM1]",
+      "description": "Representative for New Mexico's 1st congressional district",
+      "website": "https://stansbury.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456861-200px.jpeg"
+    },
+    "TX-6": {
+      "party": "Republican",
+      "name": "Rep. Jake Ellzey [R-TX6]",
+      "description": "Representative for Texas's 6th congressional district",
+      "website": "https://ellzey.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456862-200px.jpeg"
+    },
+    "OH-11": {
+      "party": "Democrat",
+      "name": "Rep. Shontel Brown [D-OH11]",
+      "description": "Representative for Ohio's 11th congressional district",
+      "website": "https://shontelbrown.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456863-200px.jpeg"
+    },
+    "OH-15": {
+      "party": "Republican",
+      "name": "Rep. Mike Carey [R-OH15]",
+      "description": "Representative for Ohio's 15th congressional district",
+      "website": "https://carey.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456864-200px.jpeg"
+    },
+    "FL-20": {
+      "party": "Democrat",
+      "name": "Rep. Sheila Cherfilus-McCormick [D-FL20]",
+      "description": "Representative for Florida's 20th congressional district",
+      "website": "https://cherfilus-mccormick.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456865-200px.jpeg"
+    },
+    "NE-1": {
+      "party": "Republican",
+      "name": "Rep. Mike Flood [R-NE1]",
+      "description": "Representative for Nebraska's 1st congressional district",
+      "website": "https://flood.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456868-200px.jpeg"
+    },
+    "MN-1": {
+      "party": "Republican",
+      "name": "Rep. Brad Finstad [R-MN1]",
+      "description": "Representative for Minnesota's 1st congressional district",
+      "website": "https://finstad.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456869-200px.jpeg"
+    },
+    "NY-18": {
+      "party": "Democrat",
+      "name": "Rep. Patrick Ryan [D-NY18]",
+      "description": "Representative for New York's 18th congressional district",
+      "website": "https://patryan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456871-200px.jpeg"
+    },
+    "IN-2": {
+      "party": "Republican",
+      "name": "Rep. Rudy Yakym [R-IN2]",
+      "description": "Representative for Indiana's 2nd congressional district",
+      "website": "https://yakym.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456873-200px.jpeg"
+    },
+    "MT-1": {
+      "party": "Republican",
+      "name": "Rep. Ryan Zinke [R-MT1]",
+      "description": "Representative for Montana's 1st congressional district",
+      "website": "https://zinke.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412640-200px.jpeg"
+    },
+    "AL-5": {
+      "party": "Republican",
+      "name": "Rep. Dale Strong [R-AL5]",
+      "description": "Representative for Alabama's 5th congressional district",
+      "website": "https://strong.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456878-200px.jpeg"
+    },
+    "AZ-2": {
+      "party": "Republican",
+      "name": "Rep. Eli Crane [R-AZ2]",
+      "description": "Representative for Arizona's 2nd congressional district",
+      "website": "https://crane.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456879-200px.jpeg"
+    },
+    "AZ-6": {
+      "party": "Republican",
+      "name": "Rep. Juan Ciscomani [R-AZ6]",
+      "description": "Representative for Arizona's 6th congressional district",
+      "website": "https://ciscomani.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456880-200px.jpeg"
+    },
+    "CA-3": {
+      "party": "Independent",
+      "name": "Rep. Kevin Kiley [I-CA3]",
+      "description": "Representative for California's 3rd congressional district",
+      "website": "https://kiley.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456881-200px.jpeg"
+    },
+    "CA-15": {
+      "party": "Democrat",
+      "name": "Rep. Kevin Mullin [D-CA15]",
+      "description": "Representative for California's 15th congressional district",
+      "website": "https://kevinmullin.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456883-200px.jpeg"
+    },
+    "CA-37": {
+      "party": "Democrat",
+      "name": "Rep. Sydney Kamlager-Dove [D-CA37]",
+      "description": "Representative for California's 37th congressional district",
+      "website": "https://kamlager-dove.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456884-200px.jpeg"
+    },
+    "CA-42": {
+      "party": "Democrat",
+      "name": "Rep. Robert Julio Garcia [D-CA42]",
+      "description": "Representative for California's 42nd congressional district",
+      "website": "https://robertgarcia.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456885-200px.jpeg"
+    },
+    "CO-7": {
+      "party": "Democrat",
+      "name": "Rep. Brittany Pettersen [D-CO7]",
+      "description": "Representative for Colorado's 7th congressional district",
+      "website": "https://pettersen.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456886-200px.jpeg"
+    },
+    "FL-4": {
+      "party": "Republican",
+      "name": "Rep. Aaron Bean [R-FL4]",
+      "description": "Representative for Florida's 4th congressional district",
+      "website": "https://bean.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456888-200px.jpeg"
+    },
+    "FL-7": {
+      "party": "Republican",
+      "name": "Rep. Cory Mills [R-FL7]",
+      "description": "Representative for Florida's 7th congressional district",
+      "website": "https://mills.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456889-200px.jpeg"
+    },
+    "FL-10": {
+      "party": "Democrat",
+      "name": "Rep. Maxwell Frost [D-FL10]",
+      "description": "Representative for Florida's 10th congressional district",
+      "website": "https://frost.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456890-200px.jpeg"
+    },
+    "FL-13": {
+      "party": "Republican",
+      "name": "Rep. Anna Luna [R-FL13]",
+      "description": "Representative for Florida's 13th congressional district",
+      "website": "https://luna.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456891-200px.jpeg"
+    },
+    "FL-15": {
+      "party": "Republican",
+      "name": "Rep. Laurel Lee [R-FL15]",
+      "description": "Representative for Florida's 15th congressional district",
+      "website": "https://laurellee.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456892-200px.jpeg"
+    },
+    "FL-23": {
+      "party": "Democrat",
+      "name": "Rep. Jared Moskowitz [D-FL23]",
+      "description": "Representative for Florida's 23rd congressional district",
+      "website": "https://moskowitz.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456893-200px.jpeg"
+    },
+    "GA-7": {
+      "party": "Republican",
+      "name": "Rep. Rich McCormick [R-GA7]",
+      "description": "Representative for Georgia's 7th congressional district",
+      "website": "https://mccormick.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456894-200px.jpeg"
+    },
+    "GA-10": {
+      "party": "Republican",
+      "name": "Rep. Mike Collins [R-GA10]",
+      "description": "Representative for Georgia's 10th congressional district",
+      "website": "https://collins.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456895-200px.jpeg"
+    },
+    "HI-2": {
+      "party": "Democrat",
+      "name": "Rep. Jill Tokuda [D-HI2]",
+      "description": "Representative for Hawaii's 2nd congressional district",
+      "website": "https://tokuda.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456897-200px.jpeg"
+    },
+    "IA-3": {
+      "party": "Republican",
+      "name": "Rep. Zachary (Zach) Nunn [R-IA3]",
+      "description": "Representative for Iowa's 3rd congressional district",
+      "website": "https://nunn.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456898-200px.jpeg"
+    },
+    "IL-1": {
+      "party": "Democrat",
+      "name": "Rep. Jonathan Jackson [D-IL1]",
+      "description": "Representative for Illinois's 1st congressional district",
+      "website": "https://jonathanjackson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456899-200px.jpeg"
+    },
+    "IL-3": {
+      "party": "Democrat",
+      "name": "Rep. Delia Ramirez [D-IL3]",
+      "description": "Representative for Illinois's 3rd congressional district",
+      "website": "https://ramirez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456900-200px.jpeg"
+    },
+    "IL-13": {
+      "party": "Democrat",
+      "name": "Rep. Nicole (Nikki) Budzinski [D-IL13]",
+      "description": "Representative for Illinois's 13th congressional district",
+      "website": "https://budzinski.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456901-200px.jpeg"
+    },
+    "IL-17": {
+      "party": "Democrat",
+      "name": "Rep. Eric Sorensen [D-IL17]",
+      "description": "Representative for Illinois's 17th congressional district",
+      "website": "https://sorensen.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456902-200px.jpeg"
+    },
+    "IN-9": {
+      "party": "Republican",
+      "name": "Rep. Erin Houchin [R-IN9]",
+      "description": "Representative for Indiana's 9th congressional district",
+      "website": "https://houchin.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456903-200px.jpeg"
+    },
+    "KY-3": {
+      "party": "Democrat",
+      "name": "Rep. Morgan McGarvey [D-KY3]",
+      "description": "Representative for Kentucky's 3rd congressional district",
+      "website": "https://mcgarvey.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456904-200px.jpeg"
+    },
+    "MD-4": {
+      "party": "Democrat",
+      "name": "Rep. Glenn Ivey [D-MD4]",
+      "description": "Representative for Maryland's 4th congressional district",
+      "website": "https://ivey.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456905-200px.jpeg"
+    },
+    "MI-3": {
+      "party": "Democrat",
+      "name": "Rep. Hillary Scholten [D-MI3]",
+      "description": "Representative for Michigan's 3rd congressional district",
+      "website": "https://scholten.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456906-200px.jpeg"
+    },
+    "MI-10": {
+      "party": "Republican",
+      "name": "Rep. John James [R-MI10]",
+      "description": "Representative for Michigan's 10th congressional district",
+      "website": "https://james.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456907-200px.jpeg"
+    },
+    "MI-13": {
+      "party": "Democrat",
+      "name": "Rep. Shri Thanedar [D-MI13]",
+      "description": "Representative for Michigan's 13th congressional district",
+      "website": "https://thanedar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456908-200px.jpeg"
+    },
+    "MO-4": {
+      "party": "Republican",
+      "name": "Rep. Mark Alford [R-MO4]",
+      "description": "Representative for Missouri's 4th congressional district",
+      "website": "https://alford.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456909-200px.jpeg"
+    },
+    "MO-7": {
+      "party": "Republican",
+      "name": "Rep. Eric Burlison [R-MO7]",
+      "description": "Representative for Missouri's 7th congressional district",
+      "website": "https://burlison.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456910-200px.jpeg"
+    },
+    "MS-4": {
+      "party": "Republican",
+      "name": "Rep. Mike Ezell [R-MS4]",
+      "description": "Representative for Mississippi's 4th congressional district",
+      "website": "https://ezell.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456911-200px.jpeg"
+    },
+    "NC-1": {
+      "party": "Democrat",
+      "name": "Rep. Donald Davis [D-NC1]",
+      "description": "Representative for North Carolina's 1st congressional district",
+      "website": "https://dondavis.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456912-200px.jpeg"
+    },
+    "NC-4": {
+      "party": "Democrat",
+      "name": "Rep. Valerie Foushee [D-NC4]",
+      "description": "Representative for North Carolina's 4th congressional district",
+      "website": "https://foushee.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456913-200px.jpeg"
+    },
+    "NC-11": {
+      "party": "Republican",
+      "name": "Rep. Charles (Chuck) Edwards [R-NC11]",
+      "description": "Representative for North Carolina's 11th congressional district",
+      "website": "https://edwards.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456914-200px.jpeg"
+    },
+    "NJ-7": {
+      "party": "Republican",
+      "name": "Rep. Thomas Kean [R-NJ7]",
+      "description": "Representative for New Jersey's 7th congressional district",
+      "website": "https://kean.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456917-200px.jpeg"
+    },
+    "NJ-8": {
+      "party": "Democrat",
+      "name": "Rep. Robert Jacobsen Menendez [D-NJ8]",
+      "description": "Representative for New Jersey's 8th congressional district",
+      "website": "https://menendez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456918-200px.jpeg"
+    },
+    "NM-2": {
+      "party": "Democrat",
+      "name": "Rep. Gabriel (Gabe) Vasquez [D-NM2]",
+      "description": "Representative for New Mexico's 2nd congressional district",
+      "website": "https://vasquez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456919-200px.jpeg"
+    },
+    "NY-1": {
+      "party": "Republican",
+      "name": "Rep. Nicolas LaLota [R-NY1]",
+      "description": "Representative for New York's 1st congressional district",
+      "website": "https://lalota.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456920-200px.jpeg"
+    },
+    "NY-10": {
+      "party": "Democrat",
+      "name": "Rep. Dan Goldman [D-NY10]",
+      "description": "Representative for New York's 10th congressional district",
+      "website": "https://goldman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456923-200px.jpeg"
+    },
+    "NY-17": {
+      "party": "Republican",
+      "name": "Rep. Michael Lawler [R-NY17]",
+      "description": "Representative for New York's 17th congressional district",
+      "website": "https://lawler.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456924-200px.jpeg"
+    },
+    "NY-23": {
+      "party": "Republican",
+      "name": "Rep. Nicholas Langworthy [R-NY23]",
+      "description": "Representative for New York's 23rd congressional district",
+      "website": "https://langworthy.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456927-200px.jpeg"
+    },
+    "OH-1": {
+      "party": "Democrat",
+      "name": "Rep. Greg Landsman [D-OH1]",
+      "description": "Representative for Ohio's 1st congressional district",
+      "website": "https://landsman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456928-200px.jpeg"
+    },
+    "OH-7": {
+      "party": "Republican",
+      "name": "Rep. Max Miller [R-OH7]",
+      "description": "Representative for Ohio's 7th congressional district",
+      "website": "https://maxmiller.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456929-200px.jpeg"
+    },
+    "OH-13": {
+      "party": "Democrat",
+      "name": "Rep. Emilia Sykes [D-OH13]",
+      "description": "Representative for Ohio's 13th congressional district",
+      "website": "https://sykes.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456930-200px.jpeg"
+    },
+    "OK-2": {
+      "party": "Republican",
+      "name": "Rep. Josh Brecheen [R-OK2]",
+      "description": "Representative for Oklahoma's 2nd congressional district",
+      "website": "https://brecheen.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456931-200px.jpeg"
+    },
+    "OR-4": {
+      "party": "Democrat",
+      "name": "Rep. Valerie Hoyle [D-OR4]",
+      "description": "Representative for Oregon's 4th congressional district",
+      "website": "https://hoyle.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456932-200px.jpeg"
+    },
+    "OR-6": {
+      "party": "Democrat",
+      "name": "Rep. Andrea Salinas [D-OR6]",
+      "description": "Representative for Oregon's 6th congressional district",
+      "website": "https://salinas.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456934-200px.jpeg"
+    },
+    "PA-12": {
+      "party": "Democrat",
+      "name": "Rep. Summer Lee [D-PA12]",
+      "description": "Representative for Pennsylvania's 12th congressional district",
+      "website": "https://summerlee.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456935-200px.jpeg"
+    },
+    "PA-17": {
+      "party": "Democrat",
+      "name": "Rep. Chris Deluzio [D-PA17]",
+      "description": "Representative for Pennsylvania's 17th congressional district",
+      "website": "https://deluzio.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456936-200px.jpeg"
+    },
+    "RI-2": {
+      "party": "Democrat",
+      "name": "Rep. Seth Magaziner [D-RI2]",
+      "description": "Representative for Rhode Island's 2nd congressional district",
+      "website": "https://magaziner.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456937-200px.jpeg"
+    },
+    "SC-7": {
+      "party": "Republican",
+      "name": "Rep. Russell Fry [R-SC7]",
+      "description": "Representative for South Carolina's 7th congressional district",
+      "website": "https://fry.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456938-200px.jpeg"
+    },
+    "TN-5": {
+      "party": "Republican",
+      "name": "Rep. Andrew Ogles [R-TN5]",
+      "description": "Representative for Tennessee's 5th congressional district",
+      "website": "https://ogles.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456939-200px.jpeg"
+    },
+    "TX-1": {
+      "party": "Republican",
+      "name": "Rep. Nathaniel Moran [R-TX1]",
+      "description": "Representative for Texas's 1st congressional district",
+      "website": "https://moran.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456940-200px.jpeg"
+    },
+    "TX-3": {
+      "party": "Republican",
+      "name": "Rep. Keith Self [R-TX3]",
+      "description": "Representative for Texas's 3rd congressional district",
+      "website": "https://keithself.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456941-200px.jpeg"
+    },
+    "TX-8": {
+      "party": "Republican",
+      "name": "Rep. Morgan Luttrell [R-TX8]",
+      "description": "Representative for Texas's 8th congressional district",
+      "website": "https://luttrell.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456942-200px.jpeg"
+    },
+    "TX-15": {
+      "party": "Republican",
+      "name": "Rep. Mónica De La Cruz [R-TX15]",
+      "description": "Representative for Texas's 15th congressional district",
+      "website": "https://delacruz.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456943-200px.jpeg"
+    },
+    "TX-30": {
+      "party": "Democrat",
+      "name": "Rep. Jasmine Crockett [D-TX30]",
+      "description": "Representative for Texas's 30th congressional district",
+      "website": "https://crockett.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456944-200px.jpeg"
+    },
+    "TX-35": {
+      "party": "Democrat",
+      "name": "Rep. Gregorio Casar [D-TX35]",
+      "description": "Representative for Texas's 35th congressional district",
+      "website": "https://casar.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456945-200px.jpeg"
+    },
+    "TX-38": {
+      "party": "Republican",
+      "name": "Rep. Wesley Hunt [R-TX38]",
+      "description": "Representative for Texas's 38th congressional district",
+      "website": "https://hunt.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456946-200px.jpeg"
+    },
+    "VA-2": {
+      "party": "Republican",
+      "name": "Rep. Jennifer Kiggans [R-VA2]",
+      "description": "Representative for Virginia's 2nd congressional district",
+      "website": "https://kiggans.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456947-200px.jpeg"
+    },
+    "VT-0": {
+      "party": "Democrat",
+      "name": "Rep. Becca Balint [D-VT]",
+      "description": "Representative for Vermont At Large",
+      "website": "https://balint.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456948-200px.jpeg"
+    },
+    "WA-3": {
+      "party": "Democrat",
+      "name": "Rep. Marie Gluesenkamp Perez [D-WA3]",
+      "description": "Representative for Washington's 3rd congressional district",
+      "website": "https://gluesenkampperez.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456949-200px.jpeg"
+    },
+    "WI-3": {
+      "party": "Republican",
+      "name": "Rep. Derrick Van Orden [R-WI3]",
+      "description": "Representative for Wisconsin's 3rd congressional district",
+      "website": "https://vanorden.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456950-200px.jpeg"
+    },
+    "WY-0": {
+      "party": "Republican",
+      "name": "Rep. Harriet Hageman [R-WY]",
+      "description": "Representative for Wyoming At Large",
+      "website": "https://hageman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456951-200px.jpeg"
+    },
+    "VA-4": {
+      "party": "Democrat",
+      "name": "Rep. Jennifer McClellan [D-VA4]",
+      "description": "Representative for Virginia's 4th congressional district",
+      "website": "https://mcclellan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456953-200px.jpeg"
+    },
+    "RI-1": {
+      "party": "Democrat",
+      "name": "Rep. Gabe Amo [D-RI1]",
+      "description": "Representative for Rhode Island's 1st congressional district",
+      "website": "https://amo.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456955-200px.jpeg"
+    },
+    "UT-2": {
+      "party": "Republican",
+      "name": "Rep. Celeste Maloy [R-UT2]",
+      "description": "Representative for Utah's 2nd congressional district",
+      "website": "https://maloy.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456956-200px.jpeg"
+    },
+    "NY-3": {
+      "party": "Democrat",
+      "name": "Rep. Thomas Suozzi [D-NY3]",
+      "description": "Representative for New York's 3rd congressional district",
+      "website": "https://suozzi.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412717-200px.jpeg"
+    },
+    "NY-26": {
+      "party": "Democrat",
+      "name": "Rep. Timothy Kennedy [D-NY26]",
+      "description": "Representative for New York's 26th congressional district",
+      "website": "https://kennedy.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456957-200px.jpeg"
+    },
+    "CA-20": {
+      "party": "Republican",
+      "name": "Rep. Vince Fong [R-CA20]",
+      "description": "Representative for California's 20th congressional district",
+      "website": "https://fong.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456958-200px.jpeg"
+    },
+    "OH-6": {
+      "party": "Republican",
+      "name": "Rep. Michael Rulli [R-OH6]",
+      "description": "Representative for Ohio's 6th congressional district",
+      "website": "https://rulli.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456959-200px.jpeg"
+    },
+    "NJ-10": {
+      "party": "Democrat",
+      "name": "Rep. LaMonica McIver [D-NJ10]",
+      "description": "Representative for New Jersey's 10th congressional district",
+      "website": "https://mciver.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456962-200px.jpeg"
+    },
+    "WI-8": {
+      "party": "Republican",
+      "name": "Rep. Tony Wied [R-WI8]",
+      "description": "Representative for Wisconsin's 8th congressional district",
+      "website": "https://wied.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456963-200px.jpeg"
+    },
+    "LA-6": {
+      "party": "Democrat",
+      "name": "Rep. Cleo Fields [D-LA6]",
+      "description": "Representative for Louisiana's 6th congressional district",
+      "website": "https://fields.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/404067-200px.jpeg"
+    },
+    "IN-3": {
+      "party": "Republican",
+      "name": "Rep. Marlin Stutzman [R-IN3]",
+      "description": "Representative for Indiana's 3rd congressional district",
+      "website": "https://stutzman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412392-200px.jpeg"
+    },
+    "CA-31": {
+      "party": "Democrat",
+      "name": "Rep. Gilbert Cisneros [D-CA31]",
+      "description": "Representative for California's 31st congressional district",
+      "website": "https://cisneros.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/412757-200px.jpeg"
+    },
+    "AK-0": {
+      "party": "Republican",
+      "name": "Rep. Nicholas Begich III [R-AK]",
+      "description": "Representative for Alaska At Large",
+      "website": "https://begich.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456970-200px.jpeg"
+    },
+    "AL-2": {
+      "party": "Democrat",
+      "name": "Rep. Shomari Figures [D-AL2]",
+      "description": "Representative for Alabama's 2nd congressional district",
+      "website": "https://figures.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456971-200px.jpeg"
+    },
+    "AZ-3": {
+      "party": "Democrat",
+      "name": "Rep. Yassamin Ansari [D-AZ3]",
+      "description": "Representative for Arizona's 3rd congressional district",
+      "website": "https://ansari.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456972-200px.jpeg"
+    },
+    "AZ-8": {
+      "party": "Republican",
+      "name": "Rep. Abraham Hamadeh [R-AZ8]",
+      "description": "Representative for Arizona's 8th congressional district",
+      "website": "https://hamadeh.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456973-200px.jpeg"
+    },
+    "CA-12": {
+      "party": "Democrat",
+      "name": "Rep. Lateefah Simon [D-CA12]",
+      "description": "Representative for California's 12th congressional district",
+      "website": "https://simon.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456974-200px.jpeg"
+    },
+    "CA-13": {
+      "party": "Democrat",
+      "name": "Rep. Adam Gray [D-CA13]",
+      "description": "Representative for California's 13th congressional district",
+      "website": "https://gray.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456975-200px.jpeg"
+    },
+    "CA-16": {
+      "party": "Democrat",
+      "name": "Rep. Sam Liccardo [D-CA16]",
+      "description": "Representative for California's 16th congressional district",
+      "website": "https://liccardo.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456976-200px.jpeg"
+    },
+    "CA-27": {
+      "party": "Democrat",
+      "name": "Rep. George Whitesides [D-CA27]",
+      "description": "Representative for California's 27th congressional district",
+      "website": "https://whitesides.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456977-200px.jpeg"
+    },
+    "CA-29": {
+      "party": "Democrat",
+      "name": "Rep. Luz Rivas [D-CA29]",
+      "description": "Representative for California's 29th congressional district",
+      "website": "https://rivas.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456978-200px.jpeg"
+    },
+    "CA-30": {
+      "party": "Democrat",
+      "name": "Rep. Laura Friedman [D-CA30]",
+      "description": "Representative for California's 30th congressional district",
+      "website": "https://friedman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456979-200px.jpeg"
+    },
+    "CA-45": {
+      "party": "Democrat",
+      "name": "Rep. Derek Tran [D-CA45]",
+      "description": "Representative for California's 45th congressional district",
+      "website": "https://tran.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456980-200px.jpeg"
+    },
+    "CA-47": {
+      "party": "Democrat",
+      "name": "Rep. Dave Min [D-CA47]",
+      "description": "Representative for California's 47th congressional district",
+      "website": "https://min.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456981-200px.jpeg"
+    },
+    "CO-3": {
+      "party": "Republican",
+      "name": "Rep. Jeff Hurd [R-CO3]",
+      "description": "Representative for Colorado's 3rd congressional district",
+      "website": "https://hurd.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456982-200px.jpeg"
+    },
+    "CO-5": {
+      "party": "Republican",
+      "name": "Rep. Jeff Crank [R-CO5]",
+      "description": "Representative for Colorado's 5th congressional district",
+      "website": "https://crank.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456983-200px.jpeg"
+    },
+    "CO-8": {
+      "party": "Republican",
+      "name": "Rep. Gabe Evans [R-CO8]",
+      "description": "Representative for Colorado's 8th congressional district",
+      "website": "https://gabeevans.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456984-200px.jpeg"
+    },
+    "DE-0": {
+      "party": "Democrat",
+      "name": "Rep. Sarah McBride [D-DE]",
+      "description": "Representative for Delaware At Large",
+      "website": "https://mcbride.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456985-200px.jpeg"
+    },
+    "FL-8": {
+      "party": "Republican",
+      "name": "Rep. Mike Haridopolos [R-FL8]",
+      "description": "Representative for Florida's 8th congressional district",
+      "website": "https://haridopolos.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456986-200px.jpeg"
+    },
+    "GA-3": {
+      "party": "Republican",
+      "name": "Rep. Brian Jack [R-GA3]",
+      "description": "Representative for Georgia's 3rd congressional district",
+      "website": "https://jack.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456987-200px.jpeg"
+    },
+    "IN-6": {
+      "party": "Republican",
+      "name": "Rep. Jefferson Shreve [R-IN6]",
+      "description": "Representative for Indiana's 6th congressional district",
+      "website": "https://shreve.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456988-200px.jpeg"
+    },
+    "IN-8": {
+      "party": "Republican",
+      "name": "Rep. Mark Messmer [R-IN8]",
+      "description": "Representative for Indiana's 8th congressional district",
+      "website": "https://messmer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456989-200px.jpeg"
+    },
+    "KS-2": {
+      "party": "Republican",
+      "name": "Rep. Derek Schmidt [R-KS2]",
+      "description": "Representative for Kansas's 2nd congressional district",
+      "website": "https://schmidt.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456990-200px.jpeg"
+    },
+    "MD-2": {
+      "party": "Democrat",
+      "name": "Rep. Johnny Olszewski [D-MD2]",
+      "description": "Representative for Maryland's 2nd congressional district",
+      "website": "https://olszewski.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456991-200px.jpeg"
+    },
+    "MD-3": {
+      "party": "Democrat",
+      "name": "Rep. Sarah Elfreth [D-MD3]",
+      "description": "Representative for Maryland's 3rd congressional district",
+      "website": "https://elfreth.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456992-200px.jpeg"
+    },
+    "MD-6": {
+      "party": "Democrat",
+      "name": "Rep. April McClain Delaney [D-MD6]",
+      "description": "Representative for Maryland's 6th congressional district",
+      "website": "https://mcclaindelaney.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456993-200px.jpeg"
+    },
+    "MI-7": {
+      "party": "Republican",
+      "name": "Rep. Tom Barrett [R-MI7]",
+      "description": "Representative for Michigan's 7th congressional district",
+      "website": "https://barrett.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456994-200px.jpeg"
+    },
+    "MI-8": {
+      "party": "Democrat",
+      "name": "Rep. Kristen McDonald Rivet [D-MI8]",
+      "description": "Representative for Michigan's 8th congressional district",
+      "website": "https://mcdonaldrivet.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456995-200px.jpeg"
+    },
+    "MN-3": {
+      "party": "Democrat",
+      "name": "Rep. Kelly Morrison [D-MN3]",
+      "description": "Representative for Minnesota's 3rd congressional district",
+      "website": "https://morrison.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456996-200px.jpeg"
+    },
+    "MO-1": {
+      "party": "Democrat",
+      "name": "Rep. Wesley Bell [D-MO1]",
+      "description": "Representative for Missouri's 1st congressional district",
+      "website": "https://bell.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456997-200px.jpeg"
+    },
+    "MO-3": {
+      "party": "Republican",
+      "name": "Rep. Robert Onder [R-MO3]",
+      "description": "Representative for Missouri's 3rd congressional district",
+      "website": "https://onder.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/456998-200px.jpeg"
+    },
+    "MT-2": {
+      "party": "Republican",
+      "name": "Rep. Troy Downing [R-MT2]",
+      "description": "Representative for Montana's 2nd congressional district",
+      "website": "https://downing.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457000-200px.jpeg"
+    },
+    "NC-6": {
+      "party": "Republican",
+      "name": "Rep. Addison McDowell [R-NC6]",
+      "description": "Representative for North Carolina's 6th congressional district",
+      "website": "https://mcdowell.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457001-200px.jpeg"
+    },
+    "NC-8": {
+      "party": "Republican",
+      "name": "Rep. Mark Everette Harris [R-NC8]",
+      "description": "Representative for North Carolina's 8th congressional district",
+      "website": "https://markharris.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457002-200px.jpeg"
+    },
+    "NC-10": {
+      "party": "Republican",
+      "name": "Rep. Pat Harrigan [R-NC10]",
+      "description": "Representative for North Carolina's 10th congressional district",
+      "website": "https://harrigan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457003-200px.jpeg"
+    },
+    "NC-13": {
+      "party": "Republican",
+      "name": "Rep. Brad Knott [R-NC13]",
+      "description": "Representative for North Carolina's 13th congressional district",
+      "website": "https://knott.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457004-200px.jpeg"
+    },
+    "NC-14": {
+      "party": "Republican",
+      "name": "Rep. Tim Moore [R-NC14]",
+      "description": "Representative for North Carolina's 14th congressional district",
+      "website": "https://timmoore.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457005-200px.jpeg"
+    },
+    "ND-0": {
+      "party": "Republican",
+      "name": "Rep. Julie Fedorchak [R-ND]",
+      "description": "Representative for North Dakota At Large",
+      "website": "https://fedorchak.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457006-200px.jpeg"
+    },
+    "NH-2": {
+      "party": "Democrat",
+      "name": "Rep. Maggie Goodlander [D-NH2]",
+      "description": "Representative for New Hampshire's 2nd congressional district",
+      "website": "https://goodlander.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457007-200px.jpeg"
+    },
+    "NJ-3": {
+      "party": "Democrat",
+      "name": "Rep. Herbert Conaway [D-NJ3]",
+      "description": "Representative for New Jersey's 3rd congressional district",
+      "website": "https://conaway.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457008-200px.jpeg"
+    },
+    "NJ-9": {
+      "party": "Democrat",
+      "name": "Rep. Nellie Pou [D-NJ9]",
+      "description": "Representative for New Jersey's 9th congressional district",
+      "website": "https://pou.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457009-200px.jpeg"
+    },
+    "NY-4": {
+      "party": "Democrat",
+      "name": "Rep. Laura Gillen [D-NY4]",
+      "description": "Representative for New York's 4th congressional district",
+      "website": "https://gillen.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457010-200px.jpeg"
+    },
+    "NY-16": {
+      "party": "Democrat",
+      "name": "Rep. George Latimer [D-NY16]",
+      "description": "Representative for New York's 16th congressional district",
+      "website": "https://latimer.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457011-200px.jpeg"
+    },
+    "NY-19": {
+      "party": "Democrat",
+      "name": "Rep. Josh Riley [D-NY19]",
+      "description": "Representative for New York's 19th congressional district",
+      "website": "https://riley.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457012-200px.jpeg"
+    },
+    "NY-22": {
+      "party": "Democrat",
+      "name": "Rep. John Mannion [D-NY22]",
+      "description": "Representative for New York's 22nd congressional district",
+      "website": "https://mannion.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457013-200px.jpeg"
+    },
+    "OH-2": {
+      "party": "Republican",
+      "name": "Rep. David Taylor [R-OH2]",
+      "description": "Representative for Ohio's 2nd congressional district",
+      "website": "https://taylor.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457014-200px.jpeg"
+    },
+    "OR-3": {
+      "party": "Democrat",
+      "name": "Rep. Maxine Dexter [D-OR3]",
+      "description": "Representative for Oregon's 3rd congressional district",
+      "website": "https://dexter.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457015-200px.jpeg"
+    },
+    "OR-5": {
+      "party": "Democrat",
+      "name": "Rep. Janelle Bynum [D-OR5]",
+      "description": "Representative for Oregon's 5th congressional district",
+      "website": "https://bynum.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457016-200px.jpeg"
+    },
+    "PA-7": {
+      "party": "Republican",
+      "name": "Rep. Ryan Mackenzie [R-PA7]",
+      "description": "Representative for Pennsylvania's 7th congressional district",
+      "website": "https://mackenzie.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457017-200px.jpeg"
+    },
+    "PA-8": {
+      "party": "Republican",
+      "name": "Rep. Robert Bresnahan [R-PA8]",
+      "description": "Representative for Pennsylvania's 8th congressional district",
+      "website": "https://bresnahan.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457018-200px.jpeg"
+    },
+    "SC-3": {
+      "party": "Republican",
+      "name": "Rep. Sheri Biggs [R-SC3]",
+      "description": "Representative for South Carolina's 3rd congressional district",
+      "website": "https://sheribiggs.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457020-200px.jpeg"
+    },
+    "TX-12": {
+      "party": "Republican",
+      "name": "Rep. Craig Goldman [R-TX12]",
+      "description": "Representative for Texas's 12th congressional district",
+      "website": "https://craiggoldman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457021-200px.jpeg"
+    },
+    "TX-26": {
+      "party": "Republican",
+      "name": "Rep. Brandon Gill [R-TX26]",
+      "description": "Representative for Texas's 26th congressional district",
+      "website": "https://gill.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457023-200px.jpeg"
+    },
+    "TX-32": {
+      "party": "Democrat",
+      "name": "Rep. Julie Johnson [D-TX32]",
+      "description": "Representative for Texas's 32nd congressional district",
+      "website": "https://juliejohnson.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457024-200px.jpeg"
+    },
+    "UT-3": {
+      "party": "Republican",
+      "name": "Rep. Mike Kennedy [R-UT3]",
+      "description": "Representative for Utah's 3rd congressional district",
+      "website": "https://mikekennedy.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457025-200px.jpeg"
+    },
+    "VA-5": {
+      "party": "Republican",
+      "name": "Rep. John J. McGuire [R-VA5]",
+      "description": "Representative for Virginia's 5th congressional district",
+      "website": "https://mcguire.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457026-200px.jpeg"
+    },
+    "VA-7": {
+      "party": "Democrat",
+      "name": "Rep. Eugene Vindman [D-VA7]",
+      "description": "Representative for Virginia's 7th congressional district",
+      "website": "https://vindman.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457027-200px.jpeg"
+    },
+    "VA-10": {
+      "party": "Democrat",
+      "name": "Rep. Suhas Subramanyam [D-VA10]",
+      "description": "Representative for Virginia's 10th congressional district",
+      "website": "https://subramanyam.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457028-200px.jpeg"
+    },
+    "WA-5": {
+      "party": "Republican",
+      "name": "Rep. Michael Baumgartner [R-WA5]",
+      "description": "Representative for Washington's 5th congressional district",
+      "website": "https://baumgartner.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457029-200px.jpeg"
+    },
+    "WA-6": {
+      "party": "Democrat",
+      "name": "Rep. Emily Randall [D-WA6]",
+      "description": "Representative for Washington's 6th congressional district",
+      "website": "https://randall.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457030-200px.jpeg"
+    },
+    "WV-2": {
+      "party": "Republican",
+      "name": "Rep. Riley Moore [R-WV2]",
+      "description": "Representative for West Virginia's 2nd congressional district",
+      "website": "https://rileymoore.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457031-200px.jpeg"
+    },
+    "FL-1": {
+      "party": "Republican",
+      "name": "Rep. Jimmy Patronis [R-FL1]",
+      "description": "Representative for Florida's 1st congressional district",
+      "website": "https://patronis.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457034-200px.jpeg"
+    },
+    "FL-6": {
+      "party": "Republican",
+      "name": "Rep. Randall “Randy” Fine [R-FL6]",
+      "description": "Representative for Florida's 6th congressional district",
+      "website": "https://fine.house.gov",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457035-200px.jpeg"
+    },
+    "VA-11": {
+      "party": "Democrat",
+      "name": "Rep. James Walkinshaw [D-VA11]",
+      "description": "Representative for Virginia's 11th congressional district",
+      "website": "https://walkinshaw.house.gov/",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457036-200px.jpeg"
+    },
+    "AZ-7": {
+      "party": "Democrat",
+      "name": "Rep. Adelita Grijalva [D-AZ7]",
+      "description": "Representative for Arizona's 7th congressional district",
+      "website": "https://grijalva.house.gov/",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457037-200px.jpeg"
+    },
+    "TN-7": {
+      "party": "Republican",
+      "name": "Rep. Matt Van Epps [R-TN7]",
+      "description": "Representative for Tennessee's 7th congressional district",
+      "website": "https://vanepps.house.gov/",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457038-200px.jpeg"
+    },
+    "TX-18": {
+      "party": "Democrat",
+      "name": "Rep. Christian Menefee [D-TX18]",
+      "description": "Representative for Texas's 18th congressional district",
+      "website": "https://menefee.house.gov/",
+      "photoUrl": "https://www.govtrack.us/static/legislator-photos/457039-200px.jpeg"
+    }
+  }
+}

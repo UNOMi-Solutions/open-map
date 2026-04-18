@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OpenMap API Documentation</title>
+  <style>
+    :root{
+      --bg:#ffffff; --muted:#6b7280; --accent:#0f172a; --card:#f8fafc;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:var(--accent); margin:28px; line-height:1.5}
+    header{margin-bottom:18px}
+    h1{font-size:28px; margin:0 0 6px}
+    p.lead{color:var(--muted); margin:0 0 12px}
+    .note{background:var(--card); padding:12px; border-radius:8px; color:#0b1220; margin-bottom:18px; border:1px solid #eef2f7}
+    section{margin-bottom:20px}
+    h2{font-size:18px; margin:12px 0}
+    h3{font-size:15px; margin:8px 0}
+    table{width:100%; border-collapse:collapse; margin-top:8px}
+    th,td{padding:8px 10px; border:1px solid #e6eef6; text-align:left; font-size:13px}
+    th{background:#fbfdff; font-weight:600; color:#0b1220}
+    table, th, td {
+  vertical-align: top;
+}
+
+    code{background:#f4f6f8; padding:2px 6px; border-radius:6px; font-family:var(--mono); font-size:13px}
+    pre{background:#0b1220; color:#e6f1ff; padding:10px; border-radius:6px; overflow:auto; font-size:13px}
+    .param{font-weight:600}
+    .small{font-size:13px; color:var(--muted)}
+    footer{margin-top:28px; font-size:13px; color:var(--muted)}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>OpenMap API Documentation</h1>
+  <p class="lead">API for gathering necessary data for OpenMap website development.</p>
+</header>
+
+<!-- <section class="note">
+  <p><strong>Placeholders</strong>—replace values wrapped in <code>{{double-braces}}</code> before publishing:</p>
+  <ul>
+    <li><code>{{API_TITLE}}</code> — API display title.</li>
+    <li><code>{{SHORT_DESCRIPTION}}</code> — one-line description of the API.</li>
+    <li><code>{{BASE_URL}}</code> — public base URL where the API is mounted (e.g. <code>https://api.example.com</code>).</li>
+    <li><code>x-api-key</code> — header name used for auth (e.g. <code>x-api-key</code>).</li>
+    <li><code>{{AUTH_HEADER_EXAMPLE}}</code> — example value for the auth header.</li>
+    <li><code>{{CONTACT_EMAIL}}</code> — support / contact email.</li>
+    <li><code>{{CURRENT_YEAR}}</code> — current year default shown in examples.</li>
+  </ul>
+</section> -->
+
+<section>
+  <h2>Global / Usage</h2>
+  <p class="small">
+    <strong>Base URL (mounted prefix):</strong> <code>https://openmap-backend.onrender.com/api/v1/{category}</code><br />
+    <strong>Authentication:</strong> Send the API key using header <code>x-api-key</code> with each request. Example header:
+  </p>
+  <pre>Authorization Header
+x-api-key: [key]</pre>
+
+  <p class="small">All responses are JSON unless otherwise noted. Endpoints that accept an optional <code>year</code> parameter default to current year when omitted. Time and date formats follow ISO-8601 where applicable.</p>
+</section>
+
+<hr/>
+
+<section>
+  <h2>/api/v1/crime</h2>
+
+  <article>
+    <h3>GET /murderByState</h3>
+    <p class="small"><strong>Purpose:</strong> Return state-level murder totals and related FBI SHR data for a specified year.</p>
+
+    <table>
+      <thead>
+        <tr><th>Query Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="param"><code>year</code></td>
+          <td>string / integer</td>
+          <td>No</td>
+          <td>Four-digit year. Defaults to current year if omitted.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="small"><strong>Response:</strong> JSON array of objects — one per state. Each object is the raw payload returned from the FBI SHR endpoint augmented with a <code>state</code> field containing the two-letter state code.</p>
+
+    <p class="small"><strong>Notes:</strong> Requires an environment variable <code>FBI_CRIME_KEY</code> configured on the server. The shape of the FBI payload may change — consumers should rely on documented fields where possible.</p>
+  </article>
+
+  <article>
+    <h3>GET /arrestsByState</h3>
+    <p class="small"><strong>Purpose:</strong> Return state-level arrest totals from the FBI arrest API for a chosen offense code and year.</p>
+
+    <table>
+      <thead>
+        <tr><th>Query Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="param"><code>year</code></td>
+          <td>string / integer</td>
+          <td>No</td>
+          <td>Four-digit year. Defaults to current year.</td>
+        </tr>
+        <tr>
+          <td class="param"><code>offenseCode</code></td>
+          <td>string</td>
+          <td>No</td>
+          <td>Offense code (e.g. <code>11</code> for murder). If omitted or invalid, defaults to <code>all</code>. See offense code mapping below.
+          
+          <table>
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>all</td><td>all</td></tr>
+    <tr><td>310</td><td>All Other Offenses (Except Traffic)</td></tr>
+    <tr><td>110</td><td>Arson</td></tr>
+    <tr><td>60</td><td>Burglary</td></tr>
+    <tr><td>330</td><td>Curfew and Loitering Law Violations</td></tr>
+    <tr><td>290</td><td>Disorderly Conduct</td></tr>
+    <tr><td>260</td><td>Driving Under the Influence</td></tr>
+    <tr><td>150</td><td>Drug Abuse Violations</td></tr>
+    <tr><td>158</td><td>Drug Possession - Marijuana</td></tr>
+    <tr><td>157</td><td>Drug Possession - Opium or Cocaine or Their Derivatives</td></tr>
+    <tr><td>160</td><td>Drug Possession - Other - Dangerous Nonnarcotic Drugs</td></tr>
+    <tr><td>159</td><td>Drug Possession - Synthetic Narcotics</td></tr>
+    <tr><td>153</td><td>Drug Sale/Manufacturing - Marijuana</td></tr>
+    <tr><td>152</td><td>Drug Sale/Manufacturing - Opium or Cocaine or Their Derivatives</td></tr>
+    <tr><td>155</td><td>Drug Sale/Manufacturing - Other - Dangerous Nonnarcotic Drugs</td></tr>
+    <tr><td>154</td><td>Drug Sale/Manufacturing - Synthetic Narcotics</td></tr>
+    <tr><td>280</td><td>Drunkenness</td></tr>
+    <tr><td>200</td><td>Embezzlement</td></tr>
+    <tr><td>180</td><td>Forgery and Counterfeiting</td></tr>
+    <tr><td>190</td><td>Fraud</td></tr>
+    <tr><td>173</td><td>Gambling - All Other Gambling</td></tr>
+    <tr><td>171</td><td>Gambling - Bookmaking (Horse and Sport Book)</td></tr>
+    <tr><td>172</td><td>Gambling - Numbers and Lottery</td></tr>
+    <tr><td>170</td><td>Gambling</td></tr>
+    <tr><td>70</td><td>Larceny - Theft</td></tr>
+    <tr><td>270</td><td>Liquor Law Violations</td></tr>
+    <tr><td>12</td><td>Manslaughter by Negligence</td></tr>
+    <tr><td>90</td><td>Motor Vehicle Theft</td></tr>
+    <tr><td>11</td><td>Murder and Nonnegligent Homicide</td></tr>
+    <tr><td>250</td><td>Offenses Against the Family and Children</td></tr>
+    <tr><td>140</td><td>Prostitution and Commercialized Vice</td></tr>
+    <tr><td>142</td><td>Prostitution and Commercialized Vice - Assisting or Promoting Prostitution</td></tr>
+    <tr><td>141</td><td>Prostitution and Commercialized Vice - Prostitution</td></tr>
+    <tr><td>143</td><td>Prostitution and Commercialized Vice - Purchasing Prostitution</td></tr>
+    <tr><td>23</td><td>Rape</td></tr>
+    <tr><td>30</td><td>Robbery</td></tr>
+    <tr><td>240</td><td>Sex Offenses (Except Rape, and Prostitution and Commercialized Vice)</td></tr>
+    <tr><td>55</td><td>Simple Assault</td></tr>
+    <tr><td>210</td><td>Stolen Property: Buying, Receiving, Possessing</td></tr>
+    <tr><td>300</td><td>Vagrancy</td></tr>
+    <tr><td>220</td><td>Vandalism</td></tr>
+    <tr><td>230</td><td>Weapons: Carrying, Possessing, Etc.</td></tr>
+  </tbody>
+</table>
+
+          
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="small"><strong>Response:</strong> JSON array of objects — one per state. Each object contains the raw FBI arrest data augmented with a <code>state</code> field.</p>
+
+    <p class="small"><strong>Notes:</strong> Consumers should validate <code>offenseCode</code> against the supported codes list before presenting to end users.</p>
+  </article>
+</section>
+
+<hr/>
+
+<section>
+  <h2>/api/v1/lawEnforcement</h2>
+
+  <article>
+    <h3>GET /enforcementPopulation</h3>
+    <p class="small"><strong>Purpose:</strong> Retrieve police population / personnel statistics per state from the FBI personnel/employee endpoints for a given year.</p>
+
+    <table>
+      <thead>
+        <tr><th>Query Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="param"><code>year</code></td>
+          <td>string / integer</td>
+          <td>No</td>
+          <td>Four-digit year. Defaults to 2025.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="small"><strong>Response:</strong> JSON array of objects — one per state. Each object contains the raw FBI personnel endpoint payload with an additional <code>state</code> field. Requires <code>FBI_CRIME_KEY</code> on the server.</p>
+  </article>
+
+  <article>
+    <h3>GET /policeVictimCases</h3>
+    <p class="small"><strong>Purpose:</strong> Download and return the "people killed by police" case-level dataset (spreadsheet converted to JSON).</p>
+
+    <p class="small"><strong>Behavior:</strong> The endpoint fetches an XLSX file from the external source and converts the first sheet into JSON rows. Each row corresponds to a case record with columns originating from the source dataset.</p>
+
+    <p class="small"><strong>Response:</strong> JSON array of objects where each object maps column headers from the dataset to values for that case.</p>
+
+    <p class="small"><strong>Notes:</strong> The external spreadsheet URL is defined inside the server code. Consumers must expect schema changes if the upstream dataset is updated. The server performs an in-memory conversion; large spreadsheets may increase memory usage.</p>
+  </article>
+
+  <article>
+    <h3>GET /policeVictimDepts</h3>
+    <p class="small"><strong>Purpose:</strong> Download and return the dataset of police departments associated with people killed by police (spreadsheet sheet → JSON).</p>
+
+    <p class="small"><strong>Behavior:</strong> Converts the second sheet of the XLSX resource into JSON rows and returns them.</p>
+
+    <p class="small"><strong>Response:</strong> JSON array of department records as provided in the spreadsheet.</p>
+  </article>
+
+  <article>
+    <h3>GET /policeVictimStates</h3>
+    <p class="small"><strong>Purpose:</strong> Download and return the aggregated state-level dataset of people killed by police (spreadsheet sheet → JSON).</p>
+
+    <p class="small"><strong>Behavior:</strong> Converts the third sheet of the XLSX resource into JSON rows and returns them.</p>
+
+    <p class="small"><strong>Response:</strong> JSON array of state-level aggregated records as provided by the spreadsheet.</p>
+  </article>
+</section>
+
+<hr/>
+
+<section>
+  <h2>Error Handling</h2>
+  <p class="small">On failure the API returns HTTP error statuses with a JSON body that contains an <code>error</code> field. Example:</p>
+  <pre>{
+  "error": { "message": "{{ERROR_MESSAGE_PLACEHOLDER}}", "details": "{{ERROR_DETAILS_PLACEHOLDER}}" }
+}</pre>
+  <p class="small">Replace the placeholders above with the server's preferred error schema if different.</p>
+</section>
+
+<section>
+  <h2>Operational Notes & Best Practices</h2>
+  <ul class="small">
+    <li>Set <code>FBI_CRIME_KEY</code> and any other upstream API keys in environment configuration on the host.</li>
+    <li>Rate-limit or cache responses from external providers (FBI endpoints and XLSX host) to reduce latency and avoid throttling.</li>
+    <li>Validate and sanitize query parameters before passing them to upstream services.</li>
+    <li>Consider streaming or pagination for very large returned arrays.</li>
+  </ul>
+</section>
+
+<footer>
+  <p class="small">Support: <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a></p>
+  <p class="small">Documentation generated for: <code>{{API_TITLE}}</code>. Replace placeholders prior to publishing.</p>
+</footer>
+
+</body>
+</html>

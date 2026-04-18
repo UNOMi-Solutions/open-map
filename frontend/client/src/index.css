@@ -1,0 +1,295 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure app uses a dark blue background */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: #06012A;
+}
+
+
+/* Oil spill markers: teal-blue pin, no default marker background */
+.leaflet-marker-icon.oil-spill-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Any component classes */
+@layer components {
+  .all-\[unset\] { all: unset; }
+}
+
+/* === TOKENS & BASE === */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    --card: transparent;
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 215 20.2% 65.1%;
+    --radius: 0.5rem;
+
+    /* Surface scale (map backgrounds, panels, strokes) */
+    --surface-base: var(--background);
+    --surface-elev: 210 16% 97%;
+    --surface-line: 214.3 31.8% 91.4%;
+
+    /* Text scale */
+    --text-primary: var(--foreground);
+    --text-secondary: 215 16% 46%;
+    --text-muted: 215 12% 60%;
+
+    /* Brand scale */
+    --brand-primary: 220 90% 56%;
+    --brand-accent: 198 100% 50%;
+
+    --surface-line-color: hsl(var(--surface-line));
+    --brand-primary-color: hsl(var(--brand-primary));
+    --brand-accent-color: hsl(var(--brand-accent));
+  }
+
+  .dark {
+    /* existing dark tokens */
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --card: transparent;
+    --card-foreground: 213 31% 91%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 216 34% 17%;
+    --radius: 0.5rem;
+
+    --surface-base: 224 71% 4%;
+    --surface-elev: 222 40% 10%;
+    --surface-line: 216 34% 17%;
+
+    --text-primary: var(--foreground);
+    --text-secondary: 214 20% 70%;
+    --text-muted: 214 15% 60%;
+
+    --brand-primary: 220 90% 62%;
+    --brand-accent: 198 100% 55%;
+
+    --surface-line-color: hsl(var(--surface-line));
+    --brand-primary-color: hsl(var(--brand-primary));
+    --brand-accent-color: hsl(var(--brand-accent));
+  }
+
+  * { @apply border-border; }
+
+  html, body, #root {
+    height: 100%;
+    @apply bg-background text-foreground;
+  }
+
+  body {
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* === Scrollbar === */
+.sidebar-scroll {
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(30, 167, 255, 0.4) rgba(12, 16, 34, 0.3);
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(12, 16, 34, 0.4);
+  border-radius: 4px;
+  margin: 8px 0;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(30, 167, 255, 0.6) 0%, rgba(30, 167, 255, 0.4) 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(30, 167, 255, 0.2);
+  box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: background 0.2s ease;
+}
+.sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(30, 167, 255, 0.75) 0%, rgba(30, 167, 255, 0.55) 100%);
+  border-color: rgba(30, 167, 255, 0.3);
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, rgba(30, 167, 255, 0.85) 0%, rgba(30, 167, 255, 0.65) 100%);
+}
+
+.accordion-arrow {
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  color: #ffffff;
+  transition: transform 0.2s ease;
+}
+.accordion-trigger[data-state="open"] .accordion-arrow {
+  transform: rotate(90deg);
+}
+.accordion-trigger > svg:not(.accordion-arrow) {
+  display: none;
+}
+
+/* === Leaflet === */
+.leaflet-container {
+  background: hsl(var(--surface-base));
+  outline: none;
+}
+
+.map-cta {
+  backdrop-filter: blur(6px);
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  background: color-mix(in oklab, hsl(var(--surface-elev)) 90%, transparent);
+}
+
+.inset-label {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.25rem;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: rgba(0,0,0,0.45);
+  user-select: none;
+}
+
+/* Landing waves - individual layer animations */
+/* 
+  TWEAK GUIDE FOR ANIMATION:
+  - Each wave layer moves independently with different delays and speeds
+  - Movement distance: Change "translateY(6px)" to increase/decrease vertical movement
+  - Add horizontal movement: Add "translateX(5px)" to the transform
+  - Animation speed: Change duration (5s, 6s, 7s, etc.) for each layer
+  - Animation delay: Change delay (0s, 0.5s, 1s, etc.) to stagger the waves
+  - Easing: Change "ease-in-out" to "linear", "ease", or custom cubic-bezier
+*/
+
+/* Wave layer 1 (main fill) - slowest, base layer */
+@keyframes waveFloat1 {
+  0% { transform: translateY(8px) translateX(0px); }
+  50% { transform: translateY(0px) translateX(5px); }
+  100% { transform: translateY(8px) translateX(0px); }
+}
+.wave-layer-1 {
+  animation: waveFloat1 7s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+/* Wave layer 2 - medium speed, slight delay */
+@keyframes waveFloat2 {
+  0% { transform: translateY(6px) translateX(0px); }
+  25% { transform: translateY(2px) translateX(8px); }
+  50% { transform: translateY(-2px) translateX(10px); }
+  75% { transform: translateY(2px) translateX(8px); }
+  100% { transform: translateY(6px) translateX(0px); }
+}
+.wave-layer-2 {
+  animation: waveFloat2 5.5s ease-in-out infinite;
+  animation-delay: 0.3s;
+  transform-origin: center center;
+}
+
+/* Wave layer 3 - faster, more delay */
+@keyframes waveFloat3 {
+  0% { transform: translateY(5px) translateX(0px); }
+  33% { transform: translateY(-1px) translateX(6px); }
+  66% { transform: translateY(-3px) translateX(8px); }
+  100% { transform: translateY(5px) translateX(0px); }
+}
+.wave-layer-3 {
+  animation: waveFloat3 4.5s ease-in-out infinite;
+  animation-delay: 0.6s;
+  transform-origin: center center;
+}
+
+/* Wave layer 4 - fastest, most delay for layered effect */
+@keyframes waveFloat4 {
+  0% { transform: translateY(4px) translateX(0px); }
+  50% { transform: translateY(-2px) translateX(5px); }
+  100% { transform: translateY(4px) translateX(0px); }
+}
+.wave-layer-4 {
+  animation: waveFloat4 4s ease-in-out infinite;
+  animation-delay: 0.9s;
+  transform-origin: center center;
+}
+
+/* === Choropleth (Natural Disaster Incidents) === */
+.choropleth-info {
+  padding: 6px 8px;
+  font: 14px/16px Arial, Helvetica, sans-serif;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  color: #333;
+}
+.choropleth-info h4 {
+  margin: 0 0 5px;
+  color: #555;
+}
+.choropleth-legend i {
+  width: 18px;
+  height: 18px;
+  float: left;
+  margin-right: 8px;
+  opacity: 0.7;
+}
+.choropleth-legend {
+  line-height: 18px;
+  color: #555;
+}
