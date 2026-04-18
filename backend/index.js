@@ -60,7 +60,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Respond 200 to all preflight OPTIONS requests so CORS checks pass
-app.options("*", cors(corsOptions));
+app.options("(.*)", cors(corsOptions));
 
 // Force HTTPS in production
 app.use(enforceHTTPS);
