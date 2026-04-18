@@ -39,10 +39,8 @@ router.get('/test', (req, res) => {
     res.json(testResponse);
 });
 
-// Declare OpenAI client
-const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Declare OpenAI client — reads OPENAI_API_KEY from env automatically
+const client = new OpenAI();
 
 // Array of all state abbreviations
 // Ensures separation of date for ease of parsing on map
