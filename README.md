@@ -1,6 +1,6 @@
 # OpenMap
 
-An interactive data visualization platform that maps US statistics across crime, health, environment, economics, politics, law enforcement, and social data — sourced from government APIs and displayed on a live map.
+An interactive data visualization platform that maps US statistics across crime, health, environment, economics, politics, law enforcement, and social data sourced from government APIs and displayed on a live map.
 
 **Live site:** [getopenmap.com](https://getopenmap.com)
 
