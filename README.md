@@ -1,6 +1,6 @@
 # OpenMap
 
-An interactive data visualization platform that maps US statistics across crime, health, environment, economics, politics, law enforcement, and social data. Sourced from government APIs and displayed on a live map.
+An interactive data visualization platform that maps US statistics across crime, health, environment, economics, politics, law enforcement, and social data sourced from government APIs and displayed on a live map.
 
 **Live site:** [getopenmap.com](https://getopenmap.com)
 
@@ -140,12 +140,12 @@ Auth routes (no API key needed):
 **Adding a new data route:**
 1. Create or edit a file in `backend/routes/`
 2. Register it in `backend/index.js` with `app.use("/api/v1/yourRoute", auth, yourRoutes)`
-3. Push to `main` and Cloud Run redeploys automatically
+3. Push to `main` — Cloud Run redeploys automatically
 
 **Adding a new frontend page:**
 1. Add your component under `frontend/client/src/pages/` or `frontend/client/src/components/`
 2. Wire it up in `App.tsx`
-3. Push to `main` and Vercel redeploys automatically
+3. Push to `main` — Vercel redeploys automatically
 
 **Changing environment variables:**
 - Backend: update the Variables & Secrets section in Google Cloud Run console, then redeploy
@@ -154,8 +154,8 @@ Auth routes (no API key needed):
 **Do not:**
 - Commit `.env` files
 - Change `app.listen` port away from `8080` in the backend (Cloud Run requires it)
-- Use string wildcards like `"*"` or `"(.*)"` in Express 5 route paths. Use RegExp (`/.*/`) instead
-- Call `process.exit()` during startup. It will crash the Cloud Run container before the health check passes
+- Use string wildcards like `"*"` or `"(.*)"` in Express 5 route paths — use RegExp (`/.*/`) instead
+- Call `process.exit()` during startup — it will crash the Cloud Run container before the health check passes
 
 ---
 
@@ -174,7 +174,7 @@ Auth routes (no API key needed):
 
 ## Key Things to Know
 
-- **Express 5** is in use. Route wildcards must be RegExp: `app.options(/.*/, handler)`. String wildcards throw a `PathError` at startup.
+- **Express 5** is in use. Route wildcards must be RegExp: `app.options(/.*/, handler)` — string wildcards throw a `PathError` at startup.
 - **MongoDB Atlas** network access is set to `0.0.0.0/0` because Cloud Run uses dynamic IPs. This is intentional.
 - **API keys** should be rotated periodically. Priority: Stripe, OpenAI, MongoDB password, Mailchimp.
 - The `frontend/server/` directory is legacy code from the original Replit setup and is not used in production. Do not delete it without auditing imports first.
