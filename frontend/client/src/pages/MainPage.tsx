@@ -491,6 +491,31 @@ export default function MainPage() {
                 </>
               )}
 
+              {/* RIGHT-SIDE AD RAIL (visible on landing + when sidebar closed). Hidden for premium. */}
+              {!isPremium && (showLanding || !sidebarOpen) && (
+                <aside
+                  aria-label="Sponsored"
+                  className={[
+                    "hidden lg:flex flex-col gap-4",
+                    "absolute top-28 right-6 z-30",
+                    "w-[300px] max-h-[calc(100vh-160px)] overflow-y-auto",
+                    "rounded-xl border border-white/15 bg-[#0c1022]/70 backdrop-blur-sm",
+                    "p-3 shadow-2xl pointer-events-auto",
+                  ].join(" ")}
+                >
+                  <BannerAd
+                    showLabel
+                    className="bg-white/5 rounded-md p-2"
+                    style={{ minHeight: 250 }}
+                  />
+                  <VideoAd
+                    showLabel
+                    className="bg-white/5 rounded-md p-2"
+                    style={{ minHeight: 280 }}
+                  />
+                </aside>
+              )}
+
               {/* LEFT OVERLAY SIDEBAR (Slides) */}
               <aside
                 className={[
