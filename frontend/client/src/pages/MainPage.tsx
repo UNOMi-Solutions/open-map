@@ -14,6 +14,7 @@ import SharePopup from "./sections/SharePopup";
 import LeafletMap, { ChoroplethMetricKey } from "@/components/ui/LeafletMap";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { X, UserPlusIcon } from "lucide-react";
+import { BannerAd, VideoAd } from "@/components/ads";
 
 import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
 
@@ -25,6 +26,8 @@ export default function MainPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
+  // Premium users see no ads. Wire this up to your real subscription flag.
+  const [isPremium] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -553,6 +556,13 @@ export default function MainPage() {
                   onPoliticalCategoryChange={setPoliticalCategory}
                   onResetAllFilters={handleResetAllFilters}
                 />
+                {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
+                {!isPremium && (
+                  <div className="px-4 pt-4 pb-8 space-y-4 border-t border-white/10 mt-4">
+                    <BannerAd showLabel className="bg-white/5 rounded-md p-2" />
+                    <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
+                  </div>
+                )}
                 {/* <div className="px-6 pt-6 pb-20">
                   <NavigationMenuSection
                     searchQuery={searchQuery}
@@ -585,6 +595,15 @@ export default function MainPage() {
               )}
             </section>
             {/* ======= END HERO ======= */}
+
+            {/* Fixed bottom banner ad (hidden on landing screen and for premium users). */}
+            {!showLanding && !isPremium && !sidebarOpen && (
+              <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none flex justify-center pb-2 px-4">
+                <div className="pointer-events-auto bg-[#0c1022]/85 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl max-w-[900px] w-full p-2">
+                  <BannerAd showLabel />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -102,7 +102,23 @@ VITE_EMAILJS_PUBLIC_KEY=...
 VITE_EMAILJS_PAYMENT_TEMPLATE_ID=...
 VITE_EMAILJS_WAITLIST_TEMPLATE_ID=...
 VITE_MAILCHIMP_URL=...
+
+# Google AdSense (banner + video / in-feed ads)
+VITE_ADSENSE_CLIENT=ca-pub-4397282403486242
+VITE_ADSENSE_SLOT_BANNER=
+VITE_ADSENSE_SLOT_VIDEO=
+VITE_ADSENSE_SLOT_SIDEBAR=
+VITE_ADSENSE_SLOT_INFEED=
 ```
+
+The AdSense loader script is hard-wired in `frontend/client/index.html` with
+`ca-pub-4397282403486242`. `frontend/client/public/ads.txt` is served at
+`https://getopenmap.com/ads.txt` and authorizes Google to sell our inventory.
+
+Banner and video ad components live in `frontend/client/src/components/ads/`.
+They render nothing until the matching `VITE_ADSENSE_SLOT_*` env vars are
+populated (after AdSense approves the site and you create ad units in the
+"Ads → By ad unit" tab).
 
 For local development, set `VITE_API_LINK=http://localhost:8080` in `frontend/.env`.
 
