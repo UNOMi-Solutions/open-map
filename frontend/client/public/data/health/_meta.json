@@ -1,0 +1,98 @@
+{
+  "source": "https://data.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-County-Data-20/h3ej-a9ec",
+  "defaultYear": "2021",
+  "dataValueType": "Age-adjusted prevalence",
+  "fetchedAt": "2026-04-21T23:37:38.356Z",
+  "layers": {
+    "heart-disease": {
+      "measureid": "CHD",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "cancer": {
+      "measureid": "CANCER",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "breast-cancer": {
+      "measureid": "MAMMOUSE",
+      "year": "2020",
+      "countyCount": 3144,
+      "invertFromPercent": false
+    },
+    "diabetes": {
+      "measureid": "DIABETES",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "colon-cancer": {
+      "measureid": "COLON_SCREEN",
+      "year": "2020",
+      "countyCount": 3144,
+      "invertFromPercent": false
+    },
+    "lung-cancer": {
+      "measureid": "COPD",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "kidney-disease": {
+      "measureid": "KIDNEY",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "smokers": {
+      "measureid": "CSMOKING",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "obesity": {
+      "measureid": "OBESITY",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "alcoholism": {
+      "measureid": "BINGE",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "mental-health": {
+      "measureid": "DEPRESSION",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "worst-healthcare-coverage": {
+      "measureid": "ACCESS2",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "best-healthcare-coverage": {
+      "measureid": "ACCESS2",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": true
+    },
+    "most-out-of-shape-population": {
+      "measureid": "LPA",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": false
+    },
+    "healthiest-population": {
+      "measureid": "GHLTH",
+      "year": "2021",
+      "countyCount": 3077,
+      "invertFromPercent": true
+    }
+  }
+}

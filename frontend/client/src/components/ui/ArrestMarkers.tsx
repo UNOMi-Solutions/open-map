@@ -8,9 +8,6 @@ import DonutChart from "./DonutChart";
 
 import { CreateMarker } from "./CreateMarker";
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 // All states and their centers
 const states = [
   { state: "AL", latitude: 32.806671, longitude: -86.791130 },
@@ -84,12 +81,14 @@ const HomicideMarkers = ({ arrestCategory, showArrestData } : ArrestMarkersProps
         let currentTimestamp = new Date();
 
         if(browserData == null || (+currentTimestamp - +browserData.timestamp > 86400000)) {
-            fetch(`${apiURL}/api/v1/crime/arrestsByState`, {
+            //https://openmap-backend.onrender.com/api/v1/crime/murderByState
+            //"http://localhost:8000/api/v1/crime/murderByState"
+            fetch("https://openmap-backend.onrender.com/api/v1/crime/arrestsByState", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": apiKey || ""
-               }
+                    //"x-api-key": import.meta.env.VITE_API_DEV_KEY || ""
+                    "x-api-key": "ZWFnbGVzIGNhbiBmbHk"                }
             })
             .then(response => {
                 if (!response.ok) {

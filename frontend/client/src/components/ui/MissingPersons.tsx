@@ -4,9 +4,6 @@ import { Marker, Popup } from "react-leaflet";
 
 import { CreateMarker } from "./CreateMarker";
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 interface MissingPersonsProps {
     showMissingPersonsData: boolean;
     missingPersonQ?: string;
@@ -60,11 +57,14 @@ const MissingPersons = ({ showMissingPersonsData, missingPersonQ, missingPersonY
         let currentTimestamp = new Date();
 
         if(browserData == null || (+currentTimestamp - +browserData.timestamp > 86400000)) {
-            fetch(`${apiURL}/api/v1/crime/missingPersons`, {
+            //https://openmap-backend.onrender.com/api/v1/missing-persons
+            //"http://localhost:8000/api/v1/missing-persons"
+            fetch("http://localhost:8000/api/v1/crime/missingPersons", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": apiKey || ""
+                    //"x-api-key": import.meta.env.VITE_API_DEV_KEY || ""
+                    "x-api-key": "ZWFnbGVzIGNhbiBmbHk"
                 }
             })
             .then(response => {
@@ -96,8 +96,6 @@ const MissingPersons = ({ showMissingPersonsData, missingPersonQ, missingPersonY
             showMissingPersonsData &&
             !loadingMissingPersonsData && 
             missingPersonsData.map((missingPerson: MissingPerson, index: number) => {
-                const randXOffset = (Math.random() - 0.5) * 0.5;
-                const randYOffset = (Math.random() - 0.5) * 0.5;
                 const cleanedObj = Object.fromEntries(
                     Object.entries(missingPerson).map(([key, value]) => [
                         key.replace(/^\uFEFF/, '').replace(/^"(.*)"$/, '$1'),
@@ -107,7 +105,7 @@ const MissingPersons = ({ showMissingPersonsData, missingPersonQ, missingPersonY
                 const { locationData, DLC, "Case Number": caseNumber, "Legal First Name": legalFirstName, "Legal Last Name": legalLastName } = cleanedObj;
                 const missingPersonDate = new Date(DLC);
 
-                return (locationData != null && missingPersonDate >= startDate && missingPersonDate <= endDate) ? <Marker icon={CreateMarker(`hsl(${color},80%,50%)`)} position={[Number(locationData["latitude"]) + randXOffset, Number(locationData["longitude"]) + randYOffset]} key={index}>
+                return (locationData != null && missingPersonDate >= startDate && missingPersonDate <= endDate) ? <Marker icon={CreateMarker(`hsl(${color},80%,50%)`)} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]} key={index}>
                     <Popup>
                         <h1>Case Number: { caseNumber }</h1>
                         <h1>{ legalFirstName } { legalLastName }</h1>

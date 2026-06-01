@@ -2,9 +2,6 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 /* Orange marker icon to distinguish air quality from other markers */
 const AIR_QUALITY_ICON = L.divIcon({
   className: "air-quality-marker",
@@ -82,14 +79,14 @@ const AirQualityMarkers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const baseUrl = `${apiURL}/api/v1/environment/airQuality`;
+    const baseUrl = "http://localhost:8000/api/v1/environment/airQualityByLocation";
     const seen = new Set<string>();
 
     Promise.all(
       AIR_QUALITY_CITIES.map(([lat, lon]) =>
         fetch(`${baseUrl}?lat=${lat}&long=${lon}`, {
           method: "GET",
-          headers: { "Content-Type": "application/json", "x-api-key": apiKey || "" },
+          headers: { "Content-Type": "application/json" },
         })
           .then((res) => (res.ok ? res.json() : []))
           .then((data) => {

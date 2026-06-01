@@ -2,9 +2,6 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 // marker icon to distinguish oil spills from default blue markers
 const OIL_SPILL_ICON = L.divIcon({
   className: "oil-spill-marker",
@@ -53,9 +50,9 @@ const OilSpillMarkers = () => {
   const [loadingOilSpillData, setLoadingOilSpillData] = useState<Boolean>(true);
 
   useEffect(() => {
-    fetch(`${apiURL}/api/v1/environment/oilSpills`, {
+    fetch("http://localhost:8000/api/v1/environment/oilSpills", {
       method: "GET",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey || "" },
+      headers: { "Content-Type": "application/json" },
     })
       .then(response => {
         if (!response.ok) {

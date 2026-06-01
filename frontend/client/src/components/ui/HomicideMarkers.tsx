@@ -90,12 +90,14 @@ const HomicideMarkers = ( { murderCategory, murderAttribute, showMurderData } : 
         let currentTimestamp = new Date();
 
         if(browserData == null || (+currentTimestamp - +browserData.timestamp > 86400000)) {
-            fetch(`${import.meta.env.VITE_API_LINK}/api/v1/crime/murderByState`, {
+            //https://openmap-backend.onrender.com/api/v1/crime/murderByState
+            //"http://localhost:8000/api/v1/crime/murderByState"
+            fetch("http://localhost:8000/api/v1/crime/murderByState", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": import.meta.env.VITE_API_DEV_KEY || ""  
-                }
+                    //"x-api-key": import.meta.env.VITE_API_DEV_KEY || ""
+                    "x-api-key": "ZWFnbGVzIGNhbiBmbHk"                }
             })
             .then(response => {
                 if (!response.ok) {

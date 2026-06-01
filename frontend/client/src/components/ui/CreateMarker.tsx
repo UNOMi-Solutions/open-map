@@ -8,6 +8,9 @@ export const CreateMarker = (color: string) =>
         <!-- Pin -->
         <div class="absolute top-0 left-0 w-5 h-5 rounded-[50%_50%_50%_0] rotate-[-45deg] shadow-md" style="background-color: ${color}">
         </div>
+
+        <!-- Shadow -->
+        <div class="absolute bottom-[-6px] left-1/4 w-5 h-2 rounded-full bg-black/25 blur-sm"></div>
       </div>
     `,
     iconSize: [32, 44],

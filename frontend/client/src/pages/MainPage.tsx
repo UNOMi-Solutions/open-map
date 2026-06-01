@@ -11,12 +11,20 @@ import ContactUsform from "./sections/ContactUsform";
 import AboutUsModal from "./sections/AboutUs";
 import NewsletterPopup from "./sections/NewsLetterPopup";
 import SharePopup from "./sections/SharePopup";
-import LeafletMap, { ChoroplethMetricKey } from "@/components/ui/LeafletMap";
+import LeafletMap, {
+  ChoroplethMetricKey,
+  HouseDistrictPartyMode,
+} from "@/components/ui/LeafletMap";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { X, UserPlusIcon } from "lucide-react";
 import { BannerAd, VideoAd } from "@/components/ads";
 
 import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
+import {
+  HEALTH_ALL_LAYER_IDS,
+  HEALTH_WIRED_LAYER_IDS,
+} from "@/lib/health-places";
+import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
 
 export default function MainPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -75,7 +83,11 @@ export default function MainPage() {
   // Props for consent age data
   const [showConsentAgeData, setShowConsentAgeData] = useState(false);
 
-  const [politicalCategory, setPoliticalCategory] = useState("");
+  const [politicalLayerIds, setPoliticalLayerIds] = useState<string[]>([]);
+  const [houseDistrictPartyMode, setHouseDistrictPartyMode] =
+    useState<HouseDistrictPartyMode>("both");
+  /** CDC PLACES county choropleth; exclusive with census race/age/sex selection */
+  const [healthMetricId, setHealthMetricId] = useState<string | null>(null);
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
@@ -158,7 +170,54 @@ export default function MainPage() {
   };
 
   const handleLayerToggle = (layerId: string, checked: boolean) => {
+    if (SPLC_LAYER_IDS.has(layerId)) {
+      if (checked) {
+        setSelectedLayers((prev) => [
+          ...prev.filter(
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+          ),
+          layerId,
+        ]);
+        setHealthMetricId(null);
+        setSelectedRaceCensusId("all");
+        setSelectedAgeGroupId(null);
+        setSelectedSexId(null);
+        setShowChoropleth(false);
+      } else {
+        setSelectedLayers((prev) => prev.filter((id) => id !== layerId));
+      }
+      return;
+    }
+    if (HEALTH_ALL_LAYER_IDS.has(layerId)) {
+      if (checked) {
+        setSelectedLayers((prev) => [
+          ...prev.filter(
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+          ),
+          layerId,
+        ]);
+        if (HEALTH_WIRED_LAYER_IDS.has(layerId)) {
+          setHealthMetricId(layerId);
+          setSelectedRaceCensusId("all");
+          setSelectedAgeGroupId(null);
+          setSelectedSexId(null);
+          setShowChoropleth(false);
+        } else {
+          setHealthMetricId(null);
+        }
+      } else {
+        setSelectedLayers((prev) => prev.filter((id) => id !== layerId));
+        setHealthMetricId((cur) => (cur === layerId ? null : cur));
+      }
+      return;
+    }
     setSelectedLayers((prev) =>
+      checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
+    );
+  };
+
+  const handlePoliticalLayerToggle = (layerId: string, checked: boolean) => {
+    setPoliticalLayerIds((prev) =>
       checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
     );
   };
@@ -183,8 +242,10 @@ export default function MainPage() {
     setMissingPersonQ("Q1");
     setMissingPersonYear(2026);
     setShowConsentAgeData(false);
-    setPoliticalCategory("");
+    setPoliticalLayerIds([]);
+    setHouseDistrictPartyMode("both");
     setSearchQuery("");
+    setHealthMetricId(null);
   };
 
   // Newsletter popup timer
@@ -192,6 +253,35 @@ export default function MainPage() {
     const timer = setTimeout(() => setIsNewsletterPopupOpen(true), 60000);
     return () => clearTimeout(timer);
   }, []);
+
+  /** Drop health / SPLC choropleths when user turns on census race / age / sex layers */
+  useEffect(() => {
+    const censusActive =
+      selectedRaceCensusId !== "all" ||
+      selectedAgeGroupId != null ||
+      selectedSexId != null;
+    if (!censusActive) return;
+    if (healthMetricId) {
+      setHealthMetricId(null);
+      setSelectedLayers((prev) =>
+        prev.filter((id) => !HEALTH_ALL_LAYER_IDS.has(id))
+      );
+    }
+    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id)));
+  }, [selectedRaceCensusId, selectedAgeGroupId, selectedSexId, healthMetricId]);
+
+  /** Population choropleth and SPLC are mutually exclusive for the colored layer */
+  const handleTogglePopulationChoropleth = () => {
+    setShowChoropleth((v) => {
+      const next = !v;
+      if (next) {
+        setSelectedLayers((prev) =>
+          prev.filter((id) => !SPLC_LAYER_IDS.has(id))
+        );
+      }
+      return next;
+    });
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -224,7 +314,7 @@ export default function MainPage() {
                 aria-pressed={isPinDropMode}
               >
                 <img
-                  className="w-[17px] h-[17px]"
+                  className="h-[17px] w-[11px] object-contain object-center shrink-0"
                   alt="Drop Pin"
                   src="/figmaAssets/map-pin.png"
                 />
@@ -443,7 +533,10 @@ export default function MainPage() {
                   selectedAgeGroupId={selectedAgeGroupId}
                   selectedRaceCensusId={selectedRaceCensusId}
                   selectedSexId={selectedSexId}
-                  politicalCategory={politicalCategory}
+                  politicalLayerIds={politicalLayerIds}
+                  houseDistrictPartyMode={houseDistrictPartyMode}
+                  healthMetricId={healthMetricId}
+                  showSplcHateMap={selectedLayers.includes("most-racist")}
                 />
               </div>
 
@@ -537,7 +630,7 @@ export default function MainPage() {
                   choroplethMetric={choroplethMetric}
                   onChoroplethMetricChange={setChoroplethMetric}
                   showChoropleth={showChoropleth}
-                  onToggleChoropleth={() => setShowChoropleth((v) => !v)}
+                  onToggleChoropleth={handleTogglePopulationChoropleth}
 
                   showPoliceKillingData={showPoliceKillingData}
                   onTogglePoliceKillingData={() => setShowPoliceKillingData((v) => !v)}
@@ -577,8 +670,10 @@ export default function MainPage() {
                   
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
-                  politicalCategory={politicalCategory}
-                  onPoliticalCategoryChange={setPoliticalCategory}
+                  politicalLayerIds={politicalLayerIds}
+                  onPoliticalLayerToggle={handlePoliticalLayerToggle}
+                  houseDistrictPartyMode={houseDistrictPartyMode}
+                  onHouseDistrictPartyModeChange={setHouseDistrictPartyMode}
                   onResetAllFilters={handleResetAllFilters}
                 />
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
@@ -588,15 +683,6 @@ export default function MainPage() {
                     <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
                   </div>
                 )}
-                {/* <div className="px-6 pt-6 pb-20">
-                  <NavigationMenuSection
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    handleSearchTrigger={handleSearchTrigger}
-                    selectedLayers={selectedLayers}
-                    onLayerToggle={handleLayerToggle}
-                  />
-                </div> */}
               </aside>
 
               {/* TOGGLE BUTTON */}

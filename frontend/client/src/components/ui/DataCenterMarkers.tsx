@@ -2,9 +2,6 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 // Cyan/blue marker icon to distinguish data centers from other markers
 const DATA_CENTER_ICON = L.divIcon({
   className: "data-center-marker",
@@ -71,9 +68,9 @@ const DataCenterMarkers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${apiURL}/api/v1/environment/dataCenters`, {
+    fetch("http://localhost:8000/api/v1/environment/dataCenters", {
       method: "GET",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey || "" },
+      headers: { "Content-Type": "application/json" },
     })
       .then((response) => {
         if (!response.ok) {

@@ -154,45 +154,6 @@ export default function PricingCards({ isOpen: propIsOpen, onClose }) {
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     return `$${price}`;
   };
-
-  const planKeyByName: Record<string, string> = {
-    Free: "freeTrial",
-    Premium: "premium",
-    Enterprise: "enterprise",
-    Agency: "agency",
-  };
-
-  const handleCheckout = async (planName: string) => {
-    const plan = planKeyByName[planName];
-    if (!plan) return;
-    const interval = isYearly ? "yearly" : "monthly";
-    if (plan === "freeTrial") {
-      window.location.href = "/signup?plan=freeTrial";
-      handleClose();
-      return;
-    }
-    try {
-      const base = window.location.origin;
-      const res = await fetch("/api/v1/stripe/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan,
-          interval,
-          customer_email: "demo@example.com",
-          successUrl: `${base}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${base}/payment-cancelled`,
-        }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (e) {
-      console.error("Checkout error", e);
-    }
-  };
-
   if (!propIsOpen) return null;
   const handleClose = () => {
     // Call the onClose prop instead of setting internal state
@@ -250,8 +211,6 @@ export default function PricingCards({ isOpen: propIsOpen, onClose }) {
 
                 <CardContent className="space-y-4">
                   <button
-                    type="button"
-                    onClick={() => handleCheckout(plan.name)}
                     className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${plan.buttonStyle}`}
                   >
                     {plan.buttonText}

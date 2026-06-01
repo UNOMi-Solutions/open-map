@@ -5,9 +5,6 @@ import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from "geojson";
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 // 2-letter state codes for fetching; STATE_CODES maps them to FIPS prefix
 const STATE_ABBREVS = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI",
@@ -159,14 +156,14 @@ const NaturalDisasterIncidentMarkers = ({
 
     const urls = STATE_ABBREVS.map(
       (code) =>
-        `${apiURL}/api/v1/environment/naturalDisasterIncidents?stateCode=${encodeURIComponent(code)}`,
+        `http://localhost:8000/api/v1/environment/naturalDisasterIncidents?stateCode=${encodeURIComponent(code)}`,
     );
 
     Promise.all(
       urls.map((url) =>
         fetch(url, {
           method: "GET",
-          headers: { "Content-Type": "application/json", "x-api-key": apiKey || "" },
+          headers: { "Content-Type": "application/json" },
         })
           .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
           .then((data) => {

@@ -2,9 +2,6 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 // Green marker icon to distinguish GHG emissions facilities from other markers 
 const GHG_EMISSIONS_ICON = L.divIcon({
   className: "ghg-emissions-marker",
@@ -65,13 +62,13 @@ const GhgEmissionsMarkers = ({ selectedStateCode }: GhgEmissionsMarkersProps) =>
     setFacilities([]);
     setLoading(true);
 
-    const url = `${apiURL}/api/v1/environment/ghgEmissions?stateCode=${encodeURIComponent(
+    const url = `http://localhost:8000/api/v1/environment/ghgEmissions?stateCode=${encodeURIComponent(
       selectedStateCode,
     )}`;
 
     fetch(url, {
       method: "GET",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey || "" },
+      headers: { "Content-Type": "application/json" },
     })
       .then((response) => {
         if (!response.ok) {

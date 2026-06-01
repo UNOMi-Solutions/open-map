@@ -11,31 +11,46 @@ import * as turf from "@turf/turf";
 import { geoidToDistrictJoinKey } from "@/lib/district-key";
 import { partyClassName } from "@/lib/party-color";
 
-const HOUSE_ICON = L.divIcon({
-  className: "house-marker",
+/**
+ * Single-user silhouette (like a “user” / sign-up avatar without the plus).
+ * Inline SVG on the map avoids any <img> load so it never shows a broken icon.
+ */
+const HOUSE_USER_PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><rect width="100" height="100" fill="#f3f4f6"/><circle cx="50" cy="36" r="17" fill="#9ca3af"/><path fill="#9ca3af" d="M 16 100 C 16 71 35 54 50 54 C 65 54 84 71 84 100 Z"/></svg>`;
+
+/** Same artwork as data URL for photo fallbacks and broken GovTrack images */
+const HOUSE_REP_PLACEHOLDER_DATA_URL = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f3f4f6"/><circle cx="50" cy="36" r="17" fill="#9ca3af"/><path fill="#9ca3af" d="M 16 100 C 16 71 35 54 50 54 C 65 54 84 71 84 100 Z"/></svg>'
+)}`;
+
+/** Escape for use inside onerror="this.src='…'" (data URL is quote-safe after encodeURIComponent) */
+function placeholderSrcForOnerrorAttr() {
+  return HOUSE_REP_PLACEHOLDER_DATA_URL.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+const HOUSE_ICON_PLACEHOLDER = L.divIcon({
+  className: "house-marker-placeholder",
   html: `<div style="
-    width: 26px;
-    height: 26px;
-    background: #0c4a6e;
-    border: 2px solid #14b8a6;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-  "></div>`,
-  iconSize: [26, 26],
-  iconAnchor: [13, 26],
-  popupAnchor: [0, -26],
+      width:30px;height:30px;border-radius:50%;overflow:hidden;
+      border:2px solid #14b8a6;box-shadow:0 2px 6px rgba(0,0,0,0.35);
+      display:flex;align-items:center;justify-content:center;background:#f3f4f6;
+    ">${HOUSE_USER_PLACEHOLDER_SVG}</div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+  popupAnchor: [0, -30],
 });
 
 function houseIcon(photoUrl: string | undefined) {
-  if (!photoUrl) return HOUSE_ICON;
+  if (!photoUrl?.trim()) return HOUSE_ICON_PLACEHOLDER;
   const safe = photoUrl.replace(/"/g, "&quot;");
+  const fallback = placeholderSrcForOnerrorAttr();
   return L.divIcon({
     className: "house-marker-photo",
     html: `<div style="
       width:30px;height:30px;border-radius:50%;overflow:hidden;
       border:2px solid #14b8a6;box-shadow:0 2px 6px rgba(0,0,0,0.35);
-    "><img src="${safe}" alt="" referrerpolicy="no-referrer"
+      background:#f3f4f6;
+    "><img src="${safe}" alt="" referrerpolicy="no-referrer" width="30" height="30"
+      onerror="this.onerror=null;this.src='${fallback}';"
       style="width:100%;height:100%;object-fit:cover;display:block;"
     /></div>`,
     iconSize: [30, 30],
@@ -70,22 +85,35 @@ type PartiesFile = {
 };
 
 function HouseMarkerRow({ h }: { h: HousePin }) {
+  const [popupPhotoFailed, setPopupPhotoFailed] = useState(false);
+  useEffect(() => {
+    setPopupPhotoFailed(false);
+  }, [h.id, h.photoUrl]);
+
   const icon = useMemo(() => houseIcon(h.photoUrl), [h.photoUrl, h.id]);
+
+  const usePlaceholder =
+    !h.photoUrl?.trim() || popupPhotoFailed;
 
   return (
     <Marker position={[h.lat, h.lng]} icon={icon}>
       <Popup>
         <div className="min-w-[200px] max-w-[260px] text-[#0c1022]">
-          {h.photoUrl && (
-            <div className="mb-2 w-full rounded bg-neutral-100">
-              <img
-                src={h.photoUrl}
-                alt=""
-                className="max-h-52 w-full rounded object-contain object-center"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          )}
+          <div className="mb-2 w-full rounded bg-neutral-100">
+            <img
+              src={
+                usePlaceholder
+                  ? HOUSE_REP_PLACEHOLDER_DATA_URL
+                  : h.photoUrl!
+              }
+              alt=""
+              className="max-h-52 w-full rounded object-contain object-center"
+              referrerPolicy={usePlaceholder ? undefined : "no-referrer"}
+              onError={() => {
+                if (h.photoUrl?.trim()) setPopupPhotoFailed(true);
+              }}
+            />
+          </div>
           <div className="text-sm font-semibold leading-snug">{h.name}</div>
           <div className="mt-0.5 text-xs text-[#0c1022]/85">{h.districtLabel}</div>
           {h.description && (

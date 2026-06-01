@@ -2,9 +2,6 @@ import { useEffect, useState } from "react";
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 /** Green marker icon for waste treatment/disposal sites */
 const WASTE_TREATMENT_ICON = L.divIcon({
   className: "waste-treatment-marker",
@@ -139,11 +136,11 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode }: WasteTreatmentDisp
     }
     setSiteData([]);
     setLoading(true);
-    const url = `${apiURL}/api/v1/environment/wasteTreatmentDisposalSites?stateCode=${encodeURIComponent(selectedStateCode)}`;
+    const url = `http://localhost:8000/api/v1/environment/wasteTreatmentDisposalSites?stateCode=${encodeURIComponent(selectedStateCode)}`;
 
     fetch(url, {
       method: "GET",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey || "" },
+      headers: { "Content-Type": "application/json" },
     })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);

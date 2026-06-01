@@ -9,9 +9,6 @@ import { CreateMarker } from "./CreateMarker";
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 const provider = new OpenStreetMapProvider();
 
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
-
 
 export type PoliceKillingQKey = 
     | "Q1"
@@ -70,12 +67,14 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
 
     useEffect(() => {
         if(browserData == null) {
-            fetch(`${apiURL}/api/v1/lawEnforcement/policeVictimCases`, {
+            // https://openmap-backend.onrender.com
+            // http://localhost:8000
+            fetch("http://localhost:8000/api/v1/lawEnforcement/policeVictimCases", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": apiKey|| ""   
-               }
+                    //"x-api-key": import.meta.env.VITE_API_DEV_KEY || ""
+                    "x-api-key": "ZWFnbGVzIGNhbiBmbHk"                }
             })
             .then(response => {
                 if (!response.ok) {
@@ -84,7 +83,7 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
                 return response.json();
             })
             .then(data => {
-                console.log("API Repsonse:", data);
+                //console.log("API Repsonse:", data);
                 setPDKillingData(data);
                 //localStorage.setItem("OpenMap-Police-Killing-Data", JSON.stringify(data));
                 setLoadingPDKillingData(false);
@@ -108,12 +107,10 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
                 const { locationData } = incident;
                 const excelEpoch = new Date(Date.UTC(1899, 11, 30));
                 const incidentDate = new Date(excelEpoch.getTime() + incident['Date of Incident (month/day/year)'] * 86400000);
-                const randXOffset = (Math.random() - 0.5) * 0.1;
-                const randYOffset = (Math.random() - 0.5) * 0.1;
                 
                 if(incidentDate > startDate && incidentDate < endDate) {
                     return (
-                        (locationData != null) ? <Marker icon={CreateMarker(`hsl(${color},80%,50%)`)} key={index} position={[Number(locationData["latitude"]) + randXOffset, Number(locationData["longitude"]) + randYOffset]}>
+                        (locationData != null) ? <Marker icon={CreateMarker(`hsl(${color},80%,50%)`)} key={index} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]}>
                             <Popup>
                                 <h1>{ incidentDate.getMonth() + 1 }/{ incidentDate.getDate() + 1 }/{ incidentDate.getFullYear() } </h1>
                                 <h1>{ incident["Media description of the circumstances surrounding the death"] }</h1>

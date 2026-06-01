@@ -25,6 +25,16 @@ import type { Topology } from "topojson-specification";
 import { feature as topojsonFeature } from "topojson-client";
 import { patchLeafletIcons } from "@/lib/leaflet-icons";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
+import {
+  getHealthChoroplethColors,
+  getHealthLayerMeta,
+  HEALTH_CHOROPLETH_COLORS_NEGATIVE,
+  HEALTH_PLACES_SOURCE,
+} from "@/lib/health-places";
+import {
+  SPLC_HATE_MAP_LABEL,
+  SPLC_HATE_MAP_SOURCE_CREDIT,
+} from "@/lib/splc-hate-map";
 import InsetMap from "./InsetMap";
 import * as turf from "@turf/turf";
 
@@ -37,8 +47,8 @@ import OilSpillMarkers from "./OilSpillMarkers";
 // Natural disaster incidents data
 import NaturalDisasterIncidentMarkers from "./NaturalDisasterIncidentMarkers";
 
-// Air quality choropleth by county
-import AirQualityHeatmap from "./AirQualityHeatmap";
+// Air quality data
+import AirQualityMarkers from "./AirQualityMarkers";
 
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
@@ -57,9 +67,13 @@ import GhgEmissionsMarkers from "./GhgEmissionsMarkers";
 // Data centers
 import DataCenterMarkers from "./DataCenterMarkers";
 import SenatorMarkers from "./SenatorMarkers";
+import GovernorMarkers from "./GovernorMarkers";
+import GerrymanderingMarkers from "./GerrymanderingMarkers";
 import PresidentMarker from "./PresidentMarker";
 import CongressionalDistrictsLayer from "./CongressionalDistrictsLayer";
 import HouseMarkers from "./HouseMarkers";
+import SupremeCourtMarkers from "./SupremeCourtMarkers";
+import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
 
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
@@ -146,9 +160,10 @@ function ClearFocusOnClick({
 
 const PIN_ICON = L.icon({
   iconUrl: "/figmaAssets/map-pin.png",
-  iconSize: [36, 36],
-  iconAnchor: [18, 34],
-  popupAnchor: [0, -30],
+  /** Slightly narrower than square so the pin reads slimmer (matches toolbar icon). */
+  iconSize: [26, 34],
+  iconAnchor: [13, 31],
+  popupAnchor: [0, -28],
   className: "drop-shadow-[0_6px_18px_rgba(6,16,35,0.45)]",
 });
 
@@ -320,6 +335,9 @@ type MapPin = {
   stateName?: string;
 };
 
+/** Red/blue House districts overlay: both parties, one party, or full split view */
+export type HouseDistrictPartyMode = "both" | "red" | "blue";
+
 export default function LeafletMap({
   sidebarOffsetPx = 0,
   hideInsets = false,
@@ -358,7 +376,10 @@ export default function LeafletMap({
   selectedAgeGroupId = null,
   selectedRaceCensusId = "all",
   selectedSexId = null,
-  politicalCategory = "",
+  politicalLayerIds = [],
+  houseDistrictPartyMode = "both",
+  healthMetricId = null,
+  showSplcHateMap = false,
 }: {
   sidebarOffsetPx?: number;
   hideInsets?: boolean;
@@ -398,12 +419,23 @@ export default function LeafletMap({
   selectedRaceCensusId?: string;
   /** When set, choropleth shows male/female % (separate subcategory from race) */
   selectedSexId?: string | null;
-  /** Sidebar "Political" topic; e.g. "senators" shows U.S. Senate pins */
-  politicalCategory?: string;
+  /** Sidebar Political checkboxes; e.g. includes "senators" for U.S. Senate pins */
+  politicalLayerIds?: string[];
+  houseDistrictPartyMode?: HouseDistrictPartyMode;
+  /** CDC PLACES county health layer id from sidebar */
+  healthMetricId?: string | null;
+  /** SPLC Hate Map-derived group counts by state GEOID (/data/splc/by-state-geoid.json) */
+  showSplcHateMap?: boolean;
 }) {
   const politicalDistrictsActive =
-    politicalCategory === "red-district" || politicalCategory === "blue-district";
-  const choroplethVisible = showChoropleth && !politicalDistrictsActive;
+    politicalLayerIds.includes("red-blue-district") ||
+    politicalLayerIds.includes("electoral-college") ||
+    politicalLayerIds.includes("gerrymandering");
+  const choroplethVisible =
+    (showChoropleth ||
+      Boolean(healthMetricId) ||
+      showSplcHateMap) &&
+    !politicalDistrictsActive;
 
   const mapRef = useRef<LeafletMapType | null>(null);
   const choroplethLayerRef = useRef<L.GeoJSON | null>(null);
@@ -442,6 +474,12 @@ export default function LeafletMap({
     Record<string, number> | null
   >(null);
   const [raceAgeValueByGeoid, setRaceAgeValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [healthValueByGeoid, setHealthValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [splcByStateGeoid, setSplcByStateGeoid] = useState<
     Record<string, number> | null
   >(null);
   const [mapReady, setMapReady] = useState(false);
@@ -753,6 +791,73 @@ export default function LeafletMap({
     };
   }, [choroplethMetric, selectedAgeGroupId, raceDataPrefix]);
 
+  /** CDC PLACES county values for selected health metric */
+  useEffect(() => {
+    if (!healthMetricId) {
+      setHealthValueByGeoid(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/data/health/${healthMetricId}.json`);
+        if (!res.ok) {
+          if (!cancelled) setHealthValueByGeoid(null);
+          return;
+        }
+        const json = (await res.json()) as Record<string, number>;
+        if (cancelled) return;
+        const cleaned: Record<string, number> = {};
+        for (const [geoid, v] of Object.entries(json)) {
+          if (typeof v === "number" && !Number.isNaN(v)) {
+            cleaned[String(geoid).padStart(5, "0")] = v;
+          }
+        }
+        setHealthValueByGeoid(cleaned);
+      } catch (e) {
+        console.error("Health PLACES data load failed:", e);
+        if (!cancelled) setHealthValueByGeoid(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [healthMetricId]);
+
+  /** SPLC Hate Map: group totals by state GEOID */
+  useEffect(() => {
+    if (!showSplcHateMap) {
+      setSplcByStateGeoid(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/data/splc/by-state-geoid.json");
+        if (!res.ok) {
+          if (!cancelled) setSplcByStateGeoid(null);
+          return;
+        }
+        const json = (await res.json()) as {
+          byStateGeoid?: Record<string, number>;
+        };
+        const raw = json.byStateGeoid ?? {};
+        const cleaned: Record<string, number> = {};
+        for (const [k, v] of Object.entries(raw)) {
+          if (typeof v === "number" && !Number.isNaN(v))
+            cleaned[String(k).padStart(2, "0")] = v;
+        }
+        if (!cancelled) setSplcByStateGeoid(cleaned);
+      } catch (e) {
+        console.error("SPLC data load failed:", e);
+        if (!cancelled) setSplcByStateGeoid(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showSplcHateMap]);
+
   /** Load choropleth polygons (counties topojson -> GeoJSON) */
   useEffect(() => {
     let cancelled = false;
@@ -836,7 +941,51 @@ export default function LeafletMap({
     return { contig48: contiguous, alaska: ak, hawaii: hi };
   }, [statesFC]);
 
+  const statesNormalizedGeo = useMemo(() => {
+    if (!statesFC?.features?.length) return null;
+    return {
+      type: "FeatureCollection" as const,
+      features: statesFC.features.map((feature, index) => {
+        const idRaw =
+          (feature as { id?: unknown }).id ??
+          (feature.properties as Record<string, unknown> | undefined)?.GEOID ??
+          index;
+        const geoid = String(idRaw).padStart(2, "0");
+        const props = { ...(feature.properties ?? {}) } as Record<string, unknown>;
+        const name = String(props.NAME ?? props.name ?? `State ${geoid}`);
+        return {
+          ...feature,
+          properties: {
+            ...props,
+            GEOID: geoid,
+            NAME: name,
+          },
+        };
+      }),
+    };
+  }, [statesFC]);
+
+  const choroplethFeatureCollection = useMemo(() => {
+    if (showSplcHateMap) return statesNormalizedGeo;
+    return choroplethGeo;
+  }, [showSplcHateMap, statesNormalizedGeo, choroplethGeo]);
+
   const metricByGeoId = useMemo(() => {
+    if (showSplcHateMap) {
+      if (splcByStateGeoid && Object.keys(splcByStateGeoid).length > 0) {
+        return splcByStateGeoid;
+      }
+      return {};
+    }
+    if (healthMetricId) {
+      if (
+        healthValueByGeoid &&
+        Object.keys(healthValueByGeoid).length > 0
+      ) {
+        return healthValueByGeoid;
+      }
+      return {};
+    }
     // When an age group is selected, use race+age or age-only data if loaded
     if (selectedAgeGroupId && raceAgeValueByGeoid && Object.keys(raceAgeValueByGeoid).length > 0) {
       return raceAgeValueByGeoid;
@@ -873,44 +1022,57 @@ export default function LeafletMap({
     selectedSexId,
     raceDataPrefix,
     raceAgeValueByGeoid,
+    healthMetricId,
+    healthValueByGeoid,
+    showSplcHateMap,
+    splcByStateGeoid,
   ]);
 
   const choroplethValueByGeoid = useMemo(() => {
     return new Map(Object.entries(metricByGeoId));
   }, [metricByGeoId]);
 
+  const activeChoroplethColors = useMemo(() => {
+    if (showSplcHateMap) return [...HEALTH_CHOROPLETH_COLORS_NEGATIVE];
+    if (healthMetricId) return getHealthChoroplethColors(healthMetricId);
+    return CHOROPLETH_COLORS;
+  }, [healthMetricId, showSplcHateMap]);
+
   const choroplethBreaks = useMemo(() => {
     const values = Array.from(choroplethValueByGeoid.values()).sort(
       (a, b) => a - b
     );
     if (!values.length) return [];
-    const bins = CHOROPLETH_COLORS.length;
+    const bins = activeChoroplethColors.length;
     const breaks: number[] = [];
     for (let i = 1; i <= bins; i++) {
       const idx = Math.min(values.length - 1, Math.floor((i / bins) * values.length) - 1);
       breaks.push(values[Math.max(0, idx)]);
     }
     return breaks;
-  }, [choroplethValueByGeoid]);
+  }, [choroplethValueByGeoid, activeChoroplethColors]);
 
   const getChoroplethColor = useCallback(
     (value: number) => {
       for (let i = 0; i < choroplethBreaks.length; i++) {
-        if (value <= choroplethBreaks[i]) return CHOROPLETH_COLORS[i];
+        if (value <= choroplethBreaks[i]) return activeChoroplethColors[i];
       }
-      return CHOROPLETH_COLORS[CHOROPLETH_COLORS.length - 1];
+      return activeChoroplethColors[activeChoroplethColors.length - 1];
     },
-    [choroplethBreaks]
+    [choroplethBreaks, activeChoroplethColors]
   );
 
   const formatMetricValue = useCallback(
     (value: number | undefined) => {
       if (value == null || Number.isNaN(value)) return "N/A";
+      if (showSplcHateMap)
+        return `${Math.round(value)} group${Math.round(value) === 1 ? "" : "s"}`;
+      if (healthMetricId) return `${value.toFixed(1)}%`;
       const unit = CHOROPLETH_METRICS[choroplethMetric].unit;
       if (unit === "%") return `${value.toFixed(1)}%`;
       return `${value.toFixed(1)} yrs`;
     },
-    [choroplethMetric]
+    [choroplethMetric, healthMetricId, showSplcHateMap]
   );
 
   const choroplethStyle = useCallback(
@@ -930,21 +1092,40 @@ export default function LeafletMap({
 
   const choroplethLegendItems = useMemo(() => {
     if (!choroplethBreaks.length) return [];
+    const fmt = showSplcHateMap
+      ? (n: number) => String(Math.round(n))
+      : (n: number) => n.toFixed(1);
     const items: Array<{ color: string; label: string }> = [];
     for (let i = 0; i < choroplethBreaks.length; i++) {
       const lower = i === 0 ? 0 : choroplethBreaks[i - 1];
       const upper = choroplethBreaks[i];
       const label =
         i === 0
-          ? `≤ ${upper.toFixed(1)}`
-          : `${lower.toFixed(1)}–${upper.toFixed(1)}`;
-      items.push({ color: CHOROPLETH_COLORS[i], label });
+          ? `≤ ${fmt(upper)}`
+          : `${fmt(lower)}–${fmt(upper)}`;
+      items.push({ color: activeChoroplethColors[i], label });
     }
     return items;
-  }, [choroplethBreaks]);
+  }, [choroplethBreaks, activeChoroplethColors, showSplcHateMap]);
 
   /** National-level summary for the current choropleth metric (for popup above legend) */
   const nationalSummary = useMemo(() => {
+    if (showSplcHateMap) {
+      const values = Array.from(choroplethValueByGeoid.values()).filter(
+        (v) => typeof v === "number" && !Number.isNaN(v)
+      );
+      if (values.length === 0) return null;
+      const total = values.reduce((a, b) => a + b, 0);
+      return { splcTotal: total, isSplc: true as const };
+    }
+    if (healthMetricId) {
+      const values = Array.from(choroplethValueByGeoid.values()).filter(
+        (v) => typeof v === "number" && !Number.isNaN(v)
+      );
+      if (values.length === 0) return null;
+      const avg = values.reduce((a, b) => a + b, 0) / values.length;
+      return { pct: avg, isPercent: true, isHealth: true as const };
+    }
     const metricKey: ChoroplethMetricKey =
       selectedSexId === "male"
         ? "pct_male"
@@ -972,6 +1153,8 @@ export default function LeafletMap({
     choroplethMetric,
     selectedSexId,
     choroplethValueByGeoid,
+    healthMetricId,
+    showSplcHateMap,
   ]);
 
   /** Track when the user moves/zooms away from the default launch view */
@@ -1054,14 +1237,18 @@ export default function LeafletMap({
       const isAgeOnly =
         selectedRaceCensusId === "all" && selectedAgeGroupId != null;
       const isSexView = selectedSexId != null;
-      const metricLabel = isAgeOnly
-        ? `Percent population aged ${
-            CENSUS_AGE_GROUPS.find((a) => a.id === selectedAgeGroupId)?.label ??
-            selectedAgeGroupId.replace("_", "–")
-          }`
-        : isSexView
-          ? CHOROPLETH_METRICS[selectedSexId === "male" ? "pct_male" : "pct_female"].label
-          : CHOROPLETH_METRICS[choroplethMetric].label;
+      const metricLabel = showSplcHateMap
+        ? SPLC_HATE_MAP_LABEL
+        : healthMetricId
+          ? getHealthLayerMeta(healthMetricId).label
+          : isAgeOnly
+            ? `Percent population aged ${
+                CENSUS_AGE_GROUPS.find((a) => a.id === selectedAgeGroupId)?.label ??
+                selectedAgeGroupId.replace("_", "–")
+              }`
+            : isSexView
+              ? CHOROPLETH_METRICS[selectedSexId === "male" ? "pct_male" : "pct_female"].label
+              : CHOROPLETH_METRICS[choroplethMetric].label;
       const tooltipHtml = `<div class="text-xs font-semibold">${name}</div><div class="text-xs">${metricLabel}: ${formatMetricValue(
         value
       )}</div>`;
@@ -1078,6 +1265,8 @@ export default function LeafletMap({
       selectedRaceCensusId,
       selectedAgeGroupId,
       selectedSexId,
+      healthMetricId,
+      showSplcHateMap,
     ]
   );
 
@@ -1116,10 +1305,10 @@ export default function LeafletMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapReady || !choroplethGeo) return;
+    if (!map || !mapReady || !choroplethFeatureCollection) return;
 
     if (!choroplethLayerRef.current) {
-      choroplethLayerRef.current = L.geoJSON(choroplethGeo, {
+      choroplethLayerRef.current = L.geoJSON(choroplethFeatureCollection, {
         style: choroplethStyle,
         onEachFeature: onEachChoroplethFeature,
       });
@@ -1127,7 +1316,7 @@ export default function LeafletMap({
       choroplethLayerRef.current.options.style = choroplethStyle;
       choroplethLayerRef.current.options.onEachFeature = onEachChoroplethFeature;
       choroplethLayerRef.current.clearLayers();
-      choroplethLayerRef.current.addData(choroplethGeo as any);
+      choroplethLayerRef.current.addData(choroplethFeatureCollection as any);
     }
 
     if (choroplethVisible) {
@@ -1139,7 +1328,7 @@ export default function LeafletMap({
     }
   }, [
     mapReady,
-    choroplethGeo,
+    choroplethFeatureCollection,
     choroplethVisible,
     choroplethStyle,
     onEachChoroplethFeature,
@@ -1180,21 +1369,31 @@ export default function LeafletMap({
     const isAgeOnly =
       selectedRaceCensusId === "all" && selectedAgeGroupId != null;
     const isSexView = selectedSexId != null;
-    const metricLabel = isAgeOnly
-      ? `Percent population aged ${
-          CENSUS_AGE_GROUPS.find((a) => a.id === selectedAgeGroupId)?.label ??
-          selectedAgeGroupId.replace("_", "–")
-        }`
-      : isSexView
-        ? CHOROPLETH_METRICS[selectedSexId === "male" ? "pct_male" : "pct_female"].label
-        : CHOROPLETH_METRICS[choroplethMetric].label;
-    const unit = isSexView
-      ? "%"
-      : CHOROPLETH_METRICS[choroplethMetric].unit;
-    const barStops = CHOROPLETH_COLORS.map(
-      (color, index) =>
-        `${color} ${(index / (CHOROPLETH_COLORS.length - 1)) * 100}%`
-    ).join(", ");
+    const metricLabel = showSplcHateMap
+      ? SPLC_HATE_MAP_LABEL
+      : healthMetricId
+        ? getHealthLayerMeta(healthMetricId).label
+        : isAgeOnly
+          ? `Percent population aged ${
+              CENSUS_AGE_GROUPS.find((a) => a.id === selectedAgeGroupId)?.label ??
+              selectedAgeGroupId.replace("_", "–")
+            }`
+          : isSexView
+            ? CHOROPLETH_METRICS[selectedSexId === "male" ? "pct_male" : "pct_female"].label
+            : CHOROPLETH_METRICS[choroplethMetric].label;
+    const unit = showSplcHateMap
+      ? ""
+      : healthMetricId
+        ? "%"
+        : isSexView
+          ? "%"
+          : CHOROPLETH_METRICS[choroplethMetric].unit;
+    const barStops = activeChoroplethColors
+      .map(
+        (color, index) =>
+          `${color} ${(index / (activeChoroplethColors.length - 1)) * 100}%`
+      )
+      .join(", ");
     const tickLabels = choroplethLegendItems
       .map(
         (item) =>
@@ -1207,6 +1406,16 @@ export default function LeafletMap({
     const nationalPopupHtml =
       nationalSummary == null
         ? ""
+        : "isSplc" in nationalSummary && nationalSummary.isSplc && nationalSummary.splcTotal != null
+          ? `<div class="rounded border border-white/20 bg-black/40 px-2.5 py-1.5 mb-2 text-[10px] leading-tight" style="margin-bottom:8px;">
+               <div style="font-weight:600;opacity:0.95;">Total group listings (all states): ${nationalSummary.splcTotal}</div>
+               <div style="opacity:0.75;">${SPLC_HATE_MAP_SOURCE_CREDIT}</div>
+             </div>`
+        : "isHealth" in nationalSummary && nationalSummary.isHealth && nationalSummary.pct != null
+          ? `<div class="rounded border border-white/20 bg-black/40 px-2.5 py-1.5 mb-2 text-[10px] leading-tight" style="margin-bottom:8px;">
+               <div style="font-weight:600;opacity:0.95;">Mean of county estimates: ${nationalSummary.pct.toFixed(1)}%</div>
+               <div style="opacity:0.75;">${HEALTH_PLACES_SOURCE}</div>
+             </div>`
         : nationalSummary.isPercent && nationalSummary.pct != null && nationalSummary.count != null
           ? `<div class="rounded border border-white/20 bg-black/40 px-2.5 py-1.5 mb-2 text-[10px] leading-tight" style="margin-bottom:8px;">
                <div style="font-weight:600;opacity:0.95;">${nationalSummary.pct.toFixed(1)}% of US population</div>
@@ -1220,7 +1429,13 @@ export default function LeafletMap({
 
     el.innerHTML = `
       ${nationalPopupHtml}
-      <div style="font-weight:600;font-size:11px;margin-bottom:4px;opacity:0.9;">Total population</div>
+      <div style="font-weight:600;font-size:11px;margin-bottom:4px;opacity:0.9;">${
+        showSplcHateMap
+          ? "State aggregates (tabular import)"
+          : healthMetricId
+            ? "County model-based rate"
+            : "Total population"
+      }</div>
       <div style="font-weight:600;margin-bottom:6px;">${metricLabel}</div>
       <div style="height:8px;border-radius:6px;background:linear-gradient(90deg, ${barStops});"></div>
       <div style="display:flex;justify-content:space-between;gap:6px;margin-top:4px;">${tickLabels}</div>
@@ -1233,6 +1448,9 @@ export default function LeafletMap({
     selectedAgeGroupId,
     selectedSexId,
     nationalSummary,
+    healthMetricId,
+    activeChoroplethColors,
+    showSplcHateMap,
   ]);
 
   /** base map threshold for zoom/clickl */
@@ -1373,16 +1591,27 @@ export default function LeafletMap({
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors"
-          noWrap={true}
-          bounds={[[-85.05, -180], [85.05, 180]]}
+          noWrap={false}
+          maxZoom={19}
         />
 
-        {politicalCategory === "red-district" && (
-          <CongressionalDistrictsLayer mode="red-district" />
+        {politicalLayerIds.includes("electoral-college") && (
+          <ElectoralCollegeStatesLayer />
         )}
-        {politicalCategory === "blue-district" && (
-          <CongressionalDistrictsLayer mode="blue-district" />
+
+        {/* Full U.S. House district mesh — under party overlay when both on */}
+        {politicalLayerIds.includes("gerrymandering") && (
+          <CongressionalDistrictsLayer mode="gerry-outline" />
         )}
+
+        {politicalLayerIds.includes("red-blue-district") &&
+          (houseDistrictPartyMode === "both" ? (
+            <CongressionalDistrictsLayer mode="party-split" />
+          ) : houseDistrictPartyMode === "red" ? (
+            <CongressionalDistrictsLayer mode="red-district" />
+          ) : (
+            <CongressionalDistrictsLayer mode="blue-district" />
+          ))}
 
         {contig48 && (
           <GeoJSON data={contig48 as any} style={outlineStyle} onEachFeature={onEachState} />
@@ -1427,9 +1656,9 @@ export default function LeafletMap({
           />
         )}
 
-        {/* Air quality – county choropleth heatmap */}
+        {/* Air quality – fetches only for the state selected */}
         {showAirQuality && (
-          <AirQualityHeatmap selectedStateCode={clickedStateCode} />
+          <AirQualityMarkers />
         )}
 
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
@@ -1445,9 +1674,18 @@ export default function LeafletMap({
         {/* Data centers – shown when Data Centers is selected in sidebar */}
         {showDataCenters && <DataCenterMarkers />}
 
-        {politicalCategory === "senators" && <SenatorMarkers />}
-        {politicalCategory === "president" && <PresidentMarker />}
-        {politicalCategory === "house" && <HouseMarkers />}
+        {politicalLayerIds.includes("senators") && <SenatorMarkers />}
+        {politicalLayerIds.includes("governors") && <GovernorMarkers />}
+        {(politicalLayerIds.includes("president") ||
+          politicalLayerIds.includes("vice-president")) && (
+          <PresidentMarker
+            showPresident={politicalLayerIds.includes("president")}
+            showVicePresident={politicalLayerIds.includes("vice-president")}
+          />
+        )}
+        {politicalLayerIds.includes("house") && <HouseMarkers />}
+        {politicalLayerIds.includes("supreme-court") && <SupremeCourtMarkers />}
+        {politicalLayerIds.includes("gerrymandering") && <GerrymanderingMarkers />}
 
         {/* TESTING - Case by case police killings */}
         <PoliceKillings
