@@ -1,6 +1,7 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 // Green marker icon to distinguish GHG emissions facilities from other markers 
 const GHG_EMISSIONS_ICON = L.divIcon({
@@ -62,29 +63,30 @@ const GhgEmissionsMarkers = ({ selectedStateCode }: GhgEmissionsMarkersProps) =>
     setFacilities([]);
     setLoading(true);
 
-    const url = `http://localhost:8000/api/v1/environment/ghgEmissions?stateCode=${encodeURIComponent(
-      selectedStateCode,
-    )}`;
+    let cancelled = false;
+    const path = `/api/v1/environment/ghgEmissions?stateCode=${encodeURIComponent(selectedStateCode)}`;
 
-    fetch(url, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
+    cachedApiGet<{ ghgEmissions?: GhgEmissionFacility[] }>(
+      `environment:ghgEmissions:${selectedStateCode}`,
+      path,
+      CACHE_TTL.ENVIRONMENT_STATE,
+    )
       .then((data) => {
+        if (cancelled) return;
         const list = data?.ghgEmissions ?? [];
         setFacilities(Array.isArray(list) ? list : []);
       })
       .catch((error) => {
         console.error("[GhgEmissionsMarkers] Fetch error:", error);
-        setFacilities([]);
+        if (!cancelled) setFacilities([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedStateCode]);
 
   // Don't render anything if no state is selected

@@ -1,6 +1,7 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 // marker icon to distinguish oil spills from default blue markers
 const OIL_SPILL_ICON = L.divIcon({
@@ -50,24 +51,25 @@ const OilSpillMarkers = () => {
   const [loadingOilSpillData, setLoadingOilSpillData] = useState<Boolean>(true);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/environment/oilSpills", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
+    let cancelled = false;
+    cachedApiGet<OilSpillIncident[]>(
+      "environment:oilSpills",
+      "/api/v1/environment/oilSpills",
+      CACHE_TTL.ENVIRONMENT_GLOBAL,
+    )
+      .then((data) => {
+        if (!cancelled) setOilSpillData(Array.isArray(data) ? data : []);
       })
-      .then(data => {
-        setOilSpillData(Array.isArray(data) ? data : []);
-      })
-      .catch(error => {
+      .catch((error) => {
         console.error("[OilSpillMarkers] Fetch error:", error);
-        setOilSpillData([]);
+        if (!cancelled) setOilSpillData([]);
       })
-      .finally(() => setLoadingOilSpillData(false));
+      .finally(() => {
+        if (!cancelled) setLoadingOilSpillData(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /* Attach coordinates to each incident and remove invalid ones;

@@ -5,6 +5,7 @@ import {
 } from "react-leaflet";
 
 import { CreateMarker } from "./CreateMarker";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 const provider = new OpenStreetMapProvider();
@@ -35,9 +36,6 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
     const [PDKillingData, setPDKillingData] = useState<Incident[]>([]);
     const [loadingPDKillingData, setLoadingPDKillingData] = useState<boolean>(true);
 
-    let raw = localStorage.getItem("OpenMap-Police-Killing-Data") || "null";
-    let browserData = JSON.parse(raw);
-
     const [startDate, setStartDate] = useState<Date>(new Date("2026-01-01"));
     const [endDate, setEndDate] = useState<Date>(new Date("2026-03-31"));
 
@@ -66,38 +64,24 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
     }, [PoliceKillingQ, PoliceKillingYear]);
 
     useEffect(() => {
-        if(browserData == null) {
-            // https://openmap-backend.onrender.com
-            // http://localhost:8000
-            fetch("http://localhost:8000/api/v1/lawEnforcement/policeVictimCases", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    //"x-api-key": import.meta.env.VITE_API_DEV_KEY || ""
-                    "x-api-key": "ZWFnbGVzIGNhbiBmbHk"                }
+        let cancelled = false;
+        cachedApiGet<Incident[]>(
+            "lawEnforcement:policeVictimCases",
+            "/api/v1/lawEnforcement/policeVictimCases",
+            CACHE_TTL.LAW_ENFORCEMENT,
+        )
+            .then((data) => {
+                if (!cancelled) setPDKillingData(Array.isArray(data) ? data : []);
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
+            .catch((error) => {
+                console.error("[PoliceKillings] Fetch error:", error);
             })
-            .then(data => {
-                //console.log("API Repsonse:", data);
-                setPDKillingData(data);
-                //localStorage.setItem("OpenMap-Police-Killing-Data", JSON.stringify(data));
-                setLoadingPDKillingData(false);
-            })
-            .catch(error => {
-                console.error("Fetch error:", error);
+            .finally(() => {
+                if (!cancelled) setLoadingPDKillingData(false);
             });
-        } else {
-            console.log("API Repsonse:", browserData);
-            setPDKillingData(browserData);
-            //localStorage.setItem("OpenMap-Police-Killing-Data", JSON.stringify(browserData));
-            setLoadingPDKillingData(false);
-        }
-
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     return (!showPoliceKillingData) ? null : <>

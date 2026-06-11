@@ -43,14 +43,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS configuration
+const productionOrigins = [
+  "https://getopenmap.com",
+  "https://www.getopenmap.com",
+];
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (productionOrigins.includes(origin)) return true;
+  // Vite may use 5173, 5174, 5175, … when ports are in use
+  if (/^http:\/\/localhost:\d+$/.test(origin)) return true;
+  if (/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) return true;
+  return false;
+}
+
 const corsOptions = {
-  origin: [
-    "https://getopenmap.com",
-    "https://www.getopenmap.com",
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://localhost:5000",
-  ],
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   // x-api-key MUST be listed here or the browser rejects the preflight
   allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],

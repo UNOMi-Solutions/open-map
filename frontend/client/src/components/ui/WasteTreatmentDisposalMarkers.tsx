@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 /** Green marker icon for waste treatment/disposal sites */
 const WASTE_TREATMENT_ICON = L.divIcon({
@@ -136,29 +137,44 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode }: WasteTreatmentDisp
     }
     setSiteData([]);
     setLoading(true);
-    const url = `http://localhost:8000/api/v1/environment/wasteTreatmentDisposalSites?stateCode=${encodeURIComponent(selectedStateCode)}`;
 
-    fetch(url, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        // Backend uses EPA /facilities and returns a plain array: { id, name, city, county, address, latitude, longitude, facilityType }
+    let cancelled = false;
+    const path = `/api/v1/environment/wasteTreatmentDisposalSites?stateCode=${encodeURIComponent(selectedStateCode)}`;
+
+    cachedApiGet<unknown>(
+      `environment:wasteTreatment:${selectedStateCode}`,
+      path,
+      CACHE_TTL.ENVIRONMENT_STATE,
+    )
+      .then((data) => {
+        if (cancelled) return;
         let rawList: unknown[] = [];
         if (Array.isArray(data)) {
           rawList = data;
-        } else if (data?.features && Array.isArray(data.features)) {
-          rawList = data.features;
-        } else if (data?.sites && Array.isArray(data.sites)) {
-          rawList = data.sites;
-        } else if (data?.facilities && Array.isArray(data.facilities)) {
-          rawList = data.facilities;
-        } else if (data?.data && Array.isArray(data.data)) {
-          rawList = data.data;
+        } else if (
+          data &&
+          typeof data === "object" &&
+          Array.isArray((data as Record<string, unknown>).features)
+        ) {
+          rawList = (data as { features: unknown[] }).features;
+        } else if (
+          data &&
+          typeof data === "object" &&
+          Array.isArray((data as Record<string, unknown>).sites)
+        ) {
+          rawList = (data as { sites: unknown[] }).sites;
+        } else if (
+          data &&
+          typeof data === "object" &&
+          Array.isArray((data as Record<string, unknown>).facilities)
+        ) {
+          rawList = (data as { facilities: unknown[] }).facilities;
+        } else if (
+          data &&
+          typeof data === "object" &&
+          Array.isArray((data as Record<string, unknown>).data)
+        ) {
+          rawList = (data as { data: unknown[] }).data;
         }
 
         const parsed: ParsedFacility[] = [];
@@ -177,11 +193,17 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode }: WasteTreatmentDisp
         });
         setSiteData(parsed);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("[WasteTreatmentDisposalMarkers] Fetch error:", error);
-        setSiteData([]);
+        if (!cancelled) setSiteData([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedStateCode]);
 
   return (

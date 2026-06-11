@@ -7,6 +7,7 @@ import {
 import DonutChart from "./DonutChart";
 
 import { CreateMarker } from "./CreateMarker";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 // All states and their centers
 const states = [
@@ -76,42 +77,24 @@ const HomicideMarkers = ({ arrestCategory, showArrestData } : ArrestMarkersProps
     const [currentCategory, setCurrentCategory] = useState<string>("Arrestee Race");
 
     useEffect(() => {
-        let raw = localStorage.getItem("OpenMap-Arrest-Data") || "null";
-        let browserData = JSON.parse(raw);
-        let currentTimestamp = new Date();
-
-        if(browserData == null || (+currentTimestamp - +browserData.timestamp > 86400000)) {
-            //https://openmap-backend.onrender.com/api/v1/crime/murderByState
-            //"http://localhost:8000/api/v1/crime/murderByState"
-            fetch("https://openmap-backend.onrender.com/api/v1/crime/arrestsByState", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    //"x-api-key": import.meta.env.VITE_API_DEV_KEY || ""
-                    "x-api-key": "ZWFnbGVzIGNhbiBmbHk"                }
+        let cancelled = false;
+        cachedApiGet<Record<string, unknown>>(
+            "crime:arrestsByState",
+            "/api/v1/crime/arrestsByState",
+            CACHE_TTL.CRIME,
+        )
+            .then((data) => {
+                if (!cancelled) setMurderData(data);
             })
-            .then(response => {
-                if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
+            .catch((error) => {
+                console.error("[ArrestMarkers] Fetch error:", error);
             })
-            .then(data => {
-                //console.log("API Repsonse:", data)
-                data.timestamp = new Date();
-                setMurderData(data);
-                localStorage.setItem("OpenMap-Arrest-Data", JSON.stringify(data));
-                setLoadingMurderData(false);
-            })
-            .catch(error => {
-                console.error("Fetch error:", error);
+            .finally(() => {
+                if (!cancelled) setLoadingMurderData(false);
             });
-        } else {
-            //console.log("Browser Repsonse:", browserData)
-            setMurderData(browserData);
-            setLoadingMurderData(false);
-        }
-
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     return <>

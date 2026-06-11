@@ -2,6 +2,7 @@ import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { feature } from "topojson-client";
+import { cachedApiGetBatch, CACHE_TTL } from "@/lib/apiCache";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from "geojson";
 
@@ -151,39 +152,41 @@ const NaturalDisasterIncidentMarkers = ({
 
   // Fetch incidents for all states (nationwide choropleth)
   useEffect(() => {
+    let cancelled = false;
     setIncidentData([]);
     setLoading(true);
 
-    const urls = STATE_ABBREVS.map(
-      (code) =>
-        `http://localhost:8000/api/v1/environment/naturalDisasterIncidents?stateCode=${encodeURIComponent(code)}`,
-    );
+    const requests = STATE_ABBREVS.map((code) => ({
+      cacheKey: `environment:naturalDisasters:${code}`,
+      path: `/api/v1/environment/naturalDisasterIncidents?stateCode=${encodeURIComponent(code)}`,
+    }));
 
-    Promise.all(
-      urls.map((url) =>
-        fetch(url, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        })
-          .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-          .then((data) => {
-            const list = data?.incidents ?? data?.naturalDisasterIncidents ?? data?.data ?? [];
-            const arr = Array.isArray(list) ? list : [];
-            const stateCode = new URL(url).searchParams.get("stateCode") ?? "";
-            return arr.map((inc: NaturalDisasterIncident) => ({ ...inc, _stateCode: stateCode }));
-          })
-          .catch(() => []),
-      ),
-    )
+    cachedApiGetBatch<Record<string, unknown>>(requests, CACHE_TTL.ENVIRONMENT_STATE)
       .then((results) => {
-        const combined = results.flat();
+        if (cancelled) return;
+        const combined = results.flatMap((data, index) => {
+          const stateCode = STATE_ABBREVS[index];
+          const list =
+            data?.incidents ?? data?.naturalDisasterIncidents ?? data?.data ?? [];
+          const arr = Array.isArray(list) ? list : [];
+          return arr.map((inc: NaturalDisasterIncident) => ({
+            ...inc,
+            _stateCode: stateCode,
+          }));
+        });
         setIncidentData(combined);
       })
       .catch((error) => {
         console.error("[NaturalDisasterChoropleth] Fetch error:", error);
-        setIncidentData([]);
+        if (!cancelled) setIncidentData([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const filteredIncidents = useMemo(

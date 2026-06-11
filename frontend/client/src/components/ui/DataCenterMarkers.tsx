@@ -1,6 +1,7 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 // Cyan/blue marker icon to distinguish data centers from other markers
 const DATA_CENTER_ICON = L.divIcon({
@@ -68,24 +69,25 @@ const DataCenterMarkers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/environment/dataCenters", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
+    let cancelled = false;
+    cachedApiGet<{ dataCenters?: DataCenter[] }>(
+      "environment:dataCenters",
+      "/api/v1/environment/dataCenters",
+      CACHE_TTL.ENVIRONMENT_GLOBAL,
+    )
       .then((raw) => {
-        setData(raw?.dataCenters ?? []);
+        if (!cancelled) setData(raw?.dataCenters ?? []);
       })
       .catch((error) => {
         console.error("[DataCenterMarkers] Fetch error:", error);
-        setData([]);
+        if (!cancelled) setData([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Attach coordinates to each data center and remove invalid ones
