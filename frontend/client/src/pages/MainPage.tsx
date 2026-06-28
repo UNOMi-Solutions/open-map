@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignUp from "./sections/SignUp";
 import Login from "./sections/Login";
+import ForgotPassword from "./sections/ForgotPassword";
 import SideBarMenu from "./sections/SideBarMenu";
 import { NavigationMenuSection } from "./sections/NavigationMenuSection";
 import SearchPopup from "./sections/SearchPopup";
@@ -31,6 +32,7 @@ export default function MainPage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
@@ -753,6 +755,15 @@ export default function MainPage() {
         />
       )}
 
+      {/* Forgot Password Modal */}
+      {isForgotPasswordOpen && (
+        <ForgotPassword
+          isOpen={isForgotPasswordOpen}
+          onClose={() => setIsForgotPasswordOpen(false)}
+          onSwitchToSignUp={() => setIsSignUpOpen(true)}
+        />
+      )}
+
       {/* Login Modal */}
       {isLoginOpen && (
         <Login 
@@ -763,6 +774,7 @@ export default function MainPage() {
             setIsLoginOpen(false);
           }}
           onSwitchToSignUp={() => setIsSignUpOpen(true)}
+          onSwitchToForgot={() => setIsForgotPasswordOpen(true)}
         />
       )}
     </>

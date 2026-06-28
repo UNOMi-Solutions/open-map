@@ -6,15 +6,23 @@ interface LoginModalProps {
   onClose: () => void;
   onLogin?: (email: string) => void;
   onSwitchToSignUp?: () => void;
+  onSwitchToForgot?: () => void;
 }
 
-export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp, onSwitchToForgot }: LoginModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isError, setIsError] = useState(false);
 
   const handleLogin = () => {
     console.log('Email:', email, 'Password:', password);
     // Handle login logic here
+    if (password != "test") {
+      setError("incorrect password");
+      setIsError(true);
+      return;
+    }
     if (onLogin && email) {
       onLogin(email);
     }
@@ -37,6 +45,13 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp 
       onSwitchToSignUp();
     }
   };
+
+  const handleForgotPassword = () => {
+    onClose();
+    if (onSwitchToForgot) {
+      onSwitchToForgot();
+    }
+  }
 
   if (!isOpen) return null;
 
@@ -73,6 +88,19 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp 
         <h2 className="text-white text-2xl font-semibold text-center mb-8">
           Login
         </h2>
+
+        {/* Forgot Password Link */}
+        { isError &&
+          <p className="text-center text-red-400 text-sm mb-4">
+          Forgot your password?{' '}
+          <button
+            onClick={handleForgotPassword}
+            className="text-green-400 hover:text-green-300 transition-colors"
+          >
+            Reset here
+          </button>
+        </p>
+        }
 
         {/* Email Input */}
         <div className="mb-4">
