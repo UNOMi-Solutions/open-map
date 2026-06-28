@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, ArrowLeft } from 'lucide-react';
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -132,6 +132,13 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
     }
   };
 
+  const handleBack = () => {
+    setInput('');
+    setIsEmail(true);
+    setIsError(false);
+    setPassword('');
+  }
+
   const handleAppleSignUp = () => {
     console.log('Continue with Apple');
     // Handle Apple sign up logic here
@@ -173,6 +180,18 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
    </div>
       {/* Sign Up Modal */}
       <div className="relative bg-gray-900 rounded-3xl p-8 w-full max-w-md mx-4 shadow-2xl">
+
+        {/* Back Button */}
+        { !isEmail &&
+        <button
+          onClick={handleBack}
+          className="absolute top-4 left-4 text-gray-400 hover:text-white transition-colors"
+        >
+          
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+}
+
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -192,6 +211,7 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
           {error}
         </p>
         }
+
         {/* Email Input */}
         <div className="mb-4">
           <input
