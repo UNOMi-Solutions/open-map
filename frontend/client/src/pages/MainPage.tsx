@@ -743,8 +743,12 @@ export default function MainPage() {
       {/* Sign Up Modal */}
       {isSignUpOpen && (
         <SignUp 
-          isOpen={isSignUpOpen} 
+          isOpen={isSignUpOpen}
           onClose={() => setIsSignUpOpen(false)}
+          onLogin={(email) => {
+            handleUserLogin(email);
+            setIsLoginOpen(false);
+          }}
           onSwitchToLogin={() => setIsLoginOpen(true)}
         />
       )}
