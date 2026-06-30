@@ -7,11 +7,48 @@ interface ForgotPasswordModalProps {
   onSwitchToSignUp?: () => void;
 }
 
+function validateEmailString(currentEmail: string): string {
+  // Email validation rules
+
+  // Must have @
+  // Must have one character before @
+  // Must have at least two characters after @
+
+  if (currentEmail.length == 0) {
+    return "Please input email";
+  }
+
+  const atIndex: number = currentEmail.indexOf("@");
+  console.log("@ index:", atIndex);
+  if (atIndex == -1) {
+    return "Email does not contain @. Please enter valid email";
+  }
+
+  if (atIndex == 0) {
+    return "Email has no local part. Please enter valid email"
+  }
+
+  if (atIndex >= currentEmail.length - 3) {
+    return "Email has no valid domain. Please enter valid email"
+  }
+
+  return '';
+}
+
 export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignUp }: ForgotPasswordModalProps) {
   const [email, setEmail] = useState('');
   const [isEmailCaptured, setIsEmailCaptured] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState('');
 
   const handleRecoveryEmail = () => {
+    const errorString: string = validateEmailString(email);
+    if (errorString != '') {
+      setIsError(true);
+      setError(errorString);
+      return;
+    }
+    setIsError(false);
     console.log('Email:', email);
     setIsEmailCaptured(true);
     // Make sure to send email
@@ -60,6 +97,13 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignUp 
         <h2 className="text-white text-2xl font-semibold text-center mb-8">
           Reset Password
         </h2>
+
+        {/* Error display */}
+        { isError &&
+        <p className="text-center text-red-400 text-sm mb-4">
+          {error}
+        </p>
+        }
         
         {/* Recovery Text */}
         { isEmailCaptured &&
