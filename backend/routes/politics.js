@@ -3,6 +3,10 @@ import { Router } from "express";
 import { offsetCoords, photoUrlFromGovTrackLink } from "../lib/usStateCenters.js";
 
 const router = Router();
+function govTrackIdFromLink(link) {
+  if (!link || typeof link !== "string") return null;
+  return link.trim().match(/\/(\d+)\/?$/)?.[1] ?? null;
+}
 
 router.get("/test", (req, res) => {
   res.json({ response: "Success: Viewing Political Data" });
@@ -40,7 +44,7 @@ router.get("/senators", async (req, res) => {
         const person = role.person ?? {};
         const link = person.link ?? "";
         senators.push({
-          id: `sen-${person.id ?? role.id ?? `${state}-${i}`}`,
+          id: `sen-${person.id ?? role.id ?? govTrackIdFromLink(link) ?? `${state}-${i}`}`,
           name: person.name ?? `${person.firstname ?? ""} ${person.lastname ?? ""}`.trim(),
           state,
           party: role.party ?? "",
@@ -87,7 +91,7 @@ router.get("/representatives", async (req, res) => {
         const state = role.state;
         const [lat, lng] = offsetCoords(state, (role.district ?? 0) % 2);
         return {
-          id: `rep-${person.id ?? role.id}`,
+          id: `rep-${person.id ?? role.id ?? govTrackIdFromLink(link) ?? `${state}-${role.district}`}`,
           name: person.name ?? `${person.firstname ?? ""} ${person.lastname ?? ""}`.trim(),
           state,
           district: role.district,
