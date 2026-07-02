@@ -3,6 +3,58 @@ import { Router } from "express";
 import mongoose from "mongoose";
 
 const router = Router();
+const US_STATE_NAMES = {
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+};
 
 router.get("/test", (req, res) => {
   res.json({ response: "Success: Viewing Health Data" });
@@ -39,22 +91,47 @@ router.get("/uninsuredRateByState", async (req, res) => {
       return res.status(502).json({ error: "Unexpected response from CDC Data API" });
     }
 
-    const states = rows
-      .filter((row) => row.stateabbr)
-      .map((row) => ({
-        state: row.stateabbr,
+const cdcByState = new Map(
+  rows
+    .filter((row) => row.stateabbr)
+    .map((row) => [
+      row.stateabbr,
+      {
         stateName: row.stateName,
         uninsuredPercent: Number(row.uninsuredPercent),
-      }));
+      },
+    ])
+);
 
-    if (states.length === 0) {
-      return res.status(404).json({ error: "No uninsured-rate data returned from CDC" });
-    }
+if (cdcByState.size === 0) {
+  return res.status(404).json({
+    error: "No uninsured-rate data returned from CDC",
+  });
+}
+
+const states = Object.entries(US_STATE_NAMES).map(
+  ([state, fallbackName]) => {
+    const row = cdcByState.get(state);
+
+    return {
+      state,
+      stateName: row?.stateName ?? fallbackName,
+      uninsuredPercent: row?.uninsuredPercent ?? null,
+      dataAvailable: Boolean(row),
+    };
+  }
+);
+
+    const missingStates = states
+      .filter((state) => !state.dataAvailable)
+      .map((state) => state.state);
 
     res.json({
       source: "CDC PLACES — Current lack of health insurance (access2_crudeprev)",
       indicator: "Current lack of health insurance among adults",
       count: states.length,
+      availableCount: states.length - missingStates.length,
+      missingStates,
       states,
     });
   } catch (error) {
