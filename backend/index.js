@@ -90,6 +90,11 @@ app.use(express.json());
 // Request logging
 app.use(requestLogger);
 
+// Public liveness check (Cloud Run / local dev — no API key)
+app.get("/api/v1/health/ping", (req, res) => {
+  res.status(200).json({ ok: true, service: "openmap-backend" });
+});
+
 // Auth routes (register + email verification)
 app.use("/api/v1/auth", authRoutes);
 
@@ -112,7 +117,7 @@ app.post("/api/auth/login", loginLimiter, async (req, res) => {
 app.use("/api/v1/census", auth, censusRoutes);
 app.use("/api/v1/crime", auth, crimeRoutes);
 app.use("/api/v1/economics", auth, economicsRoutes);
-app.use("/api/v1/environment", environmentRoutes);
+app.use("/api/v1/environment", auth, environmentRoutes);
 app.use("/api/v1/health", auth, healthRoutes);
 app.use("/api/v1/lawEnforcement", auth, lawEnforcementRoutes);
 app.use("/api/v1/politics", auth, politicsRoutes);

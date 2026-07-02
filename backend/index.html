@@ -5,258 +5,221 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>OpenMap API Documentation</title>
   <style>
-    :root{
-      --bg:#ffffff; --muted:#6b7280; --accent:#0f172a; --card:#f8fafc;
-      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    }
-    body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:var(--accent); margin:28px; line-height:1.5}
-    header{margin-bottom:18px}
-    h1{font-size:28px; margin:0 0 6px}
-    p.lead{color:var(--muted); margin:0 0 12px}
-    .note{background:var(--card); padding:12px; border-radius:8px; color:#0b1220; margin-bottom:18px; border:1px solid #eef2f7}
+    :root{ --muted:#6b7280; --accent:#0f172a; --card:#f8fafc; --mono: Consolas, Menlo, monospace; }
+    body{font-family:Inter,system-ui,sans-serif;color:var(--accent);margin:28px;line-height:1.5}
+    h1{font-size:28px;margin:0 0 6px}
+    p.lead{color:var(--muted);margin:0 0 12px}
+    .note{background:var(--card);padding:12px;border-radius:8px;margin-bottom:18px;border:1px solid #eef2f7}
     section{margin-bottom:20px}
-    h2{font-size:18px; margin:12px 0}
-    h3{font-size:15px; margin:8px 0}
-    table{width:100%; border-collapse:collapse; margin-top:8px}
-    th,td{padding:8px 10px; border:1px solid #e6eef6; text-align:left; font-size:13px}
-    th{background:#fbfdff; font-weight:600; color:#0b1220}
-    table, th, td {
-  vertical-align: top;
-}
-
-    code{background:#f4f6f8; padding:2px 6px; border-radius:6px; font-family:var(--mono); font-size:13px}
-    pre{background:#0b1220; color:#e6f1ff; padding:10px; border-radius:6px; overflow:auto; font-size:13px}
-    .param{font-weight:600}
-    .small{font-size:13px; color:var(--muted)}
-    footer{margin-top:28px; font-size:13px; color:var(--muted)}
+    h2{font-size:18px;margin:12px 0}
+    h3{font-size:15px;margin:8px 0}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:8px 10px;border:1px solid #e6eef6;text-align:left;font-size:13px;vertical-align:top}
+    th{background:#fbfdff;font-weight:600}
+    code{background:#f4f6f8;padding:2px 6px;border-radius:6px;font-family:var(--mono);font-size:13px}
+    pre{background:#0b1220;color:#e6f1ff;padding:10px;border-radius:6px;overflow:auto;font-size:13px}
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:28px;font-size:13px;color:var(--muted)}
   </style>
 </head>
 <body>
 
 <header>
   <h1>OpenMap API Documentation</h1>
-  <p class="lead">API for gathering necessary data for OpenMap website development.</p>
+  <p class="lead">REST API for OpenMap data layers — crime, census, health, economics, environment, politics, and social data.</p>
 </header>
 
-<!-- <section class="note">
-  <p><strong>Placeholders</strong>—replace values wrapped in <code>{{double-braces}}</code> before publishing:</p>
-  <ul>
-    <li><code>{{API_TITLE}}</code> — API display title.</li>
-    <li><code>{{SHORT_DESCRIPTION}}</code> — one-line description of the API.</li>
-    <li><code>{{BASE_URL}}</code> — public base URL where the API is mounted (e.g. <code>https://api.example.com</code>).</li>
-    <li><code>x-api-key</code> — header name used for auth (e.g. <code>x-api-key</code>).</li>
-    <li><code>{{AUTH_HEADER_EXAMPLE}}</code> — example value for the auth header.</li>
-    <li><code>{{CONTACT_EMAIL}}</code> — support / contact email.</li>
-    <li><code>{{CURRENT_YEAR}}</code> — current year default shown in examples.</li>
-  </ul>
-</section> -->
+<section class="note">
+  <p><strong>Base URL:</strong> <code>https://api.getopenmap.com/api/v1/{category}</code> (local: <code>http://localhost:8080/api/v1/{category}</code>)</p>
+  <p><strong>Authentication:</strong> Send header <code>x-api-key: &lt;API_DEV_KEY&gt;</code> on all data routes except <code>GET /api/v1/health/ping</code>.</p>
+  <p><strong>Env keys:</strong> Copy <code>backend/.env.example</code> → <code>backend/.env</code> and replace placeholder values. Frontend needs matching <code>VITE_API_DEV_KEY</code> in <code>frontend/.env</code>.</p>
+</section>
 
 <section>
-  <h2>Global / Usage</h2>
-  <p class="small">
-    <strong>Base URL (mounted prefix):</strong> <code>https://openmap-backend.onrender.com/api/v1/{category}</code><br />
-    <strong>Authentication:</strong> Send the API key using header <code>x-api-key</code> with each request. Example header:
-  </p>
-  <pre>Authorization Header
-x-api-key: [key]</pre>
+  <h2>Setup &amp; diagnostics</h2>
+  <article>
+    <h3>GET /api/v1/health/ping</h3>
+    <p class="small">Public liveness check. No API key. Returns <code>{ "ok": true, "service": "openmap-backend" }</code>.</p>
+  </article>
+  <article>
+    <h3>GET /api/v1/health/status</h3>
+    <p class="small">Shows DB connection and which env vars are configured (boolean only). Requires <code>x-api-key</code>.</p>
+  </article>
+</section>
 
-  <p class="small">All responses are JSON unless otherwise noted. Endpoints that accept an optional <code>year</code> parameter default to current year when omitted. Time and date formats follow ISO-8601 where applicable.</p>
+<hr/>
+
+<section>
+  <h2>/api/v1/census</h2>
+  <p class="small">Requires <code>CENSUS_API_KEY</code> — <a href="https://api.census.gov/data/key_signup.html">Census API signup</a></p>
+  <article>
+    <h3>GET /populationByState</h3>
+    <p class="small">State population estimates from U.S. Census Bureau PEP API.</p>
+    <table>
+      <tr><th>Parameter</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>year</code></td><td>No</td><td>Data vintage year (default <code>2023</code>)</td></tr>
+    </table>
+    <p class="small"><strong>Response:</strong> <code>{ source, year, count, states: [{ name, population, stateFips, stateCode }] }</code></p>
+  </article>
+</section>
+
+<hr/>
+
+<section>
+  <h2>/api/v1/economics</h2>
+  <p class="small">Requires <code>BEA_API_KEY</code> — <a href="https://apps.bea.gov/API/signup/">BEA API signup</a></p>
+  <article>
+    <h3>GET /gdpByState</h3>
+    <p class="small">State GDP (millions USD) from Bureau of Economic Analysis Regional accounts.</p>
+    <table>
+      <tr><th>Parameter</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>year</code></td><td>No</td><td>Four-digit year (default <code>2022</code>)</td></tr>
+    </table>
+    <p class="small"><strong>Response:</strong> <code>{ source, year, count, states: [{ geoFips, geoName, gdpMillions, unit }] }</code></p>
+  </article>
+</section>
+
+<hr/>
+
+<section>
+  <h2>/api/v1/health</h2>
+  <p class="small"><code>HEALTHDATA_API_KEY</code> is optional (CDC Socrata app token for higher rate limits).</p>
+  <article>
+    <h3>GET /uninsuredRateByState</h3>
+    <p class="small">Adult uninsured rate by state from CDC PLACES (<code>access2_crudeprev</code>).</p>
+    <p class="small"><strong>Response:</strong> <code>{ source, indicator, count, states: [{ state, stateName, uninsuredPercent }] }</code></p>
+  </article>
+</section>
+
+<hr/>
+
+<section>
+  <h2>/api/v1/politics</h2>
+  <p class="small">No external API key — data from GovTrack public API.</p>
+  <article>
+    <h3>GET /senators</h3>
+    <p class="small">Current U.S. senators with map coordinates for pin placement.</p>
+    <p class="small"><strong>Response:</strong> <code>{ source, fetchedAt, count, senators: [{ id, name, state, party, lat, lng, photoUrl, ... }] }</code></p>
+  </article>
+  <article>
+    <h3>GET /representatives</h3>
+    <p class="small">Current U.S. House representatives (50 states, voting districts).</p>
+    <p class="small"><strong>Response:</strong> <code>{ source, fetchedAt, count, representatives: [{ id, name, state, district, party, lat, lng, ... }] }</code></p>
+  </article>
+</section>
+
+<hr/>
+
+<section>
+  <h2>/api/v1/social</h2>
+  <p class="small">No external API key — reference data served from the backend.</p>
+  <article>
+    <h3>GET /ageOfConsentByState</h3>
+    <p class="small">Age of consent by state with map coordinates.</p>
+    <p class="small"><strong>Response:</strong> <code>{ source, count, states: [{ state, ageOfConsent, latitude, longitude }] }</code></p>
+  </article>
 </section>
 
 <hr/>
 
 <section>
   <h2>/api/v1/crime</h2>
-
+  <p class="small">Requires <code>FBI_CRIME_KEY</code></p>
   <article>
     <h3>GET /murderByState</h3>
-    <p class="small"><strong>Purpose:</strong> Return state-level murder totals and related FBI SHR data for a specified year.</p>
-
-    <table>
-      <thead>
-        <tr><th>Query Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="param"><code>year</code></td>
-          <td>string / integer</td>
-          <td>No</td>
-          <td>Four-digit year. Defaults to current year if omitted.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p class="small"><strong>Response:</strong> JSON array of objects — one per state. Each object is the raw payload returned from the FBI SHR endpoint augmented with a <code>state</code> field containing the two-letter state code.</p>
-
-    <p class="small"><strong>Notes:</strong> Requires an environment variable <code>FBI_CRIME_KEY</code> configured on the server. The shape of the FBI payload may change — consumers should rely on documented fields where possible.</p>
+    <p class="small">FBI SHR murder totals by state. Optional <code>year</code> query param.</p>
   </article>
-
   <article>
     <h3>GET /arrestsByState</h3>
-    <p class="small"><strong>Purpose:</strong> Return state-level arrest totals from the FBI arrest API for a chosen offense code and year.</p>
-
-    <table>
-      <thead>
-        <tr><th>Query Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="param"><code>year</code></td>
-          <td>string / integer</td>
-          <td>No</td>
-          <td>Four-digit year. Defaults to current year.</td>
-        </tr>
-        <tr>
-          <td class="param"><code>offenseCode</code></td>
-          <td>string</td>
-          <td>No</td>
-          <td>Offense code (e.g. <code>11</code> for murder). If omitted or invalid, defaults to <code>all</code>. See offense code mapping below.
-          
-          <table>
-  <thead>
-    <tr>
-      <th>Code</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td>all</td><td>all</td></tr>
-    <tr><td>310</td><td>All Other Offenses (Except Traffic)</td></tr>
-    <tr><td>110</td><td>Arson</td></tr>
-    <tr><td>60</td><td>Burglary</td></tr>
-    <tr><td>330</td><td>Curfew and Loitering Law Violations</td></tr>
-    <tr><td>290</td><td>Disorderly Conduct</td></tr>
-    <tr><td>260</td><td>Driving Under the Influence</td></tr>
-    <tr><td>150</td><td>Drug Abuse Violations</td></tr>
-    <tr><td>158</td><td>Drug Possession - Marijuana</td></tr>
-    <tr><td>157</td><td>Drug Possession - Opium or Cocaine or Their Derivatives</td></tr>
-    <tr><td>160</td><td>Drug Possession - Other - Dangerous Nonnarcotic Drugs</td></tr>
-    <tr><td>159</td><td>Drug Possession - Synthetic Narcotics</td></tr>
-    <tr><td>153</td><td>Drug Sale/Manufacturing - Marijuana</td></tr>
-    <tr><td>152</td><td>Drug Sale/Manufacturing - Opium or Cocaine or Their Derivatives</td></tr>
-    <tr><td>155</td><td>Drug Sale/Manufacturing - Other - Dangerous Nonnarcotic Drugs</td></tr>
-    <tr><td>154</td><td>Drug Sale/Manufacturing - Synthetic Narcotics</td></tr>
-    <tr><td>280</td><td>Drunkenness</td></tr>
-    <tr><td>200</td><td>Embezzlement</td></tr>
-    <tr><td>180</td><td>Forgery and Counterfeiting</td></tr>
-    <tr><td>190</td><td>Fraud</td></tr>
-    <tr><td>173</td><td>Gambling - All Other Gambling</td></tr>
-    <tr><td>171</td><td>Gambling - Bookmaking (Horse and Sport Book)</td></tr>
-    <tr><td>172</td><td>Gambling - Numbers and Lottery</td></tr>
-    <tr><td>170</td><td>Gambling</td></tr>
-    <tr><td>70</td><td>Larceny - Theft</td></tr>
-    <tr><td>270</td><td>Liquor Law Violations</td></tr>
-    <tr><td>12</td><td>Manslaughter by Negligence</td></tr>
-    <tr><td>90</td><td>Motor Vehicle Theft</td></tr>
-    <tr><td>11</td><td>Murder and Nonnegligent Homicide</td></tr>
-    <tr><td>250</td><td>Offenses Against the Family and Children</td></tr>
-    <tr><td>140</td><td>Prostitution and Commercialized Vice</td></tr>
-    <tr><td>142</td><td>Prostitution and Commercialized Vice - Assisting or Promoting Prostitution</td></tr>
-    <tr><td>141</td><td>Prostitution and Commercialized Vice - Prostitution</td></tr>
-    <tr><td>143</td><td>Prostitution and Commercialized Vice - Purchasing Prostitution</td></tr>
-    <tr><td>23</td><td>Rape</td></tr>
-    <tr><td>30</td><td>Robbery</td></tr>
-    <tr><td>240</td><td>Sex Offenses (Except Rape, and Prostitution and Commercialized Vice)</td></tr>
-    <tr><td>55</td><td>Simple Assault</td></tr>
-    <tr><td>210</td><td>Stolen Property: Buying, Receiving, Possessing</td></tr>
-    <tr><td>300</td><td>Vagrancy</td></tr>
-    <tr><td>220</td><td>Vandalism</td></tr>
-    <tr><td>230</td><td>Weapons: Carrying, Possessing, Etc.</td></tr>
-  </tbody>
-</table>
-
-          
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p class="small"><strong>Response:</strong> JSON array of objects — one per state. Each object contains the raw FBI arrest data augmented with a <code>state</code> field.</p>
-
-    <p class="small"><strong>Notes:</strong> Consumers should validate <code>offenseCode</code> against the supported codes list before presenting to end users.</p>
+    <p class="small">FBI arrest totals by state. Optional <code>year</code>, <code>offenseCode</code>.</p>
   </article>
+  <article>
+    <h3>GET /missingPersons</h3>
+    <p class="small">FBI missing persons CSV with county location data. No external key.</p>
+  </article>
+</section>
+
+<hr/>
+
+<section>
+  <h2>/api/v1/environment</h2>
+  <table>
+    <tr><th>Endpoint</th><th>Key required</th></tr>
+    <tr><td><code>GET /airQuality</code></td><td><code>AQICN_API_TOKEN</code></td></tr>
+    <tr><td><code>GET /ghgEmissions</code></td><td>None (EPA public data)</td></tr>
+    <tr><td><code>GET /wasteTreatmentDisposalSites</code></td><td>None</td></tr>
+    <tr><td><code>GET /coalmines</code></td><td><code>EIA_API_KEY</code></td></tr>
+    <tr><td><code>GET /oilSpills</code></td><td>None (NOAA CSV)</td></tr>
+    <tr><td><code>GET /naturalDisasterIncidents</code></td><td>None (FEMA OpenFEMA)</td></tr>
+    <tr><td><code>GET /dataCenters</code></td><td>None (local CSV)</td></tr>
+  </table>
 </section>
 
 <hr/>
 
 <section>
   <h2>/api/v1/lawEnforcement</h2>
-
   <article>
     <h3>GET /enforcementPopulation</h3>
-    <p class="small"><strong>Purpose:</strong> Retrieve police population / personnel statistics per state from the FBI personnel/employee endpoints for a given year.</p>
-
-    <table>
-      <thead>
-        <tr><th>Query Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="param"><code>year</code></td>
-          <td>string / integer</td>
-          <td>No</td>
-          <td>Four-digit year. Defaults to 2025.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p class="small"><strong>Response:</strong> JSON array of objects — one per state. Each object contains the raw FBI personnel endpoint payload with an additional <code>state</code> field. Requires <code>FBI_CRIME_KEY</code> on the server.</p>
+    <p class="small">FBI personnel data by state. Requires <code>FBI_CRIME_KEY</code>. Optional <code>year</code>.</p>
   </article>
-
   <article>
     <h3>GET /policeVictimCases</h3>
-    <p class="small"><strong>Purpose:</strong> Download and return the "people killed by police" case-level dataset (spreadsheet converted to JSON).</p>
-
-    <p class="small"><strong>Behavior:</strong> The endpoint fetches an XLSX file from the external source and converts the first sheet into JSON rows. Each row corresponds to a case record with columns originating from the source dataset.</p>
-
-    <p class="small"><strong>Response:</strong> JSON array of objects where each object maps column headers from the dataset to values for that case.</p>
-
-    <p class="small"><strong>Notes:</strong> The external spreadsheet URL is defined inside the server code. Consumers must expect schema changes if the upstream dataset is updated. The server performs an in-memory conversion; large spreadsheets may increase memory usage.</p>
+    <p class="small">Mapping Police Violence case-level data (XLSX → JSON). No key.</p>
   </article>
-
   <article>
     <h3>GET /policeVictimDepts</h3>
-    <p class="small"><strong>Purpose:</strong> Download and return the dataset of police departments associated with people killed by police (spreadsheet sheet → JSON).</p>
-
-    <p class="small"><strong>Behavior:</strong> Converts the second sheet of the XLSX resource into JSON rows and returns them.</p>
-
-    <p class="small"><strong>Response:</strong> JSON array of department records as provided in the spreadsheet.</p>
+    <p class="small">Department-level aggregation. No key.</p>
   </article>
-
   <article>
     <h3>GET /policeVictimStates</h3>
-    <p class="small"><strong>Purpose:</strong> Download and return the aggregated state-level dataset of people killed by police (spreadsheet sheet → JSON).</p>
-
-    <p class="small"><strong>Behavior:</strong> Converts the third sheet of the XLSX resource into JSON rows and returns them.</p>
-
-    <p class="small"><strong>Response:</strong> JSON array of state-level aggregated records as provided by the spreadsheet.</p>
+    <p class="small">State-level aggregation. No key.</p>
+  </article>
+  <article>
+    <h3>GET /policeGenderViolence</h3>
+    <p class="small">Police sexual violence misconduct database. No key.</p>
+    <p class="small"><strong>Response:</strong> <code>{ source, count, cases: [{ name, title, state, formOfViolence, arrestOrSentence, link }] }</code></p>
   </article>
 </section>
 
 <hr/>
 
 <section>
-  <h2>Error Handling</h2>
-  <p class="small">On failure the API returns HTTP error statuses with a JSON body that contains an <code>error</code> field. Example:</p>
-  <pre>{
-  "error": { "message": "{{ERROR_MESSAGE_PLACEHOLDER}}", "details": "{{ERROR_DETAILS_PLACEHOLDER}}" }
-}</pre>
-  <p class="small">Replace the placeholders above with the server's preferred error schema if different.</p>
+  <h2>Auth routes (no x-api-key)</h2>
+  <table>
+    <tr><th>Route</th><th>Description</th></tr>
+    <tr><td><code>POST /api/v1/auth/register</code></td><td>Register user; needs <code>RESEND_API_KEY</code> for email</td></tr>
+    <tr><td><code>GET /api/v1/auth/verify?token=...</code></td><td>Verify email</td></tr>
+    <tr><td><code>POST /api/auth/login</code></td><td>Login with email/password</td></tr>
+  </table>
+</section>
+
+<hr/>
+
+<section>
+  <h2>Environment variables reference</h2>
+  <table>
+    <tr><th>Variable</th><th>Required for</th></tr>
+    <tr><td><code>API_DEV_KEY</code></td><td>All protected data routes</td></tr>
+    <tr><td><code>MONGODB_URI</code></td><td>Auth / user accounts</td></tr>
+    <tr><td><code>CENSUS_API_KEY</code></td><td>Census routes</td></tr>
+    <tr><td><code>BEA_API_KEY</code></td><td>Economics routes</td></tr>
+    <tr><td><code>FBI_CRIME_KEY</code></td><td>Crime + law enforcement FBI routes</td></tr>
+    <tr><td><code>EIA_API_KEY</code></td><td>Coal mines</td></tr>
+    <tr><td><code>AQICN_API_TOKEN</code></td><td>Air quality</td></tr>
+    <tr><td><code>HEALTHDATA_API_KEY</code></td><td>Optional CDC rate-limit token</td></tr>
+    <tr><td><code>RESEND_API_KEY</code></td><td>Registration emails</td></tr>
+  </table>
 </section>
 
 <section>
-  <h2>Operational Notes & Best Practices</h2>
-  <ul class="small">
-    <li>Set <code>FBI_CRIME_KEY</code> and any other upstream API keys in environment configuration on the host.</li>
-    <li>Rate-limit or cache responses from external providers (FBI endpoints and XLSX host) to reduce latency and avoid throttling.</li>
-    <li>Validate and sanitize query parameters before passing them to upstream services.</li>
-    <li>Consider streaming or pagination for very large returned arrays.</li>
-  </ul>
+  <h2>Error handling</h2>
+  <p class="small">Errors return JSON with an <code>error</code> string. Missing API keys return HTTP <code>503</code> with instructions to update <code>backend/.env</code>.</p>
+  <pre>{ "error": "Census API key is still a placeholder. Replace CENSUS_API_KEY in backend/.env with your real API key." }</pre>
 </section>
 
 <footer>
-  <p class="small">Support: <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a></p>
-  <p class="small">Documentation generated for: <code>{{API_TITLE}}</code>. Replace placeholders prior to publishing.</p>
+  <p class="small">OpenMap API — <a href="https://getopenmap.com">getopenmap.com</a></p>
 </footer>
 
 </body>
