@@ -18,6 +18,7 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp,
   const handleLogin = () => {
     console.log('Email:', email, 'Password:', password);
     // Handle login logic here
+    // Make POST request to /api/auth/login
     if (password != "test") {
       setError("incorrect password");
       setIsError(true);

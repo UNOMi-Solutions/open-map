@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, ArrowLeft } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/apiClient';
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -83,7 +84,7 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
   // Originally, only the email was being logged and changed, and the continue button did not work
   // Not correct this, instead of changing the email when input is entered, we change the input variable
   // This is then read when continue is pressed. If the email is valid, we can move to the next stage
-  const handleContinue = () => {
+  const handleContinue = async () => {
 
     /*
       Input validation that needs to happen
@@ -124,11 +125,29 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
         setError(errorString);
         return;
       }
-      console.log('Password:', password);
       setInput('');
-      if (onLogin && email && password) {
-        onLogin(email);
+
+      const baseURL = getApiBaseUrl();
+      const response = await fetch(baseURL+ "/api/v1/auth/register", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        }),
+      });
+
+      if (!response.ok) {
+        setIsError(true);
+        setError("Something went wrong. Please try again later");
+        return;
       }
+
+      const data = await response.json();
+      console.log('Success:', data);
+
     }
   };
 
