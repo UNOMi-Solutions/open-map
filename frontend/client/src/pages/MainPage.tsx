@@ -352,7 +352,7 @@ export default function MainPage() {
                     src="/figmaAssets/create-account.svg"
                     style={{ filter: 'brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(119%) contrast(119%)' }}
                   />
-                  <span className="font-inter text-white text-[11px]">Sign Up</span>
+                  <span className="font-inter text-white text-[11px]">{isLoggedIn ? 'Account' : 'Sign Up'}</span>
                 </Button>
 
                 {/* Sign Up Dropdown Menu */}
@@ -360,6 +360,7 @@ export default function MainPage() {
                   <div className="absolute top-[45px] right-0 z-50">
                     <div className="bg-gray-700 rounded-lg p-4 w-64 text-white shadow-lg">
                       {/* Sign Up Option */}
+                      { !isLoggedIn && (
                       <div 
                         className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                         onClick={handleSignUpClick}
@@ -372,6 +373,7 @@ export default function MainPage() {
                         />
                         <span className="text-[10.5px] text-white">Create Account</span>
                       </div>
+                      )}
 
                       {/* User Account Options (when logged in) */}
                       {isLoggedIn && (
@@ -430,8 +432,8 @@ export default function MainPage() {
                   </div>
                 )}
               </div>
-
               {/* Login Button */}
+              { !isLoggedIn &&
               <Button 
                 onClick={() => setIsLoginOpen(true)}
                 className="h-[39px] bg-[#06012a] rounded-[29.09px] border border-[#312b7a] flex items-center gap-2"
@@ -439,15 +441,17 @@ export default function MainPage() {
                 <img className="w-[22px] h-[17px]" alt="Login" src="/figmaAssets/login.svg" />
                 <span className="font-inter text-white text-[11px]">Login</span>
               </Button>
+              }
 
               <button onClick={toggleMenu} className="p-2" aria-label="Open Menu">
                 <div className="flex flex-col gap-2 w-[30px] h-[26px] justify-center">
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
+                  <div className={`w-[30px] h-[1px] bg-[${showLanding ? "#ffffff" : "#0c1022"}] rounded-[2px]`} />
+                  <div className={`w-[30px] h-[1px] bg-[${showLanding ? "#ffffff" : "#0c1022"}] rounded-[2px]`} />
+                  <div className={`w-[30px] h-[1px] bg-[${showLanding ? "#ffffff" : "#0c1022"}] rounded-[2px]`} />
                 </div>
               </button>
             </div>
+            
 
             {/* Slide-out App Menu (your existing modal/drawer) */}
             <SideBarMenu
