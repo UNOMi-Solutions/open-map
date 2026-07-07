@@ -15,6 +15,10 @@ function Router() {
     <Switch>
       {/* Add pages below */}
       <Route path="/" component={MainPage} />
+      {/* Verification page */}
+      <Route path="/verify" component={MainPage} />
+      {/* Reset page */}
+      <Route path="/reset" component={MainPage} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>

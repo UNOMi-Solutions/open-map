@@ -2,7 +2,7 @@ import express from "express";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import User from "./models/User.js";
-import { sendVerificationEmail } from "./emailService.js";
+import { sendVerificationEmail, sendPasswordResetEmail } from "./emailService.js";
 
 const router = express.Router();
 
@@ -37,6 +37,7 @@ router.post("/register", async (req, res) => {
 
 // Step 2: Verify email
 router.get("/verify", async (req, res) => {
+  console.log("Hit!");
   const { token } = req.query;
   try {
     const user = await User.findOne({ verificationToken: token });
@@ -47,7 +48,7 @@ router.get("/verify", async (req, res) => {
     user.verificationToken = undefined;
     await user.save();
 
-    res.status(200).json({ message: `Email ${user.email} successfully verified!` });
+    res.status(200).json({ message: "Verification success.", email: user.email});
   } catch (err) {
     console.error("Verification error:", err);
     res.status(500).json({ message: "Verification failed. Please try again." });
@@ -55,16 +56,14 @@ router.get("/verify", async (req, res) => {
 });
 
 // THOUGHT PROCESS FOR THIS SECTION
-/*
 
-router.get("/reset", async (req, res) => {
-  const email = req.body;
+router.post("/reset_request", async (req, res) => {
+  const { email }= req.body;
   try {
     const user = await User.findOne({ email: email });
-    if (!user)
-      UNSURE WHAT TO SEND BACK? DO WE WANT TO NOTIFY THAT THIS ACCOUNT DOES NOT EXIST?
-      return
-
+    if (!user) {
+      return res.status(200).json({ message: "Email to reset user password sent"});
+    }
     const token = crypto.randomBytes(32).toString("hex");
     user.passwordResetToken = token;
     await user.save();
@@ -76,10 +75,11 @@ router.get("/reset", async (req, res) => {
     console.error("Reset request error:", err);
     res.status(500).json({ message: "Something went wrong on server side. Please try again" });
   }
-})
+});
 
 router.post("/reset", async (req, res) => {
-  const { token, password } = req.body;
+  const { token } = req.query;
+  const { password } = req.body;
   try {
     const user = await User.findOne({ passwordResetToken: token });
     if (!user) {
@@ -87,17 +87,15 @@ router.post("/reset", async (req, res) => {
     }
     
     const hashedPassword = await bcrypt.hash(password, 12);
-    user.passwordResetToken = undefined;
+    user.passwordResetToken = '';
     user.password = hashedPassword;
     await user.save();
 
-    res.status(200).json({ message: "Password successfully reset" });
+    res.status(200).json({ message: "Password reset initiated" });
   } catch (err) {
     console.error("Reset password error:", err);
     res.status(500).json({ message: "Something went wrong on the server side while resetting password. Please try again." });
   }
 });
-
-*/
 
 export default router;

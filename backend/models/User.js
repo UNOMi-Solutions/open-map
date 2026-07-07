@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema({
   verificationToken: {
     type: String,
   },
+  passwordResetToken: {
+    type: String,
+  },
   stripeCustomerId: {
     type: String,
   },

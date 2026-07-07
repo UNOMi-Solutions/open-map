@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignUp from "./sections/SignUp";
 import Login from "./sections/Login";
+import Verify from "./sections/Verificaiton";
+import Reset from "./sections/ResetPassword";
 import ForgotPassword from "./sections/ForgotPassword";
 import SideBarMenu from "./sections/SideBarMenu";
 import { NavigationMenuSection } from "./sections/NavigationMenuSection";
@@ -34,7 +36,7 @@ export default function MainPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
   // Premium users see no ads. Wire this up to your real subscription flag.
   const [isPremium] = useState(false);
@@ -93,6 +95,25 @@ export default function MainPage() {
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
+  const checkVerify = (() => {
+    if (window.location.href.includes("/verify?")) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  const [isVerifyOpen, setIsVerifyOpen] = useState(checkVerify());
+
+  const checkReset = (() => {
+    if (window.location.href.includes("/reset?")) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  const [isResetOpen, setIsResetOpen] = useState(checkReset());
 
   const handleSearchTrigger = () => {
     setIsSearchOpen(true);
@@ -779,6 +800,24 @@ export default function MainPage() {
           }}
           onSwitchToSignUp={() => setIsSignUpOpen(true)}
           onSwitchToForgot={() => setIsForgotPasswordOpen(true)}
+        />
+      )}
+      {/* Verify Modal */}
+      {isVerifyOpen && (
+        <Verify
+          isOpen={isVerifyOpen} 
+          onClose={() => setIsVerifyOpen(false)}
+          onLogin={(email) => {
+            handleUserLogin(email);
+            setIsVerifyOpen(false);
+          }}
+        />
+      )}
+      {/* Password Reset Modal */}
+      {isResetOpen && (
+        <Reset
+          isOpen={isResetOpen} 
+          onClose={() => setIsResetOpen(false)}
         />
       )}
     </>

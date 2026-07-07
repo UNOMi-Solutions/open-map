@@ -80,6 +80,7 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isEmail, setIsEmail] = useState(true);
+  const [isDone, setIsDone] = useState(false);
 
   // Originally, only the email was being logged and changed, and the continue button did not work
   // Not correct this, instead of changing the email when input is entered, we change the input variable
@@ -125,10 +126,10 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
         setError(errorString);
         return;
       }
-      setInput('');
-
+      
       /*
       THIS CODE HANDLES THE CALL TO THE BACK END
+      */
       const baseURL = getApiBaseUrl();
       const response = await fetch(baseURL+ "/api/v1/auth/register", {
         method: 'POST',
@@ -149,11 +150,15 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
 
       const data = await response.json();
       console.log('Success:', data);
-      */
-      if (onLogin && email && password)
-        onLogin(email);
+      setIsDone(true);
     }
   };
+
+  const handleDone = () => {
+    if (onClose) {
+      onClose();
+    }
+  }
 
   const handleBack = () => {
     setInput('');
@@ -236,6 +241,7 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
         }
 
         {/* Email Input */}
+        { !isDone &&
         <div className="mb-4">
           <input
             type="email"
@@ -245,9 +251,10 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
             className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
           />
         </div>
+}
 
         {/* Password Input */}
-        {!isEmail &&
+        {!isEmail && !isDone &&
         <div className="mb-4">
           <input
             type="password"
@@ -260,12 +267,31 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
 }
 
         {/* Continue Button */}
+        { !isDone &&
         <button
           onClick={handleContinue}
           className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 mb-4"
         >
           {isEmail ? 'Continue' : 'Sign Up'}
         </button>
+        }
+
+        {/* Done Button */}
+        { isDone &&
+        <p className="text-center text-white text-sm mb-4">
+            An email was sent to <p className="text-white-400 font-semibold">{email}</p>Please check your email to verify your account.
+        </p>
+        }
+
+        {/* Done Button */}
+        { isDone &&
+        <button
+          onClick={handleDone}
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 mb-4"
+        >
+          Done
+        </button>
+        }
 
         {/* Login Link */}
         <p className="text-center text-gray-400 text-sm mb-4">

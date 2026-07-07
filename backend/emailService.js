@@ -45,10 +45,8 @@ export async function sendVerificationEmail(to, token) {
   }
 }
 
-/*
-
 export async function sendPasswordResetEmail(to, token) {
-  const resetLink = `${process.env.FRONTEND_URL}/resetPassword?token=${token}`;
+  const resetLink = `${process.env.FRONTEND_URL}/reset?token=${token}`;
 
   const mailOptions = {
     from: "OpenMap <noreply@getopenmap.com>",
@@ -71,5 +69,3 @@ export async function sendPasswordResetEmail(to, token) {
     throw error;
   }
 }
-
-*/

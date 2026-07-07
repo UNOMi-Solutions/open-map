@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/apiClient';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -15,16 +16,35 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp,
   const [error, setError] = useState('');
   const [isError, setIsError] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     console.log('Email:', email, 'Password:', password);
     // Handle login logic here
-    // Make POST request to /api/auth/login
-    if (password != "test") {
-      setError("incorrect password");
+
+    /*
+    THIS CODE HANDLES THE CALL TO THE BACK END
+    */
+    const baseURL = getApiBaseUrl();
+    const response = await fetch(baseURL+ "/api/auth/login", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      }),
+    });
+
+    if (!response.ok) {
       setIsError(true);
+      setError("Something went wrong. Please try again later");
       return;
     }
-    if (onLogin && email) {
+
+    const data = await response.json();
+    console.log('Success:', data);
+    
+    if (onLogin && email && password) {
       onLogin(email);
     }
   };

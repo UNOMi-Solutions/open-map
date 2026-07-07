@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/apiClient';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -41,7 +42,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignUp 
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState('');
 
-  const handleRecoveryEmail = () => {
+  const handleRecoveryEmail = async () => {
     const errorString: string = validateEmailString(email);
     if (errorString != '') {
       setIsError(true);
@@ -50,14 +51,11 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignUp 
     }
     setIsError(false);
     console.log('Email:', email);
-    setIsEmailCaptured(true);
     // there is already infrastructure set up to send emails, just use that to send the email
 
-    /*
-
     const baseURL = getApiBaseUrl();
-    const response = await fetch(baseURL+ "/api/v1/auth/reset", {
-      method: 'GET',
+    const response = await fetch(baseURL+ "/api/v1/auth/reset_request", {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -75,7 +73,8 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignUp 
     const data = await response.json();
     console.log('Success:', data);
 
-    */
+    setIsEmailCaptured(true);
+
   };
 
   const handleSignUp = () => {
