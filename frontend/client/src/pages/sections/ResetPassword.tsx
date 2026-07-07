@@ -129,7 +129,7 @@ export default function ResetPasswordModal({ isOpen, onClose }: ResetPasswordMod
         {/* Email Input */}
         <div className="mb-4">
           <input
-            type="password"
+            type="input"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

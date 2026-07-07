@@ -244,7 +244,7 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
         { !isDone &&
         <div className="mb-4">
           <input
-            type="email"
+            type={isEmail ? "email" : "password"}
             placeholder={isEmail ? "Email address" : "Password"}
             value={input}
             onChange={(e) => {setInput(e.target.value); setIsError(false);}}
