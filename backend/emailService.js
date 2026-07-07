@@ -44,3 +44,32 @@ export async function sendVerificationEmail(to, token) {
     throw error;
   }
 }
+
+/*
+
+export async function sendPasswordResetEmail(to, token) {
+  const resetLink = `${process.env.FRONTEND_URL}/resetPassword?token=${token}`;
+
+  const mailOptions = {
+    from: "OpenMap <noreply@getopenmap.com>",
+    to,
+    subject: "Reset your OpenMap account password",
+    html: `
+      <p>Hello,</p>
+      <p>Please use the link below to reset your password:</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>This link will expire in 15 minutes(?!?!?!?!?) for your security.</p>
+      <p>- The OpenMap Team</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Password reset email sent to ${to}`);
+  } catch (error) {
+    console.error("❌ Failed to send password reset email:", error);
+    throw error;
+  }
+}
+
+*/

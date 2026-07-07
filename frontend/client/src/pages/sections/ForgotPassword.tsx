@@ -51,7 +51,31 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignUp 
     setIsError(false);
     console.log('Email:', email);
     setIsEmailCaptured(true);
-    // Make sure to send email
+    // there is already infrastructure set up to send emails, just use that to send the email
+
+    /*
+
+    const baseURL = getApiBaseUrl();
+    const response = await fetch(baseURL+ "/api/v1/auth/reset", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email
+      }),
+    });
+
+    if (!response.ok) {
+      setIsError(true);
+      setError("Something went wrong. Please try again later");
+      return;
+    }
+
+    const data = await response.json();
+    console.log('Success:', data);
+
+    */
   };
 
   const handleSignUp = () => {

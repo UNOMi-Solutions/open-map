@@ -127,6 +127,8 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
       }
       setInput('');
 
+      /*
+      THIS CODE HANDLES THE CALL TO THE BACK END
       const baseURL = getApiBaseUrl();
       const response = await fetch(baseURL+ "/api/v1/auth/register", {
         method: 'POST',
@@ -147,7 +149,9 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
 
       const data = await response.json();
       console.log('Success:', data);
-
+      */
+      if (onLogin && email && password)
+        onLogin(email);
     }
   };
 

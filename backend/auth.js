@@ -54,4 +54,50 @@ router.get("/verify", async (req, res) => {
   }
 });
 
+// THOUGHT PROCESS FOR THIS SECTION
+/*
+
+router.get("/reset", async (req, res) => {
+  const email = req.body;
+  try {
+    const user = await User.findOne({ email: email });
+    if (!user)
+      UNSURE WHAT TO SEND BACK? DO WE WANT TO NOTIFY THAT THIS ACCOUNT DOES NOT EXIST?
+      return
+
+    const token = crypto.randomBytes(32).toString("hex");
+    user.passwordResetToken = token;
+    await user.save();
+
+    await sendPasswordResetEmail(email, token);
+
+    res.status(200).json({ message: "Email to reset user password sent"});
+  } catch (err) {
+    console.error("Reset request error:", err);
+    res.status(500).json({ message: "Something went wrong on server side. Please try again" });
+  }
+})
+
+router.post("/reset", async (req, res) => {
+  const { token, password } = req.body;
+  try {
+    const user = await User.findOne({ passwordResetToken: token });
+    if (!user) {
+      return res.status(400).json({ message: "Invlaid or expired token" });
+    }
+    
+    const hashedPassword = await bcrypt.hash(password, 12);
+    user.passwordResetToken = undefined;
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password successfully reset" });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ message: "Something went wrong on the server side while resetting password. Please try again." });
+  }
+});
+
+*/
+
 export default router;
