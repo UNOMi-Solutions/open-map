@@ -30,7 +30,7 @@ export async function sendVerificationEmail(to, token) {
     html: `
       <p>Hello,</p>
       <p>Thank you for signing up for OpenMap. Please verify your email by clicking the link below:</p>
-      <a href="${verificationLink}">${verificationLink}</a>
+      <a href="${verificationLink}">Verify</a>
       <p>This link will expire in 15 minutes for your security.</p>
       <p>- The OpenMap Team</p>
     `,
@@ -55,7 +55,7 @@ export async function sendPasswordResetEmail(to, token) {
     html: `
       <p>Hello,</p>
       <p>Please use the link below to reset your password:</p>
-      <a href="${resetLink}">${resetLink}</a>
+      <a href="${resetLink}">Reset</a>
       <p>This link will expire in 15 minutes(?!?!?!?!?) for your security.</p>
       <p>- The OpenMap Team</p>
     `,
