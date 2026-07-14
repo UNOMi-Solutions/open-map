@@ -44,3 +44,44 @@ export async function sendVerificationEmail(to, token) {
     throw error;
   }
 }
+
+/**
+ * Sends a payment/subscription confirmation email after a successful checkout.
+ * Triggered by the Stripe webhook on `checkout.session.completed`.
+ */
+export async function sendPaymentConfirmation(to, details = {}) {
+  const {
+    planName = "Subscription",
+    amount = "0.00",
+    currency = "USD",
+    interval = "month",
+  } = details;
+
+  const cadence = interval === "year" || interval === "yearly" ? "yearly" : "monthly";
+  const accountLink = `${process.env.FRONTEND_URL}/account`;
+
+  const mailOptions = {
+    from: "OpenMap <noreply@getopenmap.com>",
+    to,
+    subject: `Your OpenMap ${planName} subscription is active`,
+    html: `
+      <p>Hello,</p>
+      <p>Thank you for subscribing to OpenMap! Your payment was successful and your plan is now active.</p>
+      <ul>
+        <li><strong>Plan:</strong> ${planName}</li>
+        <li><strong>Amount:</strong> ${amount} ${String(currency).toUpperCase()}</li>
+        <li><strong>Billing:</strong> ${cadence}</li>
+      </ul>
+      <p>You can manage your subscription anytime from your account: <a href="${accountLink}">${accountLink}</a></p>
+      <p>- The OpenMap Team</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Payment confirmation email sent to ${to}`);
+  } catch (error) {
+    console.error("❌ Failed to send payment confirmation email:", error);
+    // Don't rethrow: the subscription is already paid; email failure must not 500 the webhook.
+  }
+}

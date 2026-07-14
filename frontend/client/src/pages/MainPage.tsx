@@ -440,9 +440,9 @@ export default function MainPage() {
 
               <button onClick={toggleMenu} className="p-2" aria-label="Open Menu">
                 <div className="flex flex-col gap-2 w-[30px] h-[26px] justify-center">
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
+                  <div className="w-[30px] h-[1px] bg-black rounded-[2px]" />
+                  <div className="w-[30px] h-[1px] bg-black rounded-[2px]" />
+                  <div className="w-[30px] h-[1px] bg-black rounded-[2px]" />
                 </div>
               </button>
             </div>
@@ -720,7 +720,16 @@ export default function MainPage() {
       </div>
 
       {/* Pricing Cards */}
-      {isPricingOpen && <PricingCards isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} />}
+      {isPricingOpen && (
+        <PricingCards
+          isOpen={isPricingOpen}
+          onClose={() => setIsPricingOpen(false)}
+          onFreeTrial={() => {
+            setIsPricingOpen(false);
+            setIsSignUpOpen(true);
+          }}
+        />
+      )}
 
       {/* CONTACT US FORM MODAL */}
       {isContactOpen && <ContactUsform isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />}

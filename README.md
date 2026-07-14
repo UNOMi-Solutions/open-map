@@ -86,8 +86,19 @@ AQICN_API_TOKEN=...
 RESEND_API_KEY=...
 EMAIL_FROM=noreply@getopenmap.com
 FRONTEND_URL=https://getopenmap.com
+DOMAIN=https://getopenmap.com
+STRIPE_SECRET_KEY=sk_live_...        # Stripe API key (used for Checkout + webhook)
+STRIPE_WEBHOOK_SECRET=whsec_...      # Signing secret for /api/v1/stripe/webhook
 NODE_ENV=production
 ```
+
+Stripe Checkout lives on the backend (`backend/routes/stripe.js` +
+`backend/routes/stripeWebhook.js`). Point a Stripe webhook endpoint at
+`https://api.getopenmap.com/api/v1/stripe/webhook` (events:
+`checkout.session.completed`, `customer.subscription.updated`,
+`customer.subscription.deleted`, `invoice.payment_succeeded`) and copy its
+signing secret into `STRIPE_WEBHOOK_SECRET`. Plan price IDs are defined in
+`backend/stripePriceMap.js`.
 
 ### `frontend/.env`
 
