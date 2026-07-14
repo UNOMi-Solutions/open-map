@@ -14,7 +14,7 @@ const Card = React.forwardRef <HTMLDivElement, CardProps>(({ className, ...props
     ref={ref}
     className={`rounded-xl border bg-card text-card-foreground shadow ${className || ''}`}
     {...props}
-  />
+  />   
 ));
 Card.displayName = "Card";
 
@@ -74,8 +74,14 @@ const Toggle = ({ isYearly, onToggle }:ToggleProps) => (
   </div>
 );
 
+interface PricingCardsProps {
+  isOpen: boolean;
+  onClose?: () => void;
+  onFreeTrial?: () => void;
+}
+
 // Main Pricing Component
-export default function PricingCards({ isOpen: propIsOpen, onClose }) {
+export default function PricingCards({ isOpen: propIsOpen, onClose, onFreeTrial }: PricingCardsProps) {
   //const [isOpen, setIsOpen] = useState(true);
   const [isYearly, setIsYearly] = useState(false);
 
@@ -148,12 +154,61 @@ export default function PricingCards({ isOpen: propIsOpen, onClose }) {
       popular: false
     }
   ];
-  const getPrice = (plan) => {
+  const getPrice = (plan: { monthlyPrice: number; yearlyPrice: number }) => {
     if (plan.monthlyPrice === 0) return 'Trial';
     
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     return `$${price}`;
   };
+
+  const planKeyByName: Record<string, string> = {
+    Free: "freeTrial",
+    Premium: "premium",
+    Enterprise: "enterprise",
+    Agency: "agency",
+  };
+
+  const handleCheckout = async (planName: string) => {
+    const plan = planKeyByName[planName];
+    if (!plan) return;
+    const interval = isYearly ? "yearly" : "monthly";
+    if (plan === "freeTrial") {
+      // Free trial has no Stripe price; open the signup modal instead of
+      // navigating to a /signup route that doesn't exist in this SPA.
+      if (onFreeTrial) {
+        onFreeTrial();
+      } else {
+        handleClose();
+      }
+      return;
+    }
+    try {
+      const base = window.location.origin;
+      const apiURL = import.meta.env.VITE_API_LINK || "";
+      const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
+      const res = await fetch(`${apiURL}/api/v1/stripe/create-checkout-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          plan,
+          interval,
+          customer_email: "jkesana@asu.edu",
+          successUrl: `${base}/payment-success.html?session_id={CHECKOUT_SESSION_ID}&plan=${plan}&interval=${interval}`,
+          cancelUrl: `${base}/payment-cancelled.html`,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (e) {
+      console.error("Checkout error", e);
+    }
+  };
+
   if (!propIsOpen) return null;
   const handleClose = () => {
     // Call the onClose prop instead of setting internal state
@@ -211,6 +266,8 @@ export default function PricingCards({ isOpen: propIsOpen, onClose }) {
 
                 <CardContent className="space-y-4">
                   <button
+                    type="button"
+                    onClick={() => handleCheckout(plan.name)}
                     className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${plan.buttonStyle}`}
                   >
                     {plan.buttonText}

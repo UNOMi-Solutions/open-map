@@ -33,6 +33,8 @@ import healthRoutes from "./routes/health.js";
 import lawEnforcementRoutes from "./routes/lawEnforcement.js";
 import politicsRoutes from "./routes/politics.js";
 import socialRoutes from "./routes/social.js";
+import stripeRoutes from "./routes/stripe.js";
+import stripeWebhook from "./routes/stripeWebhook.js";
 
 // Connect to MongoDB
 connectDB();
@@ -84,6 +86,11 @@ app.use(enforceHTTPS);
 // Global security configuration (helmet, sanitization, rate limiting)
 secureApp(app);
 
+// Stripe webhook MUST receive the raw, unparsed body for signature verification,
+// so it is mounted before express.json() and is intentionally not API-key protected
+// (Stripe authenticates via the stripe-signature header instead).
+app.use("/api/v1/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+
 // JSON parsing
 app.use(express.json());
 
@@ -117,6 +124,10 @@ app.use("/api/v1/health", auth, healthRoutes);
 app.use("/api/v1/lawEnforcement", auth, lawEnforcementRoutes);
 app.use("/api/v1/politics", auth, politicsRoutes);
 app.use("/api/v1/social", auth, socialRoutes);
+
+// Stripe checkout routes (API-key protected, like the data routes).
+// The webhook is mounted separately above (before JSON parsing).
+app.use("/api/v1/stripe", auth, stripeRoutes);
 
 // Documentation route
 app.get("/", (req, res) => {

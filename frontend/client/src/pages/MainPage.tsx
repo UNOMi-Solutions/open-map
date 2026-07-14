@@ -747,7 +747,16 @@ export default function MainPage() {
       </div>
 
       {/* Pricing Cards */}
-      {isPricingOpen && <PricingCards isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} />}
+      {isPricingOpen && (
+        <PricingCards
+          isOpen={isPricingOpen}
+          onClose={() => setIsPricingOpen(false)}
+          onFreeTrial={() => {
+            setIsPricingOpen(false);
+            setIsSignUpOpen(true);
+          }}
+        />
+      )}
 
       {/* CONTACT US FORM MODAL */}
       {isContactOpen && <ContactUsform isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />}

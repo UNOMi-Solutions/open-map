@@ -22,14 +22,25 @@
     <div class="icon">✓</div>
     <h1>Payment Successful</h1>
     <p class="sub">Thank you for subscribing to OpenMap. Your payment has been processed.</p>
-    <div class="plan" id="plan-name">Premium Monthly</div>
+    <div class="plan" id="plan-name">Subscription</div>
     <p class="note">A confirmation email has been sent to your email address.</p>
     <a href="/" class="btn">Back to Home</a>
   </div>
   <script>
     const params = new URLSearchParams(location.search);
-    const sessionId = params.get('session_id');
-    if (sessionId) document.getElementById('plan-name').textContent = 'Premium Monthly';
+    const planNames = {
+      freeTrial: 'Free Trial',
+      premium: 'Premium',
+      enterprise: 'Enterprise',
+      agency: 'Agency',
+    };
+    const intervalNames = { monthly: 'Monthly', yearly: 'Yearly' };
+    const plan = params.get('plan');
+    const interval = params.get('interval');
+    const planLabel = planNames[plan] || 'Subscription';
+    const intervalLabel = intervalNames[interval] || '';
+    document.getElementById('plan-name').textContent =
+      (planLabel + ' ' + intervalLabel).trim();
   </script>
 </body>
 </html>
