@@ -1,9 +1,21 @@
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
+import xssClean from "xss-clean/lib/xss.js";
 import hpp from "hpp";
 import compression from "compression";
 import { generalLimiter } from "./rateLimiter.js";
+
+function sanitizeBodyAndParams(sanitizeFn) {
+  return (req, res, next) => {
+    if (req.body) {
+      req.body = sanitizeFn(req.body);
+    }
+    if (req.params) {
+      req.params = sanitizeFn(req.params);
+    }
+    next();
+  };
+}
 
 /**
  * Express 5 makes req.query a read-only getter. Legacy sanitizers mutate it,
@@ -23,6 +35,7 @@ function makeMutableQuery(req, _res, next) {
 /**
  * Combines multiple middleware to enforce a secure Express environment.
  * Note: CORS is handled separately in index.js so it is not duplicated here.
+ * Express 5 makes req.query read-only — sanitize body/params only.
  */
 export default function secureApp(app) {
   // Secure HTTP headers
@@ -36,14 +49,11 @@ export default function secureApp(app) {
   // Required before express-mongo-sanitize / xss-clean on Express 5
   app.use(makeMutableQuery);
 
-  // Sanitize MongoDB queries against injection
-  app.use(mongoSanitize());
+  app.use(sanitizeBodyAndParams(mongoSanitize.sanitize));
+  app.use(sanitizeBodyAndParams(xssClean.clean));
 
-  // Sanitize user input against XSS
-  app.use(xss());
-
-  // Prevent HTTP parameter pollution
-  app.use(hpp());
+  // Prevent HTTP parameter pollution on POST bodies only
+  app.use(hpp({ checkQuery: false }));
 
   // Compress responses
   app.use(compression());

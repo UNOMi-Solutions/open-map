@@ -6,8 +6,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo 'Error: no test specified' && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "dev": "nodemon --exec \"node --use-system-ca index.js\"",
+    "start": "node --use-system-ca index.js",
+    "seed:user": "node scripts/seed-user.js"
   },
   "repository": {
     "type": "git",

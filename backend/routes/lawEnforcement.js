@@ -187,11 +187,15 @@ router.get('/policeGenderViolence', async (req, res) => {
             link: row[5],
         }));
 
-        console.log(data);
+        res.json({
+            source: "Police Sexual Violence Misconduct Database",
+            count: data.length,
+            cases: data,
+        });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: error });
+        res.status(500).json({ error: error.message || "Failed to fetch police gender violence data" });
     }
 });
 
