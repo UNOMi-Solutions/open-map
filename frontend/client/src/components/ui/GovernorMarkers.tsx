@@ -2,6 +2,7 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { partyClassName } from "@/lib/party-color";
+import { CACHE_TTL, cachedApiGet } from "@/lib/apiCache";
 
 /** Distinct from senators’ gold ring */
 const RING = "#166534";
@@ -121,23 +122,31 @@ function GovernorMarkerRow({ g }: { g: GovernorPin }) {
 }
 
 export default function GovernorMarkers() {
-  const [rows, setRows] = useState<GovernorPin[]>([]);
+  const [siteData, setSiteData] = useState<GovernorPin[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setSiteData([]);
+    setLoading(true);
+
     let cancelled = false;
-    fetch("/data/governors.json")
-      .then((r) => {
-        if (!r.ok) throw new Error(`Failed to load governors (${r.status})`);
-        return r.json() as Promise<GovernorsFile>;
-      })
+    const path = `/api/v1/politics/governors`;
+    cachedApiGet<GovernorsFile>(
+      `politics:governors`,
+      path,
+      CACHE_TTL.POLITICS,
+    )
       .then((data) => {
-        if (!cancelled) setRows(data.governors ?? []);
+        if (cancelled) return;
+        setSiteData(data.governors ?? []);
       })
-      .catch((e: unknown) => {
-        if (!cancelled)
-          setError(e instanceof Error ? e.message : "Could not load governor data");
-      });
+      .catch((error) => {
+        console.error("[GovernorMarkers Fetch error:", error);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      })
     return () => {
       cancelled = true;
     };
@@ -149,7 +158,7 @@ export default function GovernorMarkers() {
 
   return (
     <>
-      {rows.map((g) => (
+      {siteData.map((g) => (
         <GovernorMarkerRow key={g.id} g={g} />
       ))}
     </>
