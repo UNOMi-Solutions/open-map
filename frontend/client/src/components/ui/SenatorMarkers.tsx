@@ -2,6 +2,7 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { partyClassName } from "@/lib/party-color";
+import { CACHE_TTL, cachedApiGet } from "@/lib/apiCache";
 
 const RING = "#c9a227";
 
@@ -128,23 +129,31 @@ function SenatorMarkerRow({ s }: { s: SenatorPin }) {
 }
 
 export default function SenatorMarkers() {
-  const [rows, setRows] = useState<SenatorPin[]>([]);
+  const [siteData, setSiteData] = useState<SenatorPin[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setSiteData([]);
+    setLoading(true);
+
     let cancelled = false;
-    fetch("/data/senators.json")
-      .then((r) => {
-        if (!r.ok) throw new Error(`Failed to load senators (${r.status})`);
-        return r.json() as Promise<SenatorsFile>;
-      })
+    const path = `/api/v1/politics/senators`;
+    cachedApiGet<SenatorsFile>(
+      `politics:senators`,
+      path,
+      CACHE_TTL.POLITICS,
+    )
       .then((data) => {
-        if (!cancelled) setRows(data.senators ?? []);
+        if (cancelled) return;
+        setSiteData(data.senators);
       })
-      .catch((e: unknown) => {
-        if (!cancelled)
-          setError(e instanceof Error ? e.message : "Could not load senator data");
-      });
+      .catch((error) => {
+        console.error("[SenatorMarkers] Fetch error:", error);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      })
     return () => {
       cancelled = true;
     };
@@ -156,7 +165,7 @@ export default function SenatorMarkers() {
 
   return (
     <>
-      {rows.map((s) => (
+      {siteData.map((s) => (
         <SenatorMarkerRow key={s.id} s={s} />
       ))}
     </>
