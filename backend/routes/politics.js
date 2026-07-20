@@ -13,6 +13,18 @@ function govTrackIdFromLink(link) {
   return link.trim().match(/\/(\d+)\/?$/)?.[1] ?? null;
 }
 
+/**
+ * Only the 50 states get voting seats in the U.S. House (435 total apportioned).
+ * GovTrack also returns non-voting delegates (DC, PR, GU, AS, MP, VI) under
+ * role_type=representative — those must be excluded to match the 435-member House.
+ */
+const FIFTY_STATE_CODES = new Set([
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
+  "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
+  "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
+  "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+]);
+
 router.get("/test", (req, res) => {
   res.json({ response: "Success: Viewing Political Data" });
 });
@@ -88,33 +100,28 @@ router.get("/representatives", async (req, res) => {
     );
 
     const objects = response.data?.objects ?? [];
-    const representatives = objects
-      .filter((role) => role.state && role.district != null)
-      .map((role) => {
-        const person = role.person ?? {};
-        const link = person.link ?? "";
-        const state = role.state;
-        const [lat, lng] = offsetCoords(state, (role.district ?? 0) % 2);
-        return {
-          id: `rep-${person.id ?? role.id}`,
-          name: person.name ?? `${person.firstname ?? ""} ${person.lastname ?? ""}`.trim(),
-          state,
-          district: role.district,
-          party: role.party ?? "",
-          description: role.description ?? "",
-          website: role.website ?? link,
-          photoUrl: photoUrlFromGovTrackLink(link),
-          lat,
-          lng,
-        };
-      })
-      .sort((a, b) => a.state.localeCompare(b.state) || a.district - b.district);
+    const districts = {};
+    for (const role of objects) {
+      const st = role.state;
+      if (!st || !FIFTY_STATE_CODES.has(st)) continue;
+      const dist = typeof role.district === "number" ? role.district : 0;
+      const key = `${st}-${dist}`;
+      const person = role.person ?? {};
+      const link = person.link ?? "";
+      districts[key] = {
+        party: role.party ?? "",
+        name: person.name ?? "",
+        description: role.description ?? "",
+        website: role.website || link,
+        photoUrl: photoUrlFromGovTrackLink(link),
+      }
+    }
 
     res.json({
       source: "https://www.govtrack.us/api/v2/role (current representatives)",
       fetchedAt: new Date().toISOString(),
-      count: representatives.length,
-      representatives,
+      count: Object.keys(districts).length,
+      districts,
     });
   } catch (error) {
     console.error("Politics representatives error:", error.message);

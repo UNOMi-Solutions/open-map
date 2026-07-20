@@ -10,6 +10,7 @@ import type {
 import * as turf from "@turf/turf";
 import { geoidToDistrictJoinKey } from "@/lib/district-key";
 import { partyClassName } from "@/lib/party-color";
+import { CACHE_TTL, cachedApiGet } from "@/lib/apiCache";
 
 /**
  * Single-user silhouette (like a “user” / sign-up avatar without the plus).
@@ -150,15 +151,23 @@ export default function HouseMarkers() {
 
   useEffect(() => {
     let cancelled = false;
+    const path = `api/v1/politics/representatives`
     Promise.all([
       fetch("/geo/congressional-119.geojson").then((r) => {
         if (!r.ok) throw new Error(`District shapes (${r.status})`);
         return r.json() as Promise<FeatureCollection<Geometry, GeoJsonProperties>>;
       }),
+      /*
       fetch("/data/house-district-parties.json").then((r) => {
         if (!r.ok) throw new Error(`House members (${r.status})`);
         return r.json() as Promise<PartiesFile>;
       }),
+      */
+      cachedApiGet<PartiesFile>(
+        `politics:houseOfReps`,
+        path,
+        CACHE_TTL.POLITICS,
+      )
     ])
       .then(([fc, p]) => {
         if (!cancelled) {
