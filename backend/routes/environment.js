@@ -264,12 +264,12 @@ router.get('/wasteTreatmentDisposalSites', async(req, res) => {
                 const facilitySubIds = (f.facilitySubtypeIds || "").toString().split(",").map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n))   // split up string and convert to numbers
                 const facilityType = facilitySubIds.map(id => facilityCodes[id]).filter(Boolean).join(", ") || null    // map the ids to the facility codes
                 return {
-                    id: facility.id,
-                    name: facility.name ?? null,
+                    id: f.id,
+                    name: f.name ?? null,
                     city: f.city ?? null,
-                    county: facility.county ?? null,
-                    address: [facility.streetAddress, facility.city, facility.stateCode, facility.zipCode].filter(Boolean).join(", ") || null,
-                    latitude: parseFloat(facility.latitude),
+                    county: f.county ?? null,
+                    address: [f.streetAddress, f.city, f.stateCode, f.zipCode].filter(Boolean).join(", ") || null,
+                    latitude: parseFloat(f.latitude),
                     longitude: parseFloat(f.longitude),
                     facilityType: facilityType || null
                 }
