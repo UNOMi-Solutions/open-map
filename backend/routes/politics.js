@@ -327,4 +327,32 @@ router.get("/congressional_geo", async (req, res) => {
   res.json(out);
 });
 
+router.get("/president", async (req, res) => {
+  const url =
+    "https://www.govtrack.us/api/v2/role?current=true&role_type=president&limit=5";
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`GovTrack ${response.status}`);
+  const data = await response.json();
+  const role = (data.objects ?? [])[0];
+  if (!role) throw new Error("No current president role returned");
+
+  const person = role.person ?? {};
+  const link = person.link ?? "";
+  res.json({
+    source: "https://www.govtrack.us/api/v2/role (current president)",
+    fetchedAt: new Date().toISOString(),
+    president: {
+      id: `pres-${link.match(/\/(\d+)\s*$/)?.[1] ?? "current"}`,
+      name: person.name ?? `${person.firstname ?? ""} ${person.lastname ?? ""}`.trim(),
+      title: role.title_long ?? role.title ?? "President of the United States",
+      party: role.party ?? "",
+      description: role.description ?? "",
+      website: role.website || link || "",
+      photoUrl: photoUrlFromGovTrackLink(link),
+      lat: DC_PIN.lat,
+      lng: DC_PIN.lng,
+    },
+  });
+});
+
 export default router;

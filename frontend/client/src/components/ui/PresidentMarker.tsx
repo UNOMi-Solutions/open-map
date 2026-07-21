@@ -2,6 +2,7 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { partyClassName } from "@/lib/party-color";
+import { CACHE_TTL, cachedApiGet } from "@/lib/apiCache";
 
 /** Gold ring — president */
 const RING_PRESIDENT = "#d4af37";
@@ -121,9 +122,28 @@ export default function PresidentMarker({
 }: PresidentMarkerProps) {
   const [file, setFile] = useState<PresidentFile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    const path = `/api/v1/politics/president`;
+    cachedApiGet<PresidentFile>(
+      `politics:president`,
+      path,
+      CACHE_TTL.POLITICS,
+    )
+      .then((data) => {
+        if (cancelled) return;
+        setFile(data);
+      })
+      .catch((error) => {
+        console.error("[PresidentMarkers] Fetch error:", error);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      })
+    /*
     fetch("/data/president.json")
       .then((r) => {
         if (!r.ok) throw new Error(`Failed to load president (${r.status})`);
@@ -136,6 +156,7 @@ export default function PresidentMarker({
         if (!cancelled)
           setError(e instanceof Error ? e.message : "Could not load president data");
       });
+    */
     return () => {
       cancelled = true;
     };
