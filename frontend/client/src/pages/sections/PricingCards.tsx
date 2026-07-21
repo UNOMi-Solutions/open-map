@@ -78,10 +78,22 @@ interface PricingCardsProps {
   isOpen: boolean;
   onClose?: () => void;
   onFreeTrial?: () => void;
+  isLoggedIn?: boolean;
+  userEmail?: string;
+  currentPlan?: string | null;
+  onRequireAuth?: (planName: string) => void;
 }
 
 // Main Pricing Component
-export default function PricingCards({ isOpen: propIsOpen, onClose, onFreeTrial }: PricingCardsProps) {
+export default function PricingCards({
+  isOpen: propIsOpen,
+  onClose,
+  onFreeTrial,
+  isLoggedIn = false,
+  userEmail,
+  currentPlan = null,
+  onRequireAuth,
+}: PricingCardsProps) {
   //const [isOpen, setIsOpen] = useState(true);
   const [isYearly, setIsYearly] = useState(false);
 
@@ -168,9 +180,26 @@ export default function PricingCards({ isOpen: propIsOpen, onClose, onFreeTrial 
     Agency: "agency",
   };
 
+  // Display label for the plan the user is already subscribed to.
+  const currentPlanLabel = currentPlan
+    ? Object.keys(planKeyByName).find((name) => planKeyByName[name] === currentPlan) || null
+    : null;
+
   const handleCheckout = async (planName: string) => {
     const plan = planKeyByName[planName];
     if (!plan) return;
+    // Gate every plan behind authentication: a logged-out user is sent to the
+    // login/signup flow first and can resume once authenticated.
+    if (!isLoggedIn) {
+      if (onRequireAuth) {
+        onRequireAuth(planName);
+      }
+      return;
+    }
+    // Already subscribed to this plan — never route back to Stripe checkout.
+    if (currentPlan && plan === currentPlan) {
+      return;
+    }
     const interval = isYearly ? "yearly" : "monthly";
     if (plan === "freeTrial") {
       // Free trial has no Stripe price; open the signup modal instead of
@@ -195,7 +224,7 @@ export default function PricingCards({ isOpen: propIsOpen, onClose, onFreeTrial 
         body: JSON.stringify({
           plan,
           interval,
-          customer_email: "jkesana@asu.edu",
+          customer_email: userEmail || "jkesana@asu.edu",
           successUrl: `${base}/payment-success.html?session_id={CHECKOUT_SESSION_ID}&plan=${plan}&interval=${interval}`,
           cancelUrl: `${base}/payment-cancelled.html`,
         }),
@@ -232,34 +261,53 @@ export default function PricingCards({ isOpen: propIsOpen, onClose, onFreeTrial 
           <h1 className="text-4xl font-montserrat font-black text-gray-900 mb-6">
             Manage Your Plan
           </h1>
-          
+
+          {currentPlanLabel && (
+            <div className="mb-6 mx-auto max-w-xl rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+              You're currently subscribed to the{" "}
+              <span className="font-semibold">{currentPlanLabel}</span> plan.
+              You can't purchase it again — manage or cancel it from your billing
+              settings.
+            </div>
+          )}
+
           <Toggle isYearly={isYearly} onToggle={() => setIsYearly(!isYearly)} />
         </div>
 
         {/* Pricing Cards */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {plans.map((plan, index) => (
+            {plans.map((plan, index) => {
+              const isCurrent =
+                !!currentPlan && planKeyByName[plan.name] === currentPlan;
+              return (
               <Card
                 key={index}
                 className={`relative ${
-                  plan.darkCard 
-                    ? 'bg-gray-800 text-white border-gray-700' 
+                  isCurrent
+                    ? 'bg-white border-green-500 ring-2 ring-green-500'
+                    : plan.darkCard
+                    ? 'bg-gray-800 text-white border-gray-700'
                     : 'bg-white border-gray-200'
                 }`}
               >
+                {isCurrent && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white shadow">
+                    Current Plan
+                  </span>
+                )}
                 <CardHeader className="text-center font-[Montserrat]">
-                <CardTitle className={`font-bold text-[24px] leading-[100%] text-center ${plan.darkCard ? 'text-gray-200' : 'text-gray-900'}`} style={{ fontFamily: 'Montserrat' }}>
+                <CardTitle className={`font-bold text-[24px] leading-[100%] text-center ${plan.darkCard && !isCurrent ? 'text-gray-200' : 'text-gray-900'}`} style={{ fontFamily: 'Montserrat' }}>
                   {plan.name}
                 </CardTitle>
-                  <div className={`text-4xl font-montserrat font-black ${plan.darkCard ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`text-4xl font-montserrat font-black ${plan.darkCard && !isCurrent ? 'text-white' : 'text-gray-900'}`}>
                   {getPrice(plan)}
                   {plan.subtitle && (
                   <div className="text-2xl font-montserrat font-normal mt-1">{plan.subtitle}</div>
               )}
                   </div>
                   
-                  <p className={`text-sm ${plan.darkCard ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <p className={`text-sm ${plan.darkCard && !isCurrent ? 'text-gray-400' : 'text-gray-500'}`}>
                     {plan.description}
                   </p>
                 </CardHeader>
@@ -268,9 +316,14 @@ export default function PricingCards({ isOpen: propIsOpen, onClose, onFreeTrial 
                   <button
                     type="button"
                     onClick={() => handleCheckout(plan.name)}
-                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${plan.buttonStyle}`}
+                    disabled={isCurrent}
+                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                      isCurrent
+                        ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                        : plan.buttonStyle
+                    }`}
                   >
-                    {plan.buttonText}
+                    {isCurrent ? 'Current Plan' : plan.buttonText}
                   </button>
 
                   <div 
@@ -288,7 +341,7 @@ export default function PricingCards({ isOpen: propIsOpen, onClose, onFreeTrial 
                       <li 
                         key={featureIndex} 
                         className={`text-sm text-center ${
-                          plan.darkCard ? 'text-gray-300' : 'text-gray-600'
+                          plan.darkCard && !isCurrent ? 'text-gray-300' : 'text-gray-600'
                         }`}
                       >
                         {feature}
@@ -297,7 +350,8 @@ export default function PricingCards({ isOpen: propIsOpen, onClose, onFreeTrial 
                   </ul>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

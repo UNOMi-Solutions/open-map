@@ -113,7 +113,16 @@ app.post("/api/auth/login", loginLimiter, async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
-    res.status(200).json({ success: true, message: "Login successful" });
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        email: user.email,
+        plan: user.plan || null,
+        subscriptionStatus: user.subscriptionStatus || null,
+        subscriptionInterval: user.subscriptionInterval || null,
+      },
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, message: "Server error" });

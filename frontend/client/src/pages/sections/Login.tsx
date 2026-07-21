@@ -5,7 +5,7 @@ import { getApiBaseUrl } from '@/lib/apiClient';
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin?: (email: string) => void;
+  onLogin?: (email: string, plan?: string | null) => void;
   onSwitchToSignUp?: () => void;
   onSwitchToForgot?: () => void;
 }
@@ -45,7 +45,7 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp,
     console.log('Success:', data);
     
     if (onLogin && email && password) {
-      onLogin(email);
+      onLogin(email, data?.user?.plan ?? null);
     }
   };
 

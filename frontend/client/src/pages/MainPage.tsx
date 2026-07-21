@@ -38,9 +38,15 @@ export default function MainPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
+  // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
+  // logged-in user, or null when they have no active subscription.
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   // Premium users see no ads. Wire this up to your real subscription flag.
   const [isPremium] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
+  // Remembers a plan a logged-out user tried to select so we can resume the
+  // pricing flow after they log in / sign up.
+  const [pendingPlan, setPendingPlan] = useState<string | null>(null);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isNewsletterPopupOpen, setIsNewsletterPopupOpen] = useState(false);
@@ -153,10 +159,22 @@ export default function MainPage() {
     setIsPinDropMode((prev) => !prev);
     setIsSignUpDropdownOpen(false);
   };
-  const handleUserLogin = (email: string) => {
+  const handleUserLogin = (email: string, plan: string | null = null) => {
     setIsLoggedIn(true);
     setUserEmail(email);
+    setCurrentPlan(plan);
     setIsSignUpOpen(false);
+    // If the user was trying to pick a plan before authenticating, bring them
+    // back to the pricing screen to finish choosing.
+    if (pendingPlan) {
+      setPendingPlan(null);
+      setIsPricingOpen(true);
+    }
+  };
+  const handleRequirePlanAuth = (_planName: string) => {
+    setPendingPlan(_planName);
+    setIsPricingOpen(false);
+    setIsLoginOpen(true);
   };
   const handlePinDropped = (coords: { lat: number; lng: number }, stateName?: string) => {
     const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -173,6 +191,7 @@ export default function MainPage() {
   const handleUserLogout = () => {
     setIsLoggedIn(false);
     setUserEmail("");
+    setCurrentPlan(null);
     setIsSignUpDropdownOpen(false);
   };
   const handlePricingClick = () => {
@@ -751,6 +770,10 @@ export default function MainPage() {
         <PricingCards
           isOpen={isPricingOpen}
           onClose={() => setIsPricingOpen(false)}
+          isLoggedIn={isLoggedIn}
+          userEmail={userEmail}
+          currentPlan={currentPlan}
+          onRequireAuth={handleRequirePlanAuth}
           onFreeTrial={() => {
             setIsPricingOpen(false);
             setIsSignUpOpen(true);
@@ -802,9 +825,12 @@ export default function MainPage() {
       {isLoginOpen && (
         <Login 
           isOpen={isLoginOpen} 
-          onClose={() => setIsLoginOpen(false)}
-          onLogin={(email) => {
-            handleUserLogin(email);
+          onClose={() => {
+            setIsLoginOpen(false);
+            setPendingPlan(null);
+          }}
+          onLogin={(email, plan) => {
+            handleUserLogin(email, plan ?? null);
             setIsLoginOpen(false);
           }}
           onSwitchToSignUp={() => setIsSignUpOpen(true)}
