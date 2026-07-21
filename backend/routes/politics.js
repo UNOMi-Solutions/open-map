@@ -287,6 +287,44 @@ router.get("/governors", async (req, res) => {
       error: error.message || "Failed to fetch governor data",
     });
   }
-})
+});
+
+router.get("/congressional_geo", async (req, res) => {
+  const base =
+    "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Legislative/MapServer/0/query";
+  const pageSize = 200;
+  const all = [];
+  let offset = 0;
+  const query = new URLSearchParams({
+    where: "1=1",
+    outFields: "STATE,GEOID,NAME",
+    outSR: "4326",
+    f: "geojson",
+    returnGeometry: "true",
+    maxAllowableOffset: "0.02",
+    resultRecordCount: String(pageSize),
+  });
+
+  for (;;) {
+    query.set("resultOffset", String(offset));
+    const url = `${base}?${query.toString()}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Census ArcGIS ${res.status}`);
+    const fc = await res.json();
+    if (fc.type !== "FeatureCollection" || !Array.isArray(fc.features)) {
+      throw new Error("Unexpected GeoJSON from Census");
+    }
+    all.push(...fc.features);
+    const n = fc.features.length;
+    const exceeded =
+      fc.exceededTransferLimit === true ||
+      fc.properties?.exceededTransferLimit === true;
+    if (!exceeded || n === 0) break;
+    offset += n;
+  }
+
+  const out = { type: "FeatureCollection", features: all };
+  res.json(out);
+});
 
 export default router;

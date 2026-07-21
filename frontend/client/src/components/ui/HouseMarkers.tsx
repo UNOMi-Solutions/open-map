@@ -151,21 +151,17 @@ export default function HouseMarkers() {
 
   useEffect(() => {
     let cancelled = false;
-    const path = `api/v1/politics/representatives`
+    const repPath = `api/v1/politics/representatives`;
+    const geoPath = `api/v1/politics/congressional_geo`;
     Promise.all([
-      fetch("/geo/congressional-119.geojson").then((r) => {
-        if (!r.ok) throw new Error(`District shapes (${r.status})`);
-        return r.json() as Promise<FeatureCollection<Geometry, GeoJsonProperties>>;
-      }),
-      /*
-      fetch("/data/house-district-parties.json").then((r) => {
-        if (!r.ok) throw new Error(`House members (${r.status})`);
-        return r.json() as Promise<PartiesFile>;
-      }),
-      */
+      cachedApiGet<FeatureCollection<Geometry, GeoJsonProperties>>(
+        `politics:congressionalGeo`,
+        geoPath,
+        CACHE_TTL.POLITICS,
+      ),
       cachedApiGet<PartiesFile>(
         `politics:houseOfReps`,
-        path,
+        repPath,
         CACHE_TTL.POLITICS,
       )
     ])
