@@ -328,6 +328,7 @@ router.get("/congressional_geo", async (req, res) => {
 });
 
 router.get("/president", async (req, res) => {
+  const DC_PIN = { lat: 38.8977, lng: -77.0365 };
   const url =
     "https://www.govtrack.us/api/v2/role?current=true&role_type=president&limit=5";
   const response = await fetch(url);
