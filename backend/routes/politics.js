@@ -329,27 +329,45 @@ router.get("/congressional_geo", async (req, res) => {
 
 router.get("/president", async (req, res) => {
   const DC_PIN = { lat: 38.8977, lng: -77.0365 };
-  const url =
+  const presUrl =
     "https://www.govtrack.us/api/v2/role?current=true&role_type=president&limit=5";
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`GovTrack ${response.status}`);
-  const data = await response.json();
-  const role = (data.objects ?? [])[0];
-  if (!role) throw new Error("No current president role returned");
+  const viceUrl = "https://www.govtrack.us/api/v2/role?current=true&role_type=vicepresident&limit=5";
+  const presResponse = await fetch(presUrl);
+  const viceResponse = await fetch(viceUrl);
+  if (!presResponse.ok) throw new Error(`GovTrack ${presResponse.status}`);
+  const presData = await presResponse.json();
+  const viceData = await viceResponse.json();
+  const presRole = (presData.objects ?? [])[0];
+  const viceRole = (viceData.objects ?? [])[0];
+  if (!presRole) throw new Error("No current president role returned");
+  if (!viceRole) throw new Error("No current vice president role returned");
 
-  const person = role.person ?? {};
-  const link = person.link ?? "";
+  const presPerson = presRole.person ?? {};
+  const vicePerson = viceRole.person ?? {};
+  const presLink = presPerson.link ?? "";
+  const viceLink = vicePerson.link ?? "";
   res.json({
     source: "https://www.govtrack.us/api/v2/role (current president)",
     fetchedAt: new Date().toISOString(),
     president: {
-      id: `pres-${link.match(/\/(\d+)\s*$/)?.[1] ?? "current"}`,
-      name: person.name ?? `${person.firstname ?? ""} ${person.lastname ?? ""}`.trim(),
-      title: role.title_long ?? role.title ?? "President of the United States",
-      party: role.party ?? "",
-      description: role.description ?? "",
-      website: role.website || link || "",
-      photoUrl: photoUrlFromGovTrackLink(link),
+      id: `pres-${presLink.match(/\/(\d+)\s*$/)?.[1] ?? "current"}`,
+      name: presPerson.name ?? `${presPerson.firstname ?? ""} ${presPerson.lastname ?? ""}`.trim(),
+      title: presRole.title_long ?? presRole.title ?? "President of the United States",
+      party: presRole.party ?? "",
+      description: presRole.description ?? "",
+      website: presRole.website || presLink || "",
+      photoUrl: photoUrlFromGovTrackLink(presLink),
+      lat: DC_PIN.lat,
+      lng: DC_PIN.lng,
+    },
+    vicePresident: {
+      id: `vp-${viceLink.match(/\/(\d+)\s*$/)?.[1] ?? "current"}`,
+      name: vicePerson.name ?? `${vicePerson.firstname ?? ""} ${vicePerson.lastname ?? ""}`.trim(),
+      title: viceRole.title_long ?? viceRole.title ?? "Vice President of the United States",
+      party: viceRole.party ?? "",
+      description: viceRole.description ?? "",
+      website: viceRole.website || viceLink || "",
+      photoUrl: photoUrlFromGovTrackLink(viceLink),
       lat: DC_PIN.lat,
       lng: DC_PIN.lng,
     },
