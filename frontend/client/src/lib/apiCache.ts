@@ -21,6 +21,7 @@ export const CACHE_TTL = {
   ENVIRONMENT_STATE: 12 * 60 * 60 * 1000,
   /** Air quality — refresh more often. */
   AIR_QUALITY: 2 * 60 * 60 * 1000,
+  /** Politics - refreshes infrequently */
   POLITICS: 24 * 60 * 60 * 1000,
 } as const;
 

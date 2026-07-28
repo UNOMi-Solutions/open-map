@@ -29,7 +29,12 @@ import {
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
 
+import ProgressBar from "@/components/ui/ProgressBar";
+
 export default function MainPage() {
+  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
