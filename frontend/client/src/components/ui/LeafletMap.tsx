@@ -339,6 +339,8 @@ type MapPin = {
 export type HouseDistrictPartyMode = "both" | "red" | "blue";
 
 export default function LeafletMap({
+  loading = false,
+  setLoading,
   sidebarOffsetPx = 0,
   hideInsets = false,
   pinDropMode = false,
@@ -381,6 +383,8 @@ export default function LeafletMap({
   healthMetricId = null,
   showSplcHateMap = false,
 }: {
+  loading?: boolean;
+  setLoading?: (state: boolean) => void,
   sidebarOffsetPx?: number;
   hideInsets?: boolean;
   pinDropMode?: boolean;
@@ -798,6 +802,7 @@ export default function LeafletMap({
       return;
     }
     let cancelled = false;
+    if (setLoading) setLoading(true);
     (async () => {
       try {
         const res = await fetch(`/data/health/${healthMetricId}.json`);
@@ -814,6 +819,7 @@ export default function LeafletMap({
           }
         }
         setHealthValueByGeoid(cleaned);
+        if (setLoading) setLoading(false);
       } catch (e) {
         console.error("Health PLACES data load failed:", e);
         if (!cancelled) setHealthValueByGeoid(null);
@@ -831,6 +837,7 @@ export default function LeafletMap({
       return;
     }
     let cancelled = false;
+    if (setLoading) setLoading(true);
     (async () => {
       try {
         const res = await fetch("/data/splc/by-state-geoid.json");
@@ -848,6 +855,7 @@ export default function LeafletMap({
             cleaned[String(k).padStart(2, "0")] = v;
         }
         if (!cancelled) setSplcByStateGeoid(cleaned);
+        if (setLoading) setLoading(false);
       } catch (e) {
         console.error("SPLC data load failed:", e);
         if (!cancelled) setSplcByStateGeoid(null);
@@ -1646,7 +1654,7 @@ export default function LeafletMap({
         <HomicideMarkers murderCategory={murderCategory} murderAttribute={murderAttribute} showMurderData={showMurderData}></HomicideMarkers>
 
         {/* Oil spill incidents – shown when Oil Spills is selected in sidebar */}
-        {showOilSpills && <OilSpillMarkers />}
+        {showOilSpills && <OilSpillMarkers setLoading={setLoading} />}
 
         {/* Natural disaster incidents – fetches only for the state selected */}
         {showNaturalDisasterIncidents && (
@@ -1668,7 +1676,7 @@ export default function LeafletMap({
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}
         {showGHGEmissions && (
-          <GhgEmissionsMarkers selectedStateCode={clickedStateCode} />
+          <GhgEmissionsMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
         )}
 
         {/* Data centers – shown when Data Centers is selected in sidebar */}

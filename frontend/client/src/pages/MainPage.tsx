@@ -18,7 +18,7 @@ import LeafletMap, {
   ChoroplethMetricKey,
   HouseDistrictPartyMode,
 } from "@/components/ui/LeafletMap";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { X, UserPlusIcon } from "lucide-react";
 import { BannerAd, VideoAd } from "@/components/ads";
 
@@ -28,12 +28,11 @@ import {
   HEALTH_WIRED_LAYER_IDS,
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
-
-import ProgressBar from "@/components/ui/ProgressBar";
+import LoadingBar from "./sections/LoadingBar";
 
 export default function MainPage() {
   const [progress, setProgress] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -528,7 +527,10 @@ export default function MainPage() {
               {/* Map layer */}
               <div className="absolute inset-0 z-0">
                 <LeafletMap 
+                  loading={isLoading}
+                  setLoading={setLoading}
                   sidebarOffsetPx={sidebarOpen ? SIDEBAR_WIDTH_OPEN : 0}
+
                   hideInsets={showLanding}
                   pinDropMode={isPinDropMode}
                   pins={mapPins}
@@ -772,6 +774,11 @@ export default function MainPage() {
       {/* Newsletter Popup */}
       {isNewsletterPopupOpen && (
         <NewsletterPopup isOpen={isNewsletterPopupOpen} onClose={() => setIsNewsletterPopupOpen(false)} />
+      )}
+
+      {/* Loading Popup */}
+      {isLoading && (
+        <LoadingBar isOpen={isLoading} onClose={() => setLoading(false)} />
       )}
 
       {/* Share Popup */}

@@ -38,6 +38,7 @@ type GhgEmissionFacility = {
 type GhgEmissionsMarkersProps = {
   // 2-letter state code of the state the user clicked; only this state's facilities are fetched 
   selectedStateCode: string | null;
+  setLoading?: (loading: boolean) => void;
 };
 
 function formatNumber(value: unknown): string {
@@ -49,14 +50,16 @@ function formatNumber(value: unknown): string {
 }
 
 // Fetch ghg emissions data from api and set state 
-const GhgEmissionsMarkers = ({ selectedStateCode }: GhgEmissionsMarkersProps) => {
+const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMarkersProps) => {
   const [facilities, setFacilities] = useState<GhgEmissionFacility[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!selectedStateCode) {
       setFacilities([]);
-      setLoading(false);
+      return;
+    }
+
+    if (setLoading == null) {
       return;
     }
 
@@ -81,7 +84,9 @@ const GhgEmissionsMarkers = ({ selectedStateCode }: GhgEmissionsMarkersProps) =>
         if (!cancelled) setFacilities([]);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -95,7 +100,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode }: GhgEmissionsMarkersProps) =>
   }
 
   // While loading and we have no facilities yet, also render nothing to avoid stray markers
-  if (loading && facilities.length === 0) {
+  if (facilities.length === 0) {
     return null;
   }
 

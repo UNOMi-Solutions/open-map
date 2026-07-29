@@ -46,12 +46,13 @@ function getCoords(incident: OilSpillIncident): [number, number] | null {
 }
 
 // Fetch oil spill data from api and set state 
-const OilSpillMarkers = () => {
+const OilSpillMarkers = ({setLoading}) => {
   const [oilSpillData, setOilSpillData] = useState<OilSpillIncident[]>([]);
   const [loadingOilSpillData, setLoadingOilSpillData] = useState<Boolean>(true);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     cachedApiGet<OilSpillIncident[]>(
       "environment:oilSpills",
       "/api/v1/environment/oilSpills",
@@ -66,6 +67,7 @@ const OilSpillMarkers = () => {
       })
       .finally(() => {
         if (!cancelled) setLoadingOilSpillData(false);
+        setLoading(false);
       });
     return () => {
       cancelled = true;
