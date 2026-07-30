@@ -2,9 +2,25 @@ import express from "express";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import User from "./models/User.js";
+import requireAuth from "./middleware/requireAuth.js";
 import { sendVerificationEmail, sendPasswordResetEmail } from "./emailService.js";
 
 const router = express.Router();
+
+// Returns the currently authenticated user (resolved from the JWT). Used by the
+// frontend to restore the session — including the plan — after a page refresh.
+router.get("/me", requireAuth, (req, res) => {
+  const user = req.authUser;
+  res.status(200).json({
+    user: {
+      email: user.email,
+      verified: !!user.verified,
+      plan: user.plan || null,
+      subscriptionStatus: user.subscriptionStatus || null,
+      subscriptionInterval: user.subscriptionInterval || null,
+    },
+  });
+});
 
 // Step 1: Register user
 router.post("/register", async (req, res) => {

@@ -17,8 +17,10 @@ import enforceHTTPS from "./middleware/httpsRedirect.js";
 import requestLogger from "./middleware/requestLogger.js";
 import errorHandler from "./middleware/errorHandler.js";
 import auth from "./middleware/auth.js";
+import requireAuth from "./middleware/requireAuth.js";
 import loginLimiter from "./middleware/loginLimiter.js";
 import authRoutes from "./auth.js";
+import { signUserToken } from "./utils/jwt.js";
 
 // Auth helpers
 import User from "./models/User.js";
@@ -35,6 +37,7 @@ import politicsRoutes from "./routes/politics.js";
 import socialRoutes from "./routes/social.js";
 import stripeRoutes from "./routes/stripe.js";
 import stripeWebhook from "./routes/stripeWebhook.js";
+import profileRoutes from "./routes/profiles.js";
 
 // Connect to MongoDB
 connectDB();
@@ -113,7 +116,22 @@ app.post("/api/auth/login", loginLimiter, async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
-    res.status(200).json({ success: true, message: "Login successful" });
+    // Issue a JWT so per-user features (e.g. saved profiles) can identify the
+    // caller on subsequent requests.
+    const token = signUserToken(user);
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        email: user.email,
+        verified: !!user.verified,
+        plan: user.plan || null,
+        subscriptionStatus: user.subscriptionStatus || null,
+        subscriptionInterval: user.subscriptionInterval || null,
+      },
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -133,6 +151,10 @@ app.use("/api/v1/social", auth, socialRoutes);
 // Stripe checkout routes (API-key protected, like the data routes).
 // The webhook is mounted separately above (before JSON parsing).
 app.use("/api/v1/stripe", auth, stripeRoutes);
+
+// Saved map profiles (per-user). Requires the shared API key AND a logged-in
+// user (JWT), since profiles and their per-tier limits are user-specific.
+app.use("/api/v1/profiles", auth, requireAuth, profileRoutes);
 
 // Documentation route
 app.get("/", (req, res) => {

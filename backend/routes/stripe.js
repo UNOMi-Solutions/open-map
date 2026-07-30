@@ -84,6 +84,19 @@ router.post("/create-checkout-session", async (req, res) => {
     const success = successUrl || `${hostBase}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     const cancel = cancelUrl || `${hostBase}/payment-cancelled`;
 
+    // Only verified accounts may purchase a paid plan. We enforce this here
+    // (not just in the UI) because the frontend gate can be bypassed. Skipped
+    // when no database is connected (local dev without MONGODB_URI).
+    if (dbReady()) {
+      const purchasingUser = customer_email ? await User.findOne({ email: customer_email }) : null;
+      if (!purchasingUser || !purchasingUser.verified) {
+        return res.status(403).json({
+          error: "Please verify your email before subscribing to a plan.",
+          code: "EMAIL_NOT_VERIFIED",
+        });
+      }
+    }
+
     const { customerId } = await resolveCustomer(customer_email);
 
     const session = await stripe.checkout.sessions.create({
