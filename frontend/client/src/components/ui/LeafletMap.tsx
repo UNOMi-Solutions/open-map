@@ -1682,7 +1682,7 @@ export default function LeafletMap({
         {/* Data centers – shown when Data Centers is selected in sidebar */}
         {showDataCenters && <DataCenterMarkers />}
 
-        {politicalLayerIds.includes("senators") && <SenatorMarkers />}
+        {politicalLayerIds.includes("senators") && <SenatorMarkers setLoading={setLoading}/>}
         {politicalLayerIds.includes("governors") && <GovernorMarkers />}
         {(politicalLayerIds.includes("president") ||
           politicalLayerIds.includes("vice-president")) && (
@@ -1691,7 +1691,7 @@ export default function LeafletMap({
             showVicePresident={politicalLayerIds.includes("vice-president")}
           />
         )}
-        {politicalLayerIds.includes("house") && <HouseMarkers />}
+        {politicalLayerIds.includes("house") && <HouseMarkers setLoading={setLoading}/>}
         {politicalLayerIds.includes("supreme-court") && <SupremeCourtMarkers />}
         {politicalLayerIds.includes("gerrymandering") && <GerrymanderingMarkers />}
 

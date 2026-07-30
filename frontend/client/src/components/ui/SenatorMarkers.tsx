@@ -128,9 +128,8 @@ function SenatorMarkerRow({ s }: { s: SenatorPin }) {
   );
 }
 
-export default function SenatorMarkers() {
+export default function SenatorMarkers({setLoading}) {
   const [siteData, setSiteData] = useState<SenatorPin[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

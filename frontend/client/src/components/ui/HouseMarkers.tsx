@@ -141,7 +141,7 @@ function HouseMarkerRow({ h }: { h: HousePin }) {
   );
 }
 
-export default function HouseMarkers() {
+export default function HouseMarkers({setLoading}) {
   const [geo, setGeo] = useState<FeatureCollection<
     Geometry,
     GeoJsonProperties
@@ -151,6 +151,7 @@ export default function HouseMarkers() {
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     const repPath = `api/v1/politics/representatives`;
     const geoPath = `api/v1/politics/congressional_geo`;
     Promise.all([
@@ -169,6 +170,7 @@ export default function HouseMarkers() {
         if (!cancelled) {
           setGeo(fc);
           setParties(p.districts ?? {});
+          setLoading(false);
         }
       })
       .catch((e: unknown) => {
