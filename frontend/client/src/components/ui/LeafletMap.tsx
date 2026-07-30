@@ -75,6 +75,9 @@ import HouseMarkers from "./HouseMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
 
+// health data
+import { apiGet } from "@/lib/apiClient";
+
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
   [24.5, -125.0], // SW
@@ -140,6 +143,59 @@ function getStateCode(f: Feature<Geometry, GeoJsonProperties>): string | null {
   const name = String(p.name ?? p.NAME ?? p.State ?? p.state ?? "").trim();
   return name ? (STATE_NAME_TO_CODE[name] ?? null) : null;
 }
+
+/* CHANGES FOR HEALTH DATA
+  "heart-disease",
+  "cancer",
+  "breast-cancer",
+  "diabetes",
+  "colon-cancer",
+  "lung-cancer",
+  "kidney-disease",
+  "smokers",
+  "obesity",
+  "alcoholism",
+  "mental-health",
+  "best-healthcare-coverage",
+  "worst-healthcare-coverage",
+  "most-out-of-shape-population",
+  "healthiest-population",
+*/
+const DEFAULT_HEALTH_YEAR = "2020";
+
+type HealthBackendRouteConfig = {
+  route: (year: string) => string;
+  geoIdField: string;
+  valueField: string;
+  level: "state" | "county";
+};
+
+const HEALTH_BACKEND_ROUTE_CONFIG: Record<string, HealthBackendRouteConfig> = {
+  "heart-disease": {
+    route: (year) => `/api/v1/health/heartDiseaseByState?year=${year}`,
+    geoIdField: "stateFips",
+    valueField: "heartDiseaseCases",
+    level: "state",
+  },
+  "colon-cancer": {
+    route: (year) => `/api/v1/health/prostateCancerByState?year=${year}`,
+    geoIdField: "stateFips",
+    valueField: "prostateCancerCases",
+    level: "state",
+  },
+  "obesity": {
+    route: (year) => `/api/v1/health/obesityByState?year=${year}`,
+    geoIdField: "stateFips",
+    valueField: "obesityCases",
+    level: "state",
+  },
+  "breast-cancer": {
+    route: (year) => `/api/v1/health/breastCancerByState?year=${year}`,
+    geoIdField: "stateFips",
+    valueField: "breastCancerCases",
+    level: "state",
+  },
+};
 
 function ClearFocusOnClick({
   onClear,
@@ -800,22 +856,42 @@ export default function LeafletMap({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/data/health/${healthMetricId}.json`);
-        if (!res.ok) {
-          if (!cancelled) setHealthValueByGeoid(null);
-          return;
-        }
-        const json = (await res.json()) as Record<string, number>;
-        if (cancelled) return;
+        const backendConfig = HEALTH_BACKEND_ROUTE_CONFIG[healthMetricId];
         const cleaned: Record<string, number> = {};
-        for (const [geoid, v] of Object.entries(json)) {
-          if (typeof v === "number" && !Number.isNaN(v)) {
-            cleaned[String(geoid).padStart(5, "0")] = v;
+
+        if (backendConfig) {
+          const payload = await apiGet<{ states?: Array<Record<string, unknown>> }>(
+            backendConfig.route(DEFAULT_HEALTH_YEAR)
+          );
+          const rows = Array.isArray(payload.states) ? payload.states : [];
+          for (const row of rows) {
+            const geoIdRaw = row[backendConfig.geoIdField];
+            const valueRaw = row[backendConfig.valueField];
+            const value =
+              typeof valueRaw === "number"
+                ? valueRaw
+                : Number(valueRaw);
+            if (geoIdRaw == null || Number.isNaN(value)) continue;
+            cleaned[String(geoIdRaw).padStart(backendConfig.level === "state" ? 2 : 5, "0")] = value;
+          }
+        } else {
+          const res = await fetch(`/data/health/${healthMetricId}.json`);
+          if (!res.ok) {
+            if (!cancelled) setHealthValueByGeoid(null);
+            return;
+          }
+          const json = (await res.json()) as Record<string, number>;
+          for (const [geoid, v] of Object.entries(json)) {
+            if (typeof v === "number" && !Number.isNaN(v)) {
+              cleaned[String(geoid).padStart(5, "0")] = v;
+            }
           }
         }
+
+        if (cancelled) return;
         setHealthValueByGeoid(cleaned);
       } catch (e) {
-        console.error("Health PLACES data load failed:", e);
+        console.error("Health backend data load failed:", e);
         if (!cancelled) setHealthValueByGeoid(null);
       }
     })();
@@ -965,10 +1041,14 @@ export default function LeafletMap({
     };
   }, [statesFC]);
 
+  const isStateHealthMetric =
+    healthMetricId != null &&
+    HEALTH_BACKEND_ROUTE_CONFIG[healthMetricId]?.level === "state";
+
   const choroplethFeatureCollection = useMemo(() => {
-    if (showSplcHateMap) return statesNormalizedGeo;
+    if (showSplcHateMap || isStateHealthMetric) return statesNormalizedGeo;
     return choroplethGeo;
-  }, [showSplcHateMap, statesNormalizedGeo, choroplethGeo]);
+  }, [showSplcHateMap, isStateHealthMetric, statesNormalizedGeo, choroplethGeo]);
 
   const metricByGeoId = useMemo(() => {
     if (showSplcHateMap) {
