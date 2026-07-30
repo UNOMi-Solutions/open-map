@@ -131,8 +131,8 @@ export const NavigationMenuSection = ({
     { id: "air-quality", label: "Air Quality" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
-    { id: "toxic-spills", label: "Toxic Spills" },
-    { id: "toxic-area", label: "Toxic Area" },
+    // { id: "toxic-spills", label: "Toxic Spills" },
+    // { id: "toxic-area", label: "Toxic Area" },
   ];
 
   // Sub-filters for Natural Disaster Incidents (matches backend incident types)
@@ -162,23 +162,23 @@ export const NavigationMenuSection = ({
     { id: "cancer", label: "Cancer" },
     { id: "breast-cancer", label: "Breast Cancer" },
     { id: "diabetes", label: "Diabetes" },
-    { id: "pre-diabetic", label: "Pre-diabetic" },
+    // { id: "pre-diabetic", label: "Pre-diabetic" },
     { id: "colon-cancer", label: "Colon Cancer" },
-    { id: "prostate-cancer", label: "Prostate Cancer" },
-    { id: "aids", label: "AIDS" },
-    { id: "hiv", label: "HIV" },
-    { id: "std", label: "STD" },
+    // { id: "prostate-cancer", label: "Prostate Cancer" },
+    // { id: "aids", label: "AIDS" },
+    // { id: "hiv", label: "HIV" },
+    // { id: "std", label: "STD" },
     { id: "obesity", label: "Obesity" },
-    { id: "smallpox", label: "Small Pox" },
-    { id: "covid-19", label: "Covid 19" },
+    // { id: "smallpox", label: "Small Pox" },
+    // { id: "covid-19", label: "Covid 19" },
     { id: "lung-cancer", label: "Lung Cancer" },
     { id: "kidney-disease", label: "Kidney Disease" },
     { id: "smokers", label: "Smokers" },
-    { id: "cannabis-smokers", label: "Cannabis Smokers" },
-    { id: "illegal-hard-drug-use", label: "Illegal/Hard drug use" },
-    { id: "healthy-eating", label: "Healthy eating" },
+    // { id: "cannabis-smokers", label: "Cannabis Smokers" },
+    // { id: "illegal-hard-drug-use", label: "Illegal/Hard drug use" },
+    // { id: "healthy-eating", label: "Healthy eating" },
     { id: "alcoholism", label: "Alcoholism" },
-    { id: "drug-addiction", label: "Drug addiction" },
+    // { id: "drug-addiction", label: "Drug addiction" },
     { id: "mental-health", label: "Mental Health" },
     { id: "best-healthcare-coverage", label: "Best healthcare coverage" },
     { id: "worst-healthcare-coverage", label: "Worst Healthcare Coverage" },
@@ -235,12 +235,12 @@ export const NavigationMenuSection = ({
 
   const politicalTopics = [
     { id: "senators", label: "Senators" },
-    { id: "mayors", label: "Mayors" },
+    // { id: "mayors", label: "Mayors" },
     { id: "house", label: "House of Representatives" },
     { id: "supreme-court", label: "Supreme Court" },
     { id: "president", label: "President" },
     { id: "vice-president", label: "Vice President" },
-    { id: "governors", label: "Governors" },
+    // { id: "governors", label: "Governors" },
     { id: "gerrymandering", label: "Jerry Mandering" },
     { id: "red-blue-district", label: "Red/Blue district (House of Representatives)" },
     { id: "electoral-college", label: "Electoral College (by state)" },
@@ -435,65 +435,6 @@ export const NavigationMenuSection = ({
                       </div>
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="real-estate" className="border-0">
-          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
-            <div className="flex items-center">
-              <ChevronRight className="accordion-arrow" />
-              {/* <span className="text-[17px] text-white font-normal font-futura leading-[100%]">
-              {/* <img
-                className="w-[11px] h-1.5 mr-1.5"
-                alt="Graphics"
-                src="/figmaAssets/graphics.svg"
-              /> */}
-              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
-                Real Estate
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="pt-0 pb-0">
-            <div className="ml-4">
-              <div className="flex flex-wrap items-center mt-1 gap-x-3 gap-y-2 pb-3 border-b border-white/10">
-                <span className="text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
-                  by:
-                </span>
-                {realEstateFilters.map((filter) => (
-                  <div key={filter.id} className="flex items-center">
-                    <Checkbox
-                      id={filter.id}
-                      className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                    />
-                    <label
-                      htmlFor={filter.id}
-                      className="ml-[12px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT]"
-                    >
-                      {filter.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-
-              {realEstateItems.map((item) => (
-                <div key={item.id} className="flex items-center mt-1.5">
-                  <Checkbox
-                    id={item.id}
-                    checked={selectedLayers.includes(item.id)}
-                    onCheckedChange={(c) =>
-                      onLayerToggle?.(item.id, c === true)
-                    }
-                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                  />
-                  <label
-                    htmlFor={item.id}
-                    className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT]"
-                  >
-                    {item.label}
-                  </label>
                 </div>
               ))}
             </div>
