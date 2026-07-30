@@ -48,3 +48,23 @@ export const PRICE_TO_PLAN = Object.entries(PRICE_MAP).reduce((acc, [plan, val])
   if (val.yearly) acc[val.yearly] = { plan, interval: "yearly" };
   return acc;
 }, {});
+
+/**
+ * Maximum number of saved profiles (map configurations) each plan allows.
+ * Keep these in sync with the "N Profiles" copy in each plan's `features`.
+ */
+export const PROFILE_LIMITS = {
+  freeTrial: 1,
+  premium: 1,
+  enterprise: 10,
+  agency: 100,
+};
+
+/**
+ * Resolves the profile limit for a user's plan key. A missing/unknown plan
+ * (e.g. a brand-new account with `plan: null`) is treated as the free trial,
+ * which allows a single profile.
+ */
+export function getProfileLimit(plan) {
+  return PROFILE_LIMITS[plan] ?? PROFILE_LIMITS.freeTrial;
+}

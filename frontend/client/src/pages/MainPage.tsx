@@ -14,6 +14,8 @@ import ContactUsform from "./sections/ContactUsform";
 import AboutUsModal from "./sections/AboutUs";
 import NewsletterPopup from "./sections/NewsLetterPopup";
 import SharePopup from "./sections/SharePopup";
+import Profiles from "./sections/Profiles";
+import { fetchMe, getAuthToken, setAuthToken } from "@/lib/apiClient";
 import LeafletMap, {
   ChoroplethMetricKey,
   HouseDistrictPartyMode,
@@ -41,6 +43,9 @@ export default function MainPage() {
   // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
   // logged-in user, or null when they have no active subscription.
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  // Whether the logged-in user's email has been verified. Unverified users
+  // cannot subscribe to a paid plan.
+  const [isVerified, setIsVerified] = useState(false);
   // Premium users see no ads. Wire this up to your real subscription flag.
   const [isPremium] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
@@ -51,6 +56,7 @@ export default function MainPage() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isNewsletterPopupOpen, setIsNewsletterPopupOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isProfilesOpen, setIsProfilesOpen] = useState(false);
   const [isSignUpDropdownOpen, setIsSignUpDropdownOpen] = useState(false);
   const [isPinDropMode, setIsPinDropMode] = useState(false);
   const [mapPins, setMapPins] = useState<
@@ -159,10 +165,15 @@ export default function MainPage() {
     setIsPinDropMode((prev) => !prev);
     setIsSignUpDropdownOpen(false);
   };
-  const handleUserLogin = (email: string, plan: string | null = null) => {
+  const handleUserLogin = (
+    email: string,
+    plan: string | null = null,
+    verified: boolean = false
+  ) => {
     setIsLoggedIn(true);
     setUserEmail(email);
     setCurrentPlan(plan);
+    setIsVerified(verified);
     setIsSignUpOpen(false);
     // If the user was trying to pick a plan before authenticating, bring them
     // back to the pricing screen to finish choosing.
@@ -189,9 +200,11 @@ export default function MainPage() {
     setMapPins([]);
   };
   const handleUserLogout = () => {
+    setAuthToken(null);
     setIsLoggedIn(false);
     setUserEmail("");
     setCurrentPlan(null);
+    setIsVerified(false);
     setIsSignUpDropdownOpen(false);
   };
   const handlePricingClick = () => {
@@ -289,6 +302,87 @@ export default function MainPage() {
     setSearchQuery("");
     setHealthMetricId(null);
   };
+
+  /** Snapshot of the full map setup, saved as a profile's `config`. */
+  const getCurrentConfig = (): Record<string, unknown> => ({
+    mapPins,
+    selectedLayers,
+    choroplethMetric,
+    showChoropleth,
+    selectedAgeGroupId,
+    selectedRaceCensusId,
+    selectedSexId,
+    showPoliceKillingData,
+    PoliceKillingQ,
+    PoliceKillingYear,
+    showMurderData,
+    murderCategory,
+    murderAttribute,
+    arrestCategory,
+    showArrestData,
+    showMissingPersonsData,
+    missingPersonQ,
+    missingPersonYear,
+    showConsentAgeData,
+    politicalLayerIds,
+    houseDistrictPartyMode,
+    healthMetricId,
+    searchQuery,
+  });
+
+  /** Applies a saved profile's config back onto the map, falling back to
+   * sensible defaults for any field an older profile may be missing. */
+  const applyConfig = (config: Record<string, any>) => {
+    const c = config || {};
+    setMapPins(Array.isArray(c.mapPins) ? c.mapPins : []);
+    setSelectedLayers(Array.isArray(c.selectedLayers) ? c.selectedLayers : []);
+    setChoroplethMetric(c.choroplethMetric ?? "pct_white");
+    setShowChoropleth(!!c.showChoropleth);
+    setSelectedAgeGroupId(c.selectedAgeGroupId ?? null);
+    setSelectedRaceCensusId(c.selectedRaceCensusId ?? "all");
+    setSelectedSexId(c.selectedSexId ?? null);
+    setShowPoliceKillingData(!!c.showPoliceKillingData);
+    setPoliceKillingQ(c.PoliceKillingQ ?? "Q1");
+    setPoliceKillingYear(c.PoliceKillingYear ?? 2026);
+    setShowMurderData(!!c.showMurderData);
+    setMurderCategory(c.murderCategory ?? "victim");
+    setMurderAttribute(c.murderAttribute ?? "age");
+    setArrestCategory(c.arrestCategory ?? "Arrestee Sex");
+    setShowArrestData(!!c.showArrestData);
+    setShowMissingPersonsData(!!c.showMissingPersonsData);
+    setMissingPersonQ(c.missingPersonQ ?? "Q1");
+    setMissingPersonYear(c.missingPersonYear ?? 2026);
+    setShowConsentAgeData(!!c.showConsentAgeData);
+    setPoliticalLayerIds(Array.isArray(c.politicalLayerIds) ? c.politicalLayerIds : []);
+    setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
+    setHealthMetricId(c.healthMetricId ?? null);
+    setSearchQuery(c.searchQuery ?? "");
+    // Make sure the loaded configuration is actually visible.
+    setShowLanding(false);
+    setSidebarOpen(true);
+  };
+
+  // Restore the logged-in session (and plan) on page load using the stored JWT.
+  useEffect(() => {
+    if (!getAuthToken()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { user } = await fetchMe();
+        if (cancelled || !user) return;
+        setIsLoggedIn(true);
+        setUserEmail(user.email);
+        setCurrentPlan(user.plan ?? null);
+        setIsVerified(!!user.verified);
+      } catch {
+        // Token invalid/expired — clear it so the UI reflects a logged-out state.
+        setAuthToken(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Newsletter popup timer
   useEffect(() => {
@@ -429,7 +523,7 @@ export default function MainPage() {
                           </div>
                           
                           <div 
-                            className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-500 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+                            className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
                               handlePricingClick();
                               setIsSignUpDropdownOpen(false);
@@ -441,6 +535,17 @@ export default function MainPage() {
                               src="/figmaAssets/Plan.svg"
                             />
                             <span className="text-[10.5px] text-white">Plan</span>
+                          </div>
+
+                          <div
+                            className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-500 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+                            onClick={() => {
+                              setIsProfilesOpen(true);
+                              setIsSignUpDropdownOpen(false);
+                            }}
+                          >
+                            <UserPlusIcon className="w-[16px] h-[16px] text-white" />
+                            <span className="text-[10.5px] text-white">My Profiles</span>
                           </div>
                           
                           <div className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors">
@@ -771,6 +876,7 @@ export default function MainPage() {
           isOpen={isPricingOpen}
           onClose={() => setIsPricingOpen(false)}
           isLoggedIn={isLoggedIn}
+          isVerified={isVerified}
           userEmail={userEmail}
           currentPlan={currentPlan}
           onRequireAuth={handleRequirePlanAuth}
@@ -798,6 +904,17 @@ export default function MainPage() {
         onClose={() => setIsShareOpen(false)}
         mapContainerRef={mapSectionRef}
       />
+
+      {/* Saved Map Profiles */}
+      {isProfilesOpen && (
+        <Profiles
+          isOpen={isProfilesOpen}
+          onClose={() => setIsProfilesOpen(false)}
+          getCurrentConfig={getCurrentConfig}
+          onLoadProfile={applyConfig}
+          planLabel={currentPlan}
+        />
+      )}
 
       {/* Sign Up Modal */}
       {isSignUpOpen && (
@@ -829,8 +946,8 @@ export default function MainPage() {
             setIsLoginOpen(false);
             setPendingPlan(null);
           }}
-          onLogin={(email, plan) => {
-            handleUserLogin(email, plan ?? null);
+          onLogin={(email, plan, verified) => {
+            handleUserLogin(email, plan ?? null, verified ?? false);
             setIsLoginOpen(false);
           }}
           onSwitchToSignUp={() => setIsSignUpOpen(true)}
@@ -843,7 +960,8 @@ export default function MainPage() {
           isOpen={isVerifyOpen} 
           onClose={() => setIsVerifyOpen(false)}
           onLogin={(email) => {
-            handleUserLogin(email);
+            // Reaching this callback means the email was just verified.
+            handleUserLogin(email, null, true);
             setIsVerifyOpen(false);
           }}
         />

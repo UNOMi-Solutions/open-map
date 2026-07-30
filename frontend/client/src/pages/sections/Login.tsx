@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { getApiBaseUrl } from '@/lib/apiClient';
+import { getApiBaseUrl, setAuthToken } from '@/lib/apiClient';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin?: (email: string, plan?: string | null) => void;
+  onLogin?: (email: string, plan?: string | null, verified?: boolean) => void;
   onSwitchToSignUp?: () => void;
   onSwitchToForgot?: () => void;
 }
@@ -43,9 +43,15 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp,
 
     const data = await response.json();
     console.log('Success:', data);
-    
+
+    // Persist the JWT so per-user features (saved profiles) work and the
+    // session survives a page refresh.
+    if (data?.token) {
+      setAuthToken(data.token);
+    }
+
     if (onLogin && email && password) {
-      onLogin(email, data?.user?.plan ?? null);
+      onLogin(email, data?.user?.plan ?? null, data?.user?.verified ?? false);
     }
   };
 

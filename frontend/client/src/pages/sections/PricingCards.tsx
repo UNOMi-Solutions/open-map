@@ -79,6 +79,7 @@ interface PricingCardsProps {
   onClose?: () => void;
   onFreeTrial?: () => void;
   isLoggedIn?: boolean;
+  isVerified?: boolean;
   userEmail?: string;
   currentPlan?: string | null;
   onRequireAuth?: (planName: string) => void;
@@ -90,12 +91,16 @@ export default function PricingCards({
   onClose,
   onFreeTrial,
   isLoggedIn = false,
+  isVerified = false,
   userEmail,
   currentPlan = null,
   onRequireAuth,
 }: PricingCardsProps) {
   //const [isOpen, setIsOpen] = useState(true);
   const [isYearly, setIsYearly] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  // A logged-in user who hasn't verified their email may not buy a paid plan.
+  const needsVerification = isLoggedIn && !isVerified;
 
   const plans = [
     {
@@ -211,6 +216,14 @@ export default function PricingCards({
       }
       return;
     }
+    // Paid plan: block unverified accounts from reaching Stripe. The backend
+    // enforces this too, but we stop here to avoid a pointless round trip.
+    if (needsVerification) {
+      setNotice(
+        "Please verify your email before subscribing to a paid plan. Check your inbox for the verification link."
+      );
+      return;
+    }
     try {
       const base = window.location.origin;
       const apiURL = import.meta.env.VITE_API_LINK || "";
@@ -268,6 +281,13 @@ export default function PricingCards({
               <span className="font-semibold">{currentPlanLabel}</span> plan.
               You can't purchase it again — manage or cancel it from your billing
               settings.
+            </div>
+          )}
+
+          {needsVerification && (
+            <div className="mb-6 mx-auto max-w-xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {notice ||
+                "Your email isn't verified yet. Please verify your email before subscribing to a paid plan — check your inbox for the verification link."}
             </div>
           )}
 
