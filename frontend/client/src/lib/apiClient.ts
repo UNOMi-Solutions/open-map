@@ -118,9 +118,103 @@ export interface ProfilesResponse {
   remaining: number;
 }
 
-/** Fetches the current user (email, plan, verified) from the stored JWT. */
-export function fetchMe(): Promise<{ user: { email: string; verified: boolean; plan: string | null } }> {
+// ---- Account ----
+
+/** The logged-in user's account, as returned by `/api/v1/auth/me`. */
+export interface AccountUser {
+  name: string;
+  email: string;
+  verified: boolean;
+  plan: string | null;
+  subscriptionStatus: string | null;
+  subscriptionInterval: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  /** New address awaiting confirmation, or null when no change is pending. */
+  pendingEmail: string | null;
+}
+
+/** Plan state for the account settings page. */
+export interface SubscriptionSummary {
+  plan: string | null;
+  displayName: string;
+  /** True only for a live, paid Stripe subscription — drives Unsubscribe vs View Plans. */
+  isPaid: boolean;
+  interval: string | null;
+  status: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+/** Fetches the current user from the stored JWT. */
+export function fetchMe(): Promise<{ user: AccountUser }> {
   return request("GET", "/api/v1/auth/me");
+}
+
+/** Updates the display name. */
+export function updateAccountName(name: string): Promise<{ user: AccountUser }> {
+  return request("PATCH", "/api/v1/auth/me", { name });
+}
+
+/**
+ * Starts an email change. The address only switches once the user opens the
+ * confirmation link sent to it, so the response reflects the *old* email.
+ */
+export function requestEmailChange(
+  email: string,
+  password: string
+): Promise<{ message: string; user: AccountUser }> {
+  return request("POST", "/api/v1/auth/me/email", { email, password });
+}
+
+/** Confirms a pending email change from the link in the new inbox. */
+export function confirmEmailChange(token: string): Promise<{ message: string; email: string }> {
+  return request("GET", `/api/v1/auth/verify-email-change?token=${encodeURIComponent(token)}`);
+}
+
+/** Mails the logged-in user the same password reset link used by the login flow. */
+export function requestPasswordChange(): Promise<{ message: string }> {
+  return request("POST", "/api/v1/auth/me/password-reset");
+}
+
+/** Permanently deletes the account, its saved profiles and any subscription. */
+export function deleteAccount(password: string): Promise<{ success: boolean; message: string }> {
+  return request("DELETE", "/api/v1/auth/me", { password });
+}
+
+export function fetchSubscription(): Promise<SubscriptionSummary> {
+  return request("GET", "/api/v1/stripe/subscription");
+}
+
+/** Cancels at the end of the paid period; access continues until then. */
+export function cancelSubscription(): Promise<{
+  success: boolean;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string | null;
+}> {
+  return request("POST", "/api/v1/stripe/cancel-subscription");
+}
+
+/** Undoes a pending cancellation. */
+export function resumeSubscription(): Promise<{ success: boolean; cancelAtPeriodEnd: boolean }> {
+  return request("POST", "/api/v1/stripe/resume-subscription");
+}
+
+/**
+ * Switches an existing subscription to another plan. Only for users who
+ * already pay — everyone else goes through Stripe checkout instead.
+ */
+export function changePlan(
+  plan: string,
+  interval: "monthly" | "yearly"
+): Promise<{
+  success: boolean;
+  plan: string;
+  interval: string;
+  displayName: string;
+  currentPeriodEnd: string | null;
+}> {
+  return request("POST", "/api/v1/stripe/change-plan", { plan, interval });
 }
 
 export function listProfiles(): Promise<ProfilesResponse> {

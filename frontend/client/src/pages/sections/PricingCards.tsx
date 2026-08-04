@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import {
+  ApiError,
+  changePlan,
+  fetchSubscription,
+  type SubscriptionSummary,
+} from '@/lib/apiClient';
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
@@ -83,6 +89,8 @@ interface PricingCardsProps {
   userEmail?: string;
   currentPlan?: string | null;
   onRequireAuth?: (planName: string) => void;
+  /** Fired after an in-place plan switch so the shell can refresh its copy. */
+  onPlanChanged?: (plan: string) => void;
 }
 
 // Main Pricing Component
@@ -95,12 +103,46 @@ export default function PricingCards({
   userEmail,
   currentPlan = null,
   onRequireAuth,
+  onPlanChanged,
 }: PricingCardsProps) {
   //const [isOpen, setIsOpen] = useState(true);
   const [isYearly, setIsYearly] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [switching, setSwitching] = useState<string | null>(null);
+  // A plan switch the user picked but hasn't confirmed yet. Changing plans
+  // bills a real card without passing through Stripe Checkout, so it gets an
+  // explicit confirmation rather than firing on the first click.
+  const [pendingSwitch, setPendingSwitch] = useState<{
+    plan: string;
+    planName: string;
+    interval: "monthly" | "yearly";
+  } | null>(null);
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  // Live Stripe state. Someone who already pays switches their existing
+  // subscription rather than checking out again, so we need to know whether
+  // one exists before deciding what each button does.
+  const [subscription, setSubscription] = useState<SubscriptionSummary | null>(null);
   // A logged-in user who hasn't verified their email may not buy a paid plan.
   const needsVerification = isLoggedIn && !isVerified;
+  const hasPaidSubscription = !!subscription?.isPaid;
+
+  useEffect(() => {
+    if (!propIsOpen || !isLoggedIn) return;
+    let cancelled = false;
+    fetchSubscription()
+      .then((data) => {
+        if (!cancelled) setSubscription(data);
+      })
+      .catch(() => {
+        // Without this the UI simply falls back to the checkout flow.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [propIsOpen, isLoggedIn]);
+
+  // Once loaded, Stripe is more current than the plan the shell passed down.
+  const activePlan = subscription?.plan ?? currentPlan;
 
   const plans = [
     {
@@ -186,9 +228,71 @@ export default function PricingCards({
   };
 
   // Display label for the plan the user is already subscribed to.
-  const currentPlanLabel = currentPlan
-    ? Object.keys(planKeyByName).find((name) => planKeyByName[name] === currentPlan) || null
+  const currentPlanLabel = activePlan
+    ? Object.keys(planKeyByName).find((name) => planKeyByName[name] === activePlan) || null
     : null;
+
+  const selectedInterval: "monthly" | "yearly" = isYearly ? "yearly" : "monthly";
+
+  const planByKey = (key: string | null) =>
+    key ? plans.find((p) => planKeyByName[p.name] === key) || null : null;
+
+  const priceFor = (
+    plan: { monthlyPrice: number; yearlyPrice: number } | null,
+    interval: string | null
+  ) => (plan ? (interval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice) : 0);
+
+  /** Normalised so a monthly plan can be compared against a yearly one. */
+  const monthlyEquivalent = (
+    plan: { monthlyPrice: number; yearlyPrice: number } | null,
+    interval: string | null
+  ) => (interval === "yearly" ? priceFor(plan, "yearly") / 12 : priceFor(plan, "monthly"));
+
+  /**
+   * True when a card represents exactly what the user already pays for. The
+   * billing interval counts too, so a monthly subscriber can still move to the
+   * yearly price of the same plan.
+   */
+  const isCurrentSelection = (planKey: string) =>
+    !!activePlan &&
+    planKey === activePlan &&
+    (!hasPaidSubscription || subscription?.interval === selectedInterval);
+
+  const confirmSwitch = async () => {
+    if (!pendingSwitch) return;
+    const { plan, interval } = pendingSwitch;
+    setSwitching(plan);
+    setSwitchError(null);
+    try {
+      const result = await changePlan(plan, interval);
+      setSubscription((current) =>
+        current
+          ? {
+              ...current,
+              plan: result.plan,
+              displayName: result.displayName,
+              interval: result.interval,
+              currentPeriodEnd: result.currentPeriodEnd,
+              cancelAtPeriodEnd: false,
+            }
+          : current
+      );
+      onPlanChanged?.(result.plan);
+      setPendingSwitch(null);
+      setNotice(
+        `You're now on the ${result.displayName} plan. The price difference is prorated onto your next invoice.`
+      );
+    } catch (e) {
+      // Keep the dialog open so the user can retry or back out.
+      setSwitchError(
+        e instanceof ApiError && e.message
+          ? e.message
+          : "Could not change your plan. Please try again."
+      );
+    } finally {
+      setSwitching(null);
+    }
+  };
 
   const handleCheckout = async (planName: string) => {
     const plan = planKeyByName[planName];
@@ -201,12 +305,31 @@ export default function PricingCards({
       }
       return;
     }
-    // Already subscribed to this plan — never route back to Stripe checkout.
-    if (currentPlan && plan === currentPlan) {
+    // Already on exactly this plan and billing interval — nothing to do.
+    if (isCurrentSelection(plan)) {
       return;
     }
-    const interval = isYearly ? "yearly" : "monthly";
+    const interval: "monthly" | "yearly" = selectedInterval;
+
+    // Existing subscriber picking a different paid plan: change the live
+    // subscription rather than checking out again, which would open a second
+    // subscription and bill them for both. Confirm before touching their card.
+    if (hasPaidSubscription && plan !== "freeTrial") {
+      setNotice(null);
+      setSwitchError(null);
+      setPendingSwitch({ plan, planName, interval });
+      return;
+    }
+
     if (plan === "freeTrial") {
+      // Downgrading to free means ending the paid subscription, which lives
+      // behind an explicit confirmation in Account Settings.
+      if (hasPaidSubscription) {
+        setNotice(
+          "To move to the free trial, unsubscribe from Account Settings. You'll keep your current plan until the end of the billing period."
+        );
+        return;
+      }
       // Free trial has no Stripe price; open the signup modal instead of
       // navigating to a /signup route that doesn't exist in this SPA.
       if (onFreeTrial) {
@@ -277,17 +400,24 @@ export default function PricingCards({
 
           {currentPlanLabel && (
             <div className="mb-6 mx-auto max-w-xl rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-              You're currently subscribed to the{" "}
+              You're currently on the{" "}
               <span className="font-semibold">{currentPlanLabel}</span> plan.
-              You can't purchase it again — manage or cancel it from your billing
-              settings.
+              {hasPaidSubscription
+                ? " Pick another plan below to upgrade or downgrade — we'll switch your existing subscription and prorate the difference."
+                : " You can't purchase it again."}
             </div>
           )}
 
-          {needsVerification && (
+          {notice && (
+            <div className="mb-6 mx-auto max-w-xl rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+              {notice}
+            </div>
+          )}
+
+          {needsVerification && !notice && (
             <div className="mb-6 mx-auto max-w-xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              {notice ||
-                "Your email isn't verified yet. Please verify your email before subscribing to a paid plan — check your inbox for the verification link."}
+              Your email isn't verified yet. Please verify your email before subscribing to a paid
+              plan — check your inbox for the verification link.
             </div>
           )}
 
@@ -298,8 +428,23 @@ export default function PricingCards({
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map((plan, index) => {
-              const isCurrent =
-                !!currentPlan && planKeyByName[plan.name] === currentPlan;
+              const planKey = planKeyByName[plan.name];
+              const isCurrent = isCurrentSelection(planKey);
+              const isSwitching = switching === planKey;
+              // Paid subscribers switch plans in place instead of buying again.
+              const canSwitch = hasPaidSubscription && !isCurrent && planKey !== "freeTrial";
+              // Same plan, different billing cadence — say so explicitly rather
+              // than the vaguer "switch to this plan".
+              const isIntervalOnlySwitch = canSwitch && planKey === activePlan;
+              const buttonText = isCurrent
+                ? "Current Plan"
+                : isSwitching
+                ? "Switching…"
+                : isIntervalOnlySwitch
+                ? `Switch to ${selectedInterval} billing`
+                : canSwitch
+                ? "Switch to this plan"
+                : plan.buttonText;
               return (
               <Card
                 key={index}
@@ -336,14 +481,14 @@ export default function PricingCards({
                   <button
                     type="button"
                     onClick={() => handleCheckout(plan.name)}
-                    disabled={isCurrent}
+                    disabled={isCurrent || switching !== null}
                     className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
                       isCurrent
                         ? 'bg-green-100 text-green-700 cursor-not-allowed'
                         : plan.buttonStyle
-                    }`}
+                    } ${switching !== null && !isCurrent ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    {isCurrent ? 'Current Plan' : plan.buttonText}
+                    {buttonText}
                   </button>
 
                   <div 
@@ -375,6 +520,93 @@ export default function PricingCards({
           </div>
         </div>
       </div>
+
+      {pendingSwitch && (() => {
+        const fromPlan = planByKey(activePlan);
+        const toPlan = planByKey(pendingSwitch.plan);
+        const fromInterval = subscription?.interval || "monthly";
+        const fromPrice = priceFor(fromPlan, fromInterval);
+        const toPrice = priceFor(toPlan, pendingSwitch.interval);
+        const isUpgrade =
+          monthlyEquivalent(toPlan, pendingSwitch.interval) >
+          monthlyEquivalent(fromPlan, fromInterval);
+        const busy = switching !== null;
+
+        return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+              <h2 className="text-xl font-bold text-gray-900">
+                {isUpgrade ? "Confirm upgrade" : "Confirm plan change"}
+              </h2>
+
+              <div className="mt-4 flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+                <div className="text-left">
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500">Current</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {currentPlanLabel || "Free"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    ${fromPrice}/{fromInterval === "yearly" ? "yr" : "mo"}
+                  </p>
+                </div>
+                <span className="px-3 text-gray-400">→</span>
+                <div className="text-right">
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500">New</p>
+                  <p className="text-sm font-semibold text-gray-900">{pendingSwitch.planName}</p>
+                  <p className="text-xs text-gray-500">
+                    ${toPrice}/{pendingSwitch.interval === "yearly" ? "yr" : "mo"}
+                  </p>
+                </div>
+              </div>
+
+              <ul className="mt-4 space-y-2 text-sm text-gray-600">
+                <li>
+                  Your new plan starts right away, and we'll charge the card already on file — you
+                  won't need to re-enter payment details.
+                </li>
+                <li>
+                  {isUpgrade
+                    ? "The price difference for the rest of this billing period is prorated onto your next invoice."
+                    : "Unused time on your current plan is credited toward future invoices."}
+                </li>
+                <li>You can change plans again or unsubscribe at any time.</li>
+              </ul>
+
+              {switchError && (
+                <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {switchError}
+                </p>
+              )}
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingSwitch(null);
+                    setSwitchError(null);
+                  }}
+                  disabled={busy}
+                  className="flex-1 rounded-lg border border-gray-300 py-3 px-4 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmSwitch}
+                  disabled={busy}
+                  className="flex-1 rounded-lg bg-blue-600 py-3 px-4 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {busy
+                    ? "Switching…"
+                    : isUpgrade
+                    ? `Upgrade to ${pendingSwitch.planName}`
+                    : `Switch to ${pendingSwitch.planName}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
