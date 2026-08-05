@@ -229,15 +229,15 @@ export const NavigationMenuSection = ({
 
   // Crime items
   const crimeItems = [
-    { id: "homicide", label: "Homicide"},
-    { id: "arrests", label: "Arrests" }
+    // { id: "homicide", label: "Homicide"},
+    // { id: "arrests", label: "Arrests" }
   ];
 
   const politicalTopics = [
     { id: "senators", label: "Senators" },
     // { id: "mayors", label: "Mayors" },
     { id: "house", label: "House of Representatives" },
-    { id: "supreme-court", label: "Supreme Court" },
+    // { id: "supreme-court", label: "Supreme Court" },
     { id: "president", label: "President" },
     { id: "vice-president", label: "Vice President" },
     // { id: "governors", label: "Governors" },
