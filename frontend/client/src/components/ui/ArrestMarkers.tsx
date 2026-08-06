@@ -112,6 +112,11 @@ const HomicideMarkers = ({ arrestCategory, showArrestData } : ArrestMarkersProps
                             fontSize: "1.5rem",
                             fontWeight: "bolder"
                         }}>Arrests in {state} (2026)</h1>
+                        <h2 style={{
+                            fontSize: "1rem",
+                            fontWeight: "bold",
+                            textAlign: "center"
+                        }}>{arrestCategory[0].toUpperCase() + arrestCategory.slice(1)}</h2>
 
                         <DonutChart
                             key={state}

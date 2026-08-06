@@ -32,7 +32,9 @@ export default function DonutChart({ data, color }: DataProps) {
           ))}
         </Pie>
         <Tooltip />
-        <Legend />
+        { (filteredData.length < 15) &&
+        (<Legend />)
+        }
       </PieChart>
     </div>
   );
