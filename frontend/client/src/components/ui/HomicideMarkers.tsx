@@ -120,9 +120,14 @@ const HomicideMarkers = ( { murderCategory, murderAttribute, showMurderData } : 
                             fontSize: "1.5rem",
                             fontWeight: "bolder"
                         }}>Homicide in {state} (2026)</h1>
+                        <h2 style={{
+                            fontSize: "1rem",
+                            fontWeight: "bold",
+                            textAlign: "center"
+                        }}>{murderCategory[0].toUpperCase() + murderCategory.slice(1)}: {murderAttribute[0].toUpperCase() + murderAttribute.slice(1)}</h2>
                         <DonutChart
                             key={state}
-                            data={murderData?.[state]?.[murderCategory]?.[murderAttribute] ?? {}}
+                            data={murderData.data?.[state]?.[murderCategory]?.[murderAttribute] ?? {}}
                             color={color}
                         />
                     </Popup>

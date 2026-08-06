@@ -192,6 +192,7 @@ router.get('/murderByState', async (req, res) => {
             state: requestedState || "all",
             data: murderJSON,
         });
+        
     } catch (error) {
         handleFbiRouteError(res, error, "murderByState");
     }
@@ -291,6 +292,7 @@ router.get('/arrestsByState', async (req, res) => {
             offenseLabel: offenseCodes[offenseCode],
             data: arrestsJSON,
         });
+        console.log(arrestsJSON);
     } catch (error) {
         handleFbiRouteError(res, error, "arrestsByState");
     }

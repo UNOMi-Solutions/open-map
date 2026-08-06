@@ -115,7 +115,7 @@ const HomicideMarkers = ({ arrestCategory, showArrestData } : ArrestMarkersProps
 
                         <DonutChart
                             key={state}
-                            data={murderData?.[state]?.[arrestCategory] ?? {}}
+                            data={murderData?.data?.[state]?.[arrestCategory] ?? {}}
                             color={color}
                         />
                     </Popup>
