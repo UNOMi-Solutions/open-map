@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: {
     type: String,
   },
+  // Reset links are only valid until this instant; checked in POST /auth/reset.
+  passwordResetExpires: {
+    type: Date,
+  },
   stripeCustomerId: {
     type: String,
   },

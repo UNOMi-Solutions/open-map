@@ -7,6 +7,9 @@ import { sendVerificationEmail, sendPasswordResetEmail } from "./emailService.js
 
 const router = express.Router();
 
+/** Password reset links are single-use and short-lived. */
+const PASSWORD_RESET_TTL_MS = 15 * 60 * 1000;
+
 // Returns the currently authenticated user (resolved from the JWT). Used by the
 // frontend to restore the session — including the plan — after a page refresh.
 router.get("/me", requireAuth, (req, res) => {
@@ -53,8 +56,11 @@ router.post("/register", async (req, res) => {
 
 // Step 2: Verify email
 router.get("/verify", async (req, res) => {
-  console.log("Hit!");
   const { token } = req.query;
+  // Mongoose strips undefined values out of query filters, so an absent token
+  // would turn this into findOne({}) and verify an arbitrary account.
+  if (typeof token !== "string" || !token)
+    return res.status(400).json({ message: "Invalid or expired token." });
   try {
     const user = await User.findOne({ verificationToken: token });
     if (!user)
@@ -82,6 +88,8 @@ router.post("/reset_request", async (req, res) => {
     }
     const token = crypto.randomBytes(32).toString("hex");
     user.passwordResetToken = token;
+    // Matches the "expires in 15 minutes" wording in sendPasswordResetEmail.
+    user.passwordResetExpires = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
     await user.save();
 
     await sendPasswordResetEmail(email, token);
@@ -96,14 +104,27 @@ router.post("/reset_request", async (req, res) => {
 router.post("/reset", async (req, res) => {
   const { token } = req.query;
   const { password } = req.body;
+  // Without this guard Mongoose drops the undefined token from the filter and
+  // findOne({}) matches an arbitrary user, letting anyone reset their password.
+  if (typeof token !== "string" || !token) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+  if (typeof password !== "string" || !password) {
+    return res.status(400).json({ message: "A new password is required" });
+  }
   try {
-    const user = await User.findOne({ passwordResetToken: token });
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: new Date() },
+    });
     if (!user) {
-      return res.status(400).json({ message: "Invlaid or expired token" });
+      return res.status(400).json({ message: "Invalid or expired token" });
     }
-    
+
     const hashedPassword = await bcrypt.hash(password, 12);
-    user.passwordResetToken = '';
+    // Unset rather than blank out — an empty string would still be matchable.
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
     user.password = hashedPassword;
     await user.save();
 
