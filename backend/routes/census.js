@@ -94,7 +94,7 @@ async function fetchCensusUrl(url, retries = 4) {
 async function fetchAllStatesSequentially(buildUrl) {
     const result = {};
     for (const state of US_STATE_ABBREVIATIONS) {
-        result[state] = await fetchFbiUrl(buildUrl(state));
+        result[state] = await fetchCensusUrl(buildUrl(state));
         await sleep(CENSUS_STATE_DELAY_MS);
     }
     return result;

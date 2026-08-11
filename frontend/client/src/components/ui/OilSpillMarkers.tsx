@@ -46,7 +46,11 @@ function getCoords(incident: OilSpillIncident): [number, number] | null {
 }
 
 // Fetch oil spill data from api and set state 
-const OilSpillMarkers = ({setLoading}) => {
+type OilSpillMarkersProps = {
+  setLoading: (loading: boolean) => void;
+};
+
+const OilSpillMarkers = ({ setLoading }: OilSpillMarkersProps) => {
   const [oilSpillData, setOilSpillData] = useState<OilSpillIncident[]>([]);
   const [loadingOilSpillData, setLoadingOilSpillData] = useState<Boolean>(true);
 

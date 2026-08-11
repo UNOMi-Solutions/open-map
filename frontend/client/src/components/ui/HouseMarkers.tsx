@@ -141,7 +141,11 @@ function HouseMarkerRow({ h }: { h: HousePin }) {
   );
 }
 
-export default function HouseMarkers({setLoading}) {
+type HouseMarkersProps = {
+  setLoading: (loading: boolean) => void;
+};
+
+export default function HouseMarkers({ setLoading }: HouseMarkersProps) {
   const [geo, setGeo] = useState<FeatureCollection<
     Geometry,
     GeoJsonProperties
@@ -170,12 +174,16 @@ export default function HouseMarkers({setLoading}) {
         if (!cancelled) {
           setGeo(fc);
           setParties(p.districts ?? {});
-          setLoading(false);
         }
       })
       .catch((e: unknown) => {
         if (!cancelled)
           setError(e instanceof Error ? e.message : "Could not load House data");
+      })
+      .finally(() => {
+        // Not guarded by `cancelled`: the overlay is app-wide, so toggling the
+        // layer off mid-fetch must still clear it.
+        setLoading(false);
       });
     return () => {
       cancelled = true;

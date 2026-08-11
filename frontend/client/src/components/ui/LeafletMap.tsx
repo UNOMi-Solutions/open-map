@@ -384,7 +384,9 @@ export default function LeafletMap({
   showSplcHateMap = false,
 }: {
   loading?: boolean;
-  setLoading?: (state: boolean) => void,
+  // Required: marker children call this unconditionally, and every code path
+  // that raises the blocking LoadingBar must be able to lower it again.
+  setLoading: (state: boolean) => void,
   sidebarOffsetPx?: number;
   hideInsets?: boolean;
   pinDropMode?: boolean;
@@ -802,7 +804,7 @@ export default function LeafletMap({
       return;
     }
     let cancelled = false;
-    if (setLoading) setLoading(true);
+    setLoading(true);
     (async () => {
       try {
         const res = await fetch(`/data/health/${healthMetricId}.json`);
@@ -819,10 +821,13 @@ export default function LeafletMap({
           }
         }
         setHealthValueByGeoid(cleaned);
-        if (setLoading) setLoading(false);
       } catch (e) {
         console.error("Health PLACES data load failed:", e);
         if (!cancelled) setHealthValueByGeoid(null);
+      } finally {
+        // Unconditional: the overlay blocks the whole app, so it must clear on
+        // the !res.ok early return and on error, not just on success.
+        setLoading(false);
       }
     })();
     return () => {
@@ -837,7 +842,7 @@ export default function LeafletMap({
       return;
     }
     let cancelled = false;
-    if (setLoading) setLoading(true);
+    setLoading(true);
     (async () => {
       try {
         const res = await fetch("/data/splc/by-state-geoid.json");
@@ -855,10 +860,11 @@ export default function LeafletMap({
             cleaned[String(k).padStart(2, "0")] = v;
         }
         if (!cancelled) setSplcByStateGeoid(cleaned);
-        if (setLoading) setLoading(false);
       } catch (e) {
         console.error("SPLC data load failed:", e);
         if (!cancelled) setSplcByStateGeoid(null);
+      } finally {
+        setLoading(false);
       }
     })();
     return () => {

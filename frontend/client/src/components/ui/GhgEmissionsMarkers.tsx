@@ -38,7 +38,7 @@ type GhgEmissionFacility = {
 type GhgEmissionsMarkersProps = {
   // 2-letter state code of the state the user clicked; only this state's facilities are fetched 
   selectedStateCode: string | null;
-  setLoading?: (loading: boolean) => void;
+  setLoading: (loading: boolean) => void;
 };
 
 function formatNumber(value: unknown): string {
@@ -56,10 +56,6 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
   useEffect(() => {
     if (!selectedStateCode) {
       setFacilities([]);
-      return;
-    }
-
-    if (setLoading == null) {
       return;
     }
 
@@ -84,9 +80,9 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
         if (!cancelled) setFacilities([]);
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        // Unguarded: re-clicking a state cancels the previous run, which would
+        // otherwise leave the app-wide overlay up.
+        setLoading(false);
       });
 
     return () => {

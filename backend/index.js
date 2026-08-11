@@ -42,6 +42,14 @@ import profileRoutes from "./routes/profiles.js";
 // Connect to MongoDB
 connectDB();
 
+// signUserToken() throws without this, which would surface as an opaque 500 on
+// every login. Warn loudly at boot instead of at the first sign-in attempt.
+if (!process.env.JWT_SECRET) {
+  console.error(
+    "[startup] JWT_SECRET is not set — all logins will fail with a 500. Set it in backend/.env."
+  );
+}
+
 // Express setup
 const app = express();
 const __filename = fileURLToPath(import.meta.url);

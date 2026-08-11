@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
 import { Loader } from 'lucide-react';
 
-const LoadingBar = ({ isOpen, onClose }) => {
+interface LoadingBarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const LoadingBar = ({ isOpen }: LoadingBarProps) => {
 
   if (!isOpen) return null;
 

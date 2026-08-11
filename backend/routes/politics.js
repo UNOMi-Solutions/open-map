@@ -83,6 +83,20 @@ const US_STATE_LOWER = new Set([
   "va", "wa", "wv", "wi", "wy",
 ]);
 
+/**
+ * When Open States has no executive YAML with role `governor` (e.g. WV currently
+ * only lists another statewide executive), fill from a manual row.
+ * Kept in sync with frontend/scripts/fetch-governors.mjs.
+ */
+const GOVERNOR_FALLBACK_BY_STATE = {
+  WV: {
+    name: "Patrick Morrisey",
+    party: "Republican",
+    website: "https://governor.wv.gov/",
+    ocdId: "morrisey-wv-manual",
+  },
+};
+
 const GOVERNOR_OVERRIDE_BY_STATE = {
   SD: {
     name: "Larry Rhoden",

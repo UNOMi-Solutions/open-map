@@ -292,7 +292,6 @@ router.get('/arrestsByState', async (req, res) => {
             offenseLabel: offenseCodes[offenseCode],
             data: arrestsJSON,
         });
-        console.log(arrestsJSON);
     } catch (error) {
         handleFbiRouteError(res, error, "arrestsByState");
     }

@@ -128,7 +128,11 @@ function SenatorMarkerRow({ s }: { s: SenatorPin }) {
   );
 }
 
-export default function SenatorMarkers({setLoading}) {
+type SenatorMarkersProps = {
+  setLoading: (loading: boolean) => void;
+};
+
+export default function SenatorMarkers({ setLoading }: SenatorMarkersProps) {
   const [siteData, setSiteData] = useState<SenatorPin[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -145,13 +149,14 @@ export default function SenatorMarkers({setLoading}) {
     )
       .then((data) => {
         if (cancelled) return;
-        setSiteData(data.senators);
+        setSiteData(data.senators ?? []);
       })
       .catch((error) => {
         console.error("[SenatorMarkers] Fetch error:", error);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        // Unguarded — see HouseMarkers: the overlay blocks the whole app.
+        setLoading(false);
       })
     return () => {
       cancelled = true;

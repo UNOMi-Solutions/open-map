@@ -111,6 +111,12 @@ export default function MainPage() {
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
+
+  // Full literal class strings — Tailwind scans source text, so an interpolated
+  // `bg-[${...}]` would never emit any CSS and the bars would be invisible.
+  const barClass = showLanding
+    ? "w-[30px] h-[1px] bg-[#ffffff] rounded-[2px]"
+    : "w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]";
   const checkVerify = (() => {
     if (window.location.href.includes("/verify?")) {
       return true;
@@ -594,9 +600,9 @@ export default function MainPage() {
 
               <button onClick={toggleMenu} className="p-2" aria-label="Open Menu">
                 <div className="flex flex-col gap-2 w-[30px] h-[26px] justify-center">
-                  <div className={`w-[30px] h-[1px] bg-[${showLanding ? "#ffffff" : "#0c1022"}] rounded-[2px]`} />
-                  <div className={`w-[30px] h-[1px] bg-[${showLanding ? "#ffffff" : "#0c1022"}] rounded-[2px]`} />
-                  <div className={`w-[30px] h-[1px] bg-[${showLanding ? "#ffffff" : "#0c1022"}] rounded-[2px]`} />
+                  <div className={barClass} />
+                  <div className={barClass} />
+                  <div className={barClass} />
                 </div>
               </button>
             </div>
