@@ -5,12 +5,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Check, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   CHOROPLETH_METRICS,
   ChoroplethMetricKey,
+  HouseDistrictPartyMode,
 } from "@/components/ui/LeafletMap";
 
 import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
@@ -63,8 +64,10 @@ interface NavigationMenuSectionProps {
   selectedSexId: string | null;
   onSelectedSexIdChange: (id: string | null) => void;
 
-  politicalCategory: string;
-  onPoliticalCategoryChange: (value: string) => void;
+  politicalLayerIds: string[];
+  onPoliticalLayerToggle: (layerId: string, checked: boolean) => void;
+  houseDistrictPartyMode: HouseDistrictPartyMode;
+  onHouseDistrictPartyModeChange: (mode: HouseDistrictPartyMode) => void;
   onResetAllFilters: () => void;
 }
 
@@ -114,20 +117,22 @@ export const NavigationMenuSection = ({
   onSelectedRaceCensusIdChange,
   selectedSexId,
   onSelectedSexIdChange,
-  politicalCategory,
-  onPoliticalCategoryChange,
+  politicalLayerIds,
+  onPoliticalLayerToggle,
+  houseDistrictPartyMode,
+  onHouseDistrictPartyModeChange,
   onResetAllFilters,
 }: NavigationMenuSectionProps): JSX.Element => {
   // Category data for Environment section
   const environmentItems = [
-    { id: "oil-spills", label: "Oil Spills", disabled: false },
-    { id: "data-centers", label: "Data Centers", disabled: false },
-    { id: "natural-disaster-incidents", label: "Natural Disaster Incidents", disabled: false },
-    { id: "air-quality", label: "Air Quality", disabled: false },
-    { id: "ghg-emissions", label: "GHG Emissions", disabled: true },
-    { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal", disabled: true },
-    { id: "toxic-spills", label: "Toxic Spills", disabled: true },
-    { id: "toxic-area", label: "Toxic Area", disabled: true },
+    { id: "oil-spills", label: "Oil Spills" },
+    { id: "data-centers", label: "Data Centers" },
+    { id: "natural-disaster-incidents", label: "Natural Disaster Incidents" },
+    { id: "air-quality", label: "Air Quality" },
+    { id: "ghg-emissions", label: "GHG Emissions" },
+    { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    // { id: "toxic-spills", label: "Toxic Spills" },
+    // { id: "toxic-area", label: "Toxic Area" },
   ];
 
   // Sub-filters for Natural Disaster Incidents (matches backend incident types)
@@ -151,6 +156,36 @@ export const NavigationMenuSection = ({
     { id: "nd-type:Other", label: "Other" },
   ];
 
+  // Health category items (checkbox state via selectedLayers; map layers not wired yet)
+  const healthItems = [
+    { id: "heart-disease", label: "Heart Disease" },
+    { id: "cancer", label: "Cancer" },
+    { id: "breast-cancer", label: "Breast Cancer" },
+    { id: "diabetes", label: "Diabetes" },
+    // { id: "pre-diabetic", label: "Pre-diabetic" },
+    { id: "colon-cancer", label: "Colon Cancer" },
+    // { id: "prostate-cancer", label: "Prostate Cancer" },
+    // { id: "aids", label: "AIDS" },
+    // { id: "hiv", label: "HIV" },
+    // { id: "std", label: "STD" },
+    { id: "obesity", label: "Obesity" },
+    // { id: "smallpox", label: "Small Pox" },
+    // { id: "covid-19", label: "Covid 19" },
+    { id: "lung-cancer", label: "Lung Cancer" },
+    { id: "kidney-disease", label: "Kidney Disease" },
+    { id: "smokers", label: "Smokers" },
+    // { id: "cannabis-smokers", label: "Cannabis Smokers" },
+    // { id: "illegal-hard-drug-use", label: "Illegal/Hard drug use" },
+    // { id: "healthy-eating", label: "Healthy eating" },
+    { id: "alcoholism", label: "Alcoholism" },
+    // { id: "drug-addiction", label: "Drug addiction" },
+    { id: "mental-health", label: "Mental Health" },
+    { id: "best-healthcare-coverage", label: "Best healthcare coverage" },
+    { id: "worst-healthcare-coverage", label: "Worst Healthcare Coverage" },
+    { id: "most-out-of-shape-population", label: "Most out of shape population" },
+    { id: "healthiest-population", label: "Healthiest Population" },
+  ];
+
   // Real Estate filter options
   const realEstateFilters = [
     { id: "city", label: "City" },
@@ -162,10 +197,17 @@ export const NavigationMenuSection = ({
   const realEstateItems = [
     { id: "safest", label: "Safest" },
     { id: "most-crime", label: "Most Crime" },
-    { id: "most-racist", label: "Most Racist" },
     { id: "healthiest-environment", label: "Healthiest Environment" },
     { id: "wealthiest", label: "Wealthiest" },
     { id: "disenfranchised", label: "Disenfranchised" },
+  ];
+
+  /** Social tab: layer id matches MainPage / SPLC choropleth wiring (`most-racist`). */
+  const socialMapItems = [
+    {
+      id: "most-racist",
+      label: "SPLC hate & antigovernment groups (by state HQ)",
+    },
   ];
 
   // Census category items
@@ -187,22 +229,37 @@ export const NavigationMenuSection = ({
 
   // Crime items
   const crimeItems = [
-    { id: "homicide", label: "Homicide"},
-    { id: "arrests", label: "Arrests" }
+    // { id: "homicide", label: "Homicide"},
+    // { id: "arrests", label: "Arrests" }
   ];
 
   const politicalTopics = [
-    { id: "", label: "Select a topic…" },
     { id: "senators", label: "Senators" },
-    { id: "mayors", label: "Mayors" },
+    // { id: "mayors", label: "Mayors" },
     { id: "house", label: "House of Representatives" },
+    // { id: "supreme-court", label: "Supreme Court" },
     { id: "president", label: "President" },
-    { id: "governors", label: "Governors" },
+    { id: "vice-president", label: "Vice President" },
+    // { id: "governors", label: "Governors" },
     { id: "gerrymandering", label: "Jerry Mandering" },
-    { id: "red-district", label: "Red District" },
-    { id: "blue-district", label: "Blue District" },
-    { id: "electoral-college", label: "Electoral College" },
+    { id: "red-blue-district", label: "Red/Blue district (House of Representatives)" },
+    { id: "electoral-college", label: "Electoral College (by state)" },
   ];
+
+  const wiredPoliticalMapIds = new Set([
+    "senators",
+    "governors",
+    "president",
+    "vice-president",
+    "house",
+    "supreme-court",
+    "gerrymandering",
+    "red-blue-district",
+    "electoral-college",
+  ]);
+  const unwiredPoliticalSelections = politicalLayerIds.filter(
+    (id) => !wiredPoliticalMapIds.has(id)
+  );
 
   // Collapsed categories
   const collapsedCategories = [
@@ -254,7 +311,7 @@ export const NavigationMenuSection = ({
       <div className="absolute inset-0 bg-[#06012A]/80 pointer-events-none" />
       <div className="relative z-10">
       {/* OpenMap Logo */}
-      <div className="flex left pt-7 ml-4">
+      <div className="flex justify-center pt-7">
         <img
           className="h-[35px] w-[175px] object-contain"
           alt="OpenMap Logo"
@@ -263,7 +320,7 @@ export const NavigationMenuSection = ({
       </div>
 
       {/* Search input */}
-      <div className="mt-8 flex items-center left ml-4 gap-4">
+      <div className="mt-8 flex items-center justify-center gap-4">
         <Input
           className="h-9 w-[258px] bg-white text-black border border-white"
           placeholder="Search..."
@@ -344,7 +401,6 @@ export const NavigationMenuSection = ({
                       className="h-4 w-4 border border-white/70 bg-white/10 text-white"
                       checked={selectedLayers.includes(item.id)}
                       onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
-                      disabled={item.disabled}
                     />
                     <label
                       htmlFor={item.id}
@@ -379,61 +435,6 @@ export const NavigationMenuSection = ({
                       </div>
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="real-estate" className="border-0">
-          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
-            <div className="flex items-center">
-              <ChevronRight className="accordion-arrow" />
-              {/* <span className="text-[17px] text-white font-normal font-futura leading-[100%]">
-              {/* <img
-                className="w-[11px] h-1.5 mr-1.5"
-                alt="Graphics"
-                src="/figmaAssets/graphics.svg"
-              /> */}
-              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
-                Real Estate
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="pt-0 pb-0">
-            <div className="ml-4">
-              <div className="flex flex-wrap items-center mt-1 gap-x-3 gap-y-2 pb-3 border-b border-white/10">
-                <span className="text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
-                  by:
-                </span>
-                {realEstateFilters.map((filter) => (
-                  <div key={filter.id} className="flex items-center">
-                    <Checkbox
-                      id={filter.id}
-                      className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                    />
-                    <label
-                      htmlFor={filter.id}
-                      className="ml-[12px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT]"
-                    >
-                      {filter.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-
-              {realEstateItems.map((item) => (
-                <div key={item.id} className="flex items-center mt-1.5">
-                  <Checkbox
-                    id={item.id}
-                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                  />
-                  <label
-                    htmlFor={item.id}
-                    className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT]"
-                  >
-                    {item.label}
-                  </label>
                 </div>
               ))}
             </div>
@@ -752,6 +753,58 @@ export const NavigationMenuSection = ({
                   Age of Consent
                 </span>
               </div>
+
+              {socialMapItems.map((item) => (
+                <div key={item.id} className="mt-2 flex items-center">
+                  <Checkbox
+                    id={`social-${item.id}`}
+                    checked={selectedLayers.includes(item.id)}
+                    onCheckedChange={(c) =>
+                      onLayerToggle?.(item.id, c === true)
+                    }
+                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  />
+                  <label
+                    htmlFor={`social-${item.id}`}
+                    className="ml-[15px] text-white text-[12px] font-normal leading-snug [font-family:'Futura PT]"
+                  >
+                    {item.label}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="health" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Health
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            <div className="ml-4">
+              {healthItems.map((item) => (
+                <div key={item.id} className="flex items-center mt-1.5">
+                  <Checkbox
+                    id={item.id}
+                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                    checked={selectedLayers.includes(item.id)}
+                    onCheckedChange={(checked) =>
+                      onLayerToggle?.(item.id, checked === true)
+                    }
+                  />
+                  <label
+                    htmlFor={item.id}
+                    className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                  >
+                    {item.label}
+                  </label>
+                </div>
+              ))}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -767,45 +820,101 @@ export const NavigationMenuSection = ({
           </AccordionTrigger>
           <AccordionContent className="pt-0 pb-0">
             <div className="ml-4 pb-2">
-              <label
-                htmlFor="political-topic"
-                className="text-white/70 text-[11px] font-futura block mb-1.5"
-              >
-                Topic
-              </label>
-              <select
-                id="political-topic"
-                className="w-full max-w-[280px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1.5 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                value={politicalCategory}
-                onChange={(e) => onPoliticalCategoryChange(e.target.value)}
-              >
-                {politicalTopics.map((t) => (
-                  <option className="text-black" key={t.id || "none"} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-              {politicalCategory === "senators" && (
+              {politicalTopics.map((item) =>
+                item.id === "red-blue-district" ? (
+                  <div key={item.id} className="mt-1.5">
+                    <div className="flex items-center">
+                      <Checkbox
+                        id={`political-${item.id}`}
+                        className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                        checked={politicalLayerIds.includes(item.id)}
+                        onCheckedChange={(checked) =>
+                          onPoliticalLayerToggle(item.id, checked === true)
+                        }
+                      />
+                      <label
+                        htmlFor={`political-${item.id}`}
+                        className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                      >
+                        {item.label}
+                      </label>
+                    </div>
+                    {politicalLayerIds.includes("red-blue-district") && (
+                      <label className="mt-2 ml-7 block">
+                        <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                          Show
+                        </span>
+                        <select
+                          className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
+                          value={houseDistrictPartyMode}
+                          onChange={(e) =>
+                            onHouseDistrictPartyModeChange(
+                              e.target.value as HouseDistrictPartyMode
+                            )
+                          }
+                        >
+                          <option className="text-black" value="both">
+                            Both (red and blue)
+                          </option>
+                          <option className="text-black" value="red">
+                            Red districts only
+                          </option>
+                          <option className="text-black" value="blue">
+                            Blue districts only
+                          </option>
+                        </select>
+                      </label>
+                    )}
+                  </div>
+                ) : (
+                  <div key={item.id} className="flex items-center mt-1.5">
+                    <Checkbox
+                      id={`political-${item.id}`}
+                      className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                      checked={politicalLayerIds.includes(item.id)}
+                      onCheckedChange={(checked) =>
+                        onPoliticalLayerToggle(item.id, checked === true)
+                      }
+                    />
+                    <label
+                      htmlFor={`political-${item.id}`}
+                      className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                    >
+                      {item.label}
+                    </label>
+                  </div>
+                )
+              )}
+              {politicalLayerIds.includes("senators") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Two pins per state (current senators). Refresh data:{" "}
                   <code className="text-white/80">npm run data:senators</code>
                 </p>
               )}
-              {politicalCategory === "president" && (
+              {politicalLayerIds.includes("governors") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  Pin at the White House (current president). Refresh:{" "}
+                  One pin per state (current governor); green ring on the map. Refresh:{" "}
+                  <code className="text-white/80">npm run data:governors</code>
+                </p>
+              )}
+              {(politicalLayerIds.includes("president") ||
+                politicalLayerIds.includes("vice-president")) && (
+                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
+                  President — gold ring (White House). Vice President — silver-blue ring
+                  (Observatory Circle). Turn each on separately or together; president pin
+                  stacks above when they overlap. Refresh:{" "}
                   <code className="text-white/80">npm run data:president</code>
                 </p>
               )}
-              {(politicalCategory === "red-district" ||
-                politicalCategory === "blue-district") && (
+              {politicalLayerIds.includes("red-blue-district") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  119th district shapes (Census); party from current voting members only
-                  (50 states, excludes D.C./territory delegates). Refresh:{" "}
+                  119th district shapes (Census); party from current voting members where
+                  listed. Vacant seats and non‑R/D members appear slate when &quot;Both&quot;
+                  is selected. Refresh:{" "}
                   <code className="text-white/80">npm run data:congressional</code>
                 </p>
               )}
-              {politicalCategory === "house" && (
+              {politicalLayerIds.includes("house") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per voting district (50 states only; 435 apportioned seats).
                   Non-voting delegates (D.C., territories) are excluded. Pin count can
@@ -813,12 +922,31 @@ export const NavigationMenuSection = ({
                   <code className="text-white/80">npm run data:congressional</code>
                 </p>
               )}
-              {politicalCategory !== "" &&
-                politicalCategory !== "senators" &&
-                politicalCategory !== "president" &&
-                politicalCategory !== "red-district" &&
-                politicalCategory !== "blue-district" &&
-                politicalCategory !== "house" && (
+              {politicalLayerIds.includes("supreme-court") && (
+                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
+                  Nine current justices; pins use birth/home-state anchors (spread when
+                  multiple share a state). Chief Justice stacks above when overlapping.
+                  Refresh roster:{" "}
+                  <code className="text-white/80">npm run data:scotus</code>
+                </p>
+              )}
+              {politicalLayerIds.includes("gerrymandering") && (
+                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
+                  Every current U.S. House district (119th Congress) is drawn from Census shapes
+                  so you can see full boundaries—not counties. Violet pins mark educational case
+                  spots; tap a district or pin for details. Cases:{" "}
+                  <code className="text-white/80">client/public/data/gerrymandering.json</code>
+                </p>
+              )}
+              {politicalLayerIds.includes("electoral-college") && (
+                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
+                  2024 presidential results by state: red/blue by statewide winner, darker =
+                  larger margin (CNN-style). Contiguous 48 + DC; Alaska &amp; Hawaii same
+                  data in corner insets. Data:{" "}
+                  <code className="text-white/80">client/public/data/electoral-college-2024.json</code>
+                </p>
+              )}
+              {unwiredPoliticalSelections.length > 0 && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Map layer for this topic is not wired yet.
                 </p>

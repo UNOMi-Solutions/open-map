@@ -17,8 +17,10 @@ import enforceHTTPS from "./middleware/httpsRedirect.js";
 import requestLogger from "./middleware/requestLogger.js";
 import errorHandler from "./middleware/errorHandler.js";
 import auth from "./middleware/auth.js";
+import requireAuth from "./middleware/requireAuth.js";
 import loginLimiter from "./middleware/loginLimiter.js";
 import authRoutes from "./auth.js";
+import { signUserToken } from "./utils/jwt.js";
 
 // Auth helpers
 import User from "./models/User.js";
@@ -33,9 +35,20 @@ import healthRoutes from "./routes/health.js";
 import lawEnforcementRoutes from "./routes/lawEnforcement.js";
 import politicsRoutes from "./routes/politics.js";
 import socialRoutes from "./routes/social.js";
+import stripeRoutes from "./routes/stripe.js";
+import stripeWebhook from "./routes/stripeWebhook.js";
+import profileRoutes from "./routes/profiles.js";
 
 // Connect to MongoDB
 connectDB();
+
+// signUserToken() throws without this, which would surface as an opaque 500 on
+// every login. Warn loudly at boot instead of at the first sign-in attempt.
+if (!process.env.JWT_SECRET) {
+  console.error(
+    "[startup] JWT_SECRET is not set — all logins will fail with a 500. Set it in backend/.env."
+  );
+}
 
 // Express setup
 const app = express();
@@ -43,14 +56,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS configuration
+const productionOrigins = [
+  "https://getopenmap.com",
+  "https://www.getopenmap.com",
+];
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (productionOrigins.includes(origin)) return true;
+  // Vite may use 5173, 5174, 5175, … when ports are in use
+  if (/^http:\/\/localhost:\d+$/.test(origin)) return true;
+  if (/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) return true;
+  return false;
+}
+
 const corsOptions = {
-  origin: [
-    "https://getopenmap.com",
-    "https://www.getopenmap.com",
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://localhost:5000",
-  ],
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   // x-api-key MUST be listed here or the browser rejects the preflight
   allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
@@ -70,11 +97,21 @@ app.use(enforceHTTPS);
 // Global security configuration (helmet, sanitization, rate limiting)
 secureApp(app);
 
+// Stripe webhook MUST receive the raw, unparsed body for signature verification,
+// so it is mounted before express.json() and is intentionally not API-key protected
+// (Stripe authenticates via the stripe-signature header instead).
+app.use("/api/v1/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+
 // JSON parsing
 app.use(express.json());
 
 // Request logging
 app.use(requestLogger);
+
+// Public liveness check (Cloud Run / local dev — no API key)
+app.get("/api/v1/health/ping", (req, res) => {
+  res.status(200).json({ ok: true, service: "openmap-backend" });
+});
 
 // Auth routes (register + email verification)
 app.use("/api/v1/auth", authRoutes);
@@ -87,7 +124,22 @@ app.post("/api/auth/login", loginLimiter, async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
-    res.status(200).json({ success: true, message: "Login successful" });
+    // Issue a JWT so per-user features (e.g. saved profiles) can identify the
+    // caller on subsequent requests.
+    const token = signUserToken(user);
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        email: user.email,
+        verified: !!user.verified,
+        plan: user.plan || null,
+        subscriptionStatus: user.subscriptionStatus || null,
+        subscriptionInterval: user.subscriptionInterval || null,
+      },
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -98,11 +150,19 @@ app.post("/api/auth/login", loginLimiter, async (req, res) => {
 app.use("/api/v1/census", auth, censusRoutes);
 app.use("/api/v1/crime", auth, crimeRoutes);
 app.use("/api/v1/economics", auth, economicsRoutes);
-app.use("/api/v1/environment", environmentRoutes);
+app.use("/api/v1/environment", auth, environmentRoutes);
 app.use("/api/v1/health", auth, healthRoutes);
 app.use("/api/v1/lawEnforcement", auth, lawEnforcementRoutes);
 app.use("/api/v1/politics", auth, politicsRoutes);
 app.use("/api/v1/social", auth, socialRoutes);
+
+// Stripe checkout routes (API-key protected, like the data routes).
+// The webhook is mounted separately above (before JSON parsing).
+app.use("/api/v1/stripe", auth, stripeRoutes);
+
+// Saved map profiles (per-user). Requires the shared API key AND a logged-in
+// user (JWT), since profiles and their per-tier limits are user-specific.
+app.use("/api/v1/profiles", auth, requireAuth, profileRoutes);
 
 // Documentation route
 app.get("/", (req, res) => {

@@ -4,6 +4,7 @@ import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { useEffect, useState, useRef, useMemo } from "react";
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
+import { cachedApiGetBatch, CACHE_TTL } from "@/lib/apiCache";
 
 const STATE_ABBREVS = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI",
@@ -29,7 +30,7 @@ const STATE_NAME_TO_CODE: Record<string, string> = {
 // EPA AQI ranges
 const AQI_GRADES = [0, 51, 101, 151, 201, 301];
 
-const API_BASE = "http://localhost:8000/api/v1/environment/airQuality";
+const AIR_QUALITY_API_PATH = "/api/v1/environment/airQuality";
 
 // Convert state name or code to 2-letter code
 function toStateCode(val: unknown): string | null {
@@ -149,29 +150,35 @@ const AirQualityHeatmap = ({ selectedStateCode }: AirQualityHeatmapProps) => {
 
   // Fetch air quality per state
   useEffect(() => {
+    let cancelled = false;
     setAirQualityData([]);
     setLoading(true);
-    const urls = selectedStateCode
-      ? [`${API_BASE}?stateCode=${encodeURIComponent(selectedStateCode)}`]
-      : STATE_ABBREVS.map((c) => `${API_BASE}?stateCode=${encodeURIComponent(c)}`);
 
-    Promise.all(
-      urls.map((url) =>
-        fetch(url, { method: "GET", headers: { "Content-Type": "application/json" }, cache: "no-store" })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((data) => {
-            const stateCode = new URL(url).searchParams.get("stateCode") ?? "";
-            return parseApiResponse(data, stateCode);
-          })
-          .catch(() => [])
-      )
-    )
-      .then((results) => setAirQualityData(results.flat()))
+    const stateCodes = selectedStateCode ? [selectedStateCode] : [...STATE_ABBREVS];
+    const requests = stateCodes.map((code) => ({
+      cacheKey: `environment:airQuality:state:${code}`,
+      path: `${AIR_QUALITY_API_PATH}?stateCode=${encodeURIComponent(code)}`,
+    }));
+
+    cachedApiGetBatch<unknown>(requests, CACHE_TTL.AIR_QUALITY)
+      .then((results) => {
+        if (cancelled) return;
+        const parsed = results.flatMap((data, index) =>
+          parseApiResponse(data, stateCodes[index] ?? ""),
+        );
+        setAirQualityData(parsed);
+      })
       .catch((err) => {
         console.error("[AirQualityHeatmap] Fetch error:", err);
-        setAirQualityData([]);
+        if (!cancelled) setAirQualityData([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedStateCode]);
 
   // Aggregate: max AQI per state

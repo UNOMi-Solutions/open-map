@@ -7,6 +7,7 @@ import {
 import DonutChart from "./DonutChart";
 
 import { CreateMarker } from "./CreateMarker";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 // All states and their centers
 const states = [
@@ -85,40 +86,24 @@ const HomicideMarkers = ( { murderCategory, murderAttribute, showMurderData } : 
     const [currentAttribute, setCurrentAttribute] = useState<string>("age");
 
     useEffect(() => {
-        let raw = localStorage.getItem("OpenMap-Homicide-Data") || "null";
-        let browserData = JSON.parse(raw);
-        let currentTimestamp = new Date();
-
-        if(browserData == null || (+currentTimestamp - +browserData.timestamp > 86400000)) {
-            fetch(`${import.meta.env.VITE_API_LINK}/api/v1/crime/murderByState`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": import.meta.env.VITE_API_DEV_KEY || ""  
-                }
+        let cancelled = false;
+        cachedApiGet<Record<string, unknown>>(
+            "crime:murderByState",
+            "/api/v1/crime/murderByState",
+            CACHE_TTL.CRIME,
+        )
+            .then((data) => {
+                if (!cancelled) setMurderData(data);
             })
-            .then(response => {
-                if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
+            .catch((error) => {
+                console.error("[HomicideMarkers] Fetch error:", error);
             })
-            .then(data => {
-                //console.log("API Repsonse:", data)
-                data.timestamp = new Date();
-                setMurderData(data);
-                localStorage.setItem("OpenMap-Homicide-Data", JSON.stringify(data));
-                setLoadingMurderData(false);
-            })
-            .catch(error => {
-                console.error("Fetch error:", error);
+            .finally(() => {
+                if (!cancelled) setLoadingMurderData(false);
             });
-        } else {
-            //console.log("Browser Repsonse:", browserData)
-            setMurderData(browserData);
-            setLoadingMurderData(false);
-        }
-
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     return <>
@@ -135,9 +120,14 @@ const HomicideMarkers = ( { murderCategory, murderAttribute, showMurderData } : 
                             fontSize: "1.5rem",
                             fontWeight: "bolder"
                         }}>Homicide in {state} (2026)</h1>
+                        <h2 style={{
+                            fontSize: "1rem",
+                            fontWeight: "bold",
+                            textAlign: "center"
+                        }}>{murderCategory[0].toUpperCase() + murderCategory.slice(1)}: {murderAttribute[0].toUpperCase() + murderAttribute.slice(1)}</h2>
                         <DonutChart
                             key={state}
-                            data={murderData?.[state]?.[murderCategory]?.[murderAttribute] ?? {}}
+                            data={murderData.data?.[state]?.[murderCategory]?.[murderAttribute] ?? {}}
                             color={color}
                         />
                     </Popup>

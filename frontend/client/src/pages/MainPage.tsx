@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignUp from "./sections/SignUp";
 import Login from "./sections/Login";
+import Verify from "./sections/Verificaiton";
+import Reset from "./sections/ResetPassword";
+import ForgotPassword from "./sections/ForgotPassword";
 import SideBarMenu from "./sections/SideBarMenu";
 import { NavigationMenuSection } from "./sections/NavigationMenuSection";
 import SearchPopup from "./sections/SearchPopup";
@@ -11,28 +14,53 @@ import ContactUsform from "./sections/ContactUsform";
 import AboutUsModal from "./sections/AboutUs";
 import NewsletterPopup from "./sections/NewsLetterPopup";
 import SharePopup from "./sections/SharePopup";
-import LeafletMap, { ChoroplethMetricKey } from "@/components/ui/LeafletMap";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Profiles from "./sections/Profiles";
+import { fetchMe, getAuthToken, setAuthToken } from "@/lib/apiClient";
+import LeafletMap, {
+  ChoroplethMetricKey,
+  HouseDistrictPartyMode,
+} from "@/components/ui/LeafletMap";
+import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { X, UserPlusIcon } from "lucide-react";
 import { BannerAd, VideoAd } from "@/components/ads";
 
 import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
+import {
+  HEALTH_ALL_LAYER_IDS,
+  HEALTH_WIRED_LAYER_IDS,
+} from "@/lib/health-places";
+import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
+import LoadingBar from "./sections/LoadingBar";
 
 export default function MainPage() {
+  const [progress, setProgress] = useState(0);
+  const [isLoading, setLoading] = useState(false);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
+  // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
+  // logged-in user, or null when they have no active subscription.
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  // Whether the logged-in user's email has been verified. Unverified users
+  // cannot subscribe to a paid plan.
+  const [isVerified, setIsVerified] = useState(false);
   // Premium users see no ads. Wire this up to your real subscription flag.
   const [isPremium] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
+  // Remembers a plan a logged-out user tried to select so we can resume the
+  // pricing flow after they log in / sign up.
+  const [pendingPlan, setPendingPlan] = useState<string | null>(null);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isNewsletterPopupOpen, setIsNewsletterPopupOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isProfilesOpen, setIsProfilesOpen] = useState(false);
   const [isSignUpDropdownOpen, setIsSignUpDropdownOpen] = useState(false);
   const [isPinDropMode, setIsPinDropMode] = useState(false);
   const [mapPins, setMapPins] = useState<
@@ -75,10 +103,39 @@ export default function MainPage() {
   // Props for consent age data
   const [showConsentAgeData, setShowConsentAgeData] = useState(false);
 
-  const [politicalCategory, setPoliticalCategory] = useState("");
+  const [politicalLayerIds, setPoliticalLayerIds] = useState<string[]>([]);
+  const [houseDistrictPartyMode, setHouseDistrictPartyMode] =
+    useState<HouseDistrictPartyMode>("both");
+  /** CDC PLACES county choropleth; exclusive with census race/age/sex selection */
+  const [healthMetricId, setHealthMetricId] = useState<string | null>(null);
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
+
+  // Full literal class strings — Tailwind scans source text, so an interpolated
+  // `bg-[${...}]` would never emit any CSS and the bars would be invisible.
+  const barClass = showLanding
+    ? "w-[30px] h-[1px] bg-[#ffffff] rounded-[2px]"
+    : "w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]";
+  const checkVerify = (() => {
+    if (window.location.href.includes("/verify?")) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  const [isVerifyOpen, setIsVerifyOpen] = useState(checkVerify());
+
+  const checkReset = (() => {
+    if (window.location.href.includes("/reset?")) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  const [isResetOpen, setIsResetOpen] = useState(checkReset());
 
   const handleSearchTrigger = () => {
     setIsSearchOpen(true);
@@ -118,10 +175,27 @@ export default function MainPage() {
     setIsPinDropMode((prev) => !prev);
     setIsSignUpDropdownOpen(false);
   };
-  const handleUserLogin = (email: string) => {
+  const handleUserLogin = (
+    email: string,
+    plan: string | null = null,
+    verified: boolean = false
+  ) => {
     setIsLoggedIn(true);
     setUserEmail(email);
+    setCurrentPlan(plan);
+    setIsVerified(verified);
     setIsSignUpOpen(false);
+    // If the user was trying to pick a plan before authenticating, bring them
+    // back to the pricing screen to finish choosing.
+    if (pendingPlan) {
+      setPendingPlan(null);
+      setIsPricingOpen(true);
+    }
+  };
+  const handleRequirePlanAuth = (_planName: string) => {
+    setPendingPlan(_planName);
+    setIsPricingOpen(false);
+    setIsLoginOpen(true);
   };
   const handlePinDropped = (coords: { lat: number; lng: number }, stateName?: string) => {
     const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -136,8 +210,11 @@ export default function MainPage() {
     setMapPins([]);
   };
   const handleUserLogout = () => {
+    setAuthToken(null);
     setIsLoggedIn(false);
     setUserEmail("");
+    setCurrentPlan(null);
+    setIsVerified(false);
     setIsSignUpDropdownOpen(false);
   };
   const handlePricingClick = () => {
@@ -158,7 +235,54 @@ export default function MainPage() {
   };
 
   const handleLayerToggle = (layerId: string, checked: boolean) => {
+    if (SPLC_LAYER_IDS.has(layerId)) {
+      if (checked) {
+        setSelectedLayers((prev) => [
+          ...prev.filter(
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+          ),
+          layerId,
+        ]);
+        setHealthMetricId(null);
+        setSelectedRaceCensusId("all");
+        setSelectedAgeGroupId(null);
+        setSelectedSexId(null);
+        setShowChoropleth(false);
+      } else {
+        setSelectedLayers((prev) => prev.filter((id) => id !== layerId));
+      }
+      return;
+    }
+    if (HEALTH_ALL_LAYER_IDS.has(layerId)) {
+      if (checked) {
+        setSelectedLayers((prev) => [
+          ...prev.filter(
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+          ),
+          layerId,
+        ]);
+        if (HEALTH_WIRED_LAYER_IDS.has(layerId)) {
+          setHealthMetricId(layerId);
+          setSelectedRaceCensusId("all");
+          setSelectedAgeGroupId(null);
+          setSelectedSexId(null);
+          setShowChoropleth(false);
+        } else {
+          setHealthMetricId(null);
+        }
+      } else {
+        setSelectedLayers((prev) => prev.filter((id) => id !== layerId));
+        setHealthMetricId((cur) => (cur === layerId ? null : cur));
+      }
+      return;
+    }
     setSelectedLayers((prev) =>
+      checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
+    );
+  };
+
+  const handlePoliticalLayerToggle = (layerId: string, checked: boolean) => {
+    setPoliticalLayerIds((prev) =>
       checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
     );
   };
@@ -183,15 +307,127 @@ export default function MainPage() {
     setMissingPersonQ("Q1");
     setMissingPersonYear(2026);
     setShowConsentAgeData(false);
-    setPoliticalCategory("");
+    setPoliticalLayerIds([]);
+    setHouseDistrictPartyMode("both");
     setSearchQuery("");
+    setHealthMetricId(null);
   };
+
+  /** Snapshot of the full map setup, saved as a profile's `config`. */
+  const getCurrentConfig = (): Record<string, unknown> => ({
+    mapPins,
+    selectedLayers,
+    choroplethMetric,
+    showChoropleth,
+    selectedAgeGroupId,
+    selectedRaceCensusId,
+    selectedSexId,
+    showPoliceKillingData,
+    PoliceKillingQ,
+    PoliceKillingYear,
+    showMurderData,
+    murderCategory,
+    murderAttribute,
+    arrestCategory,
+    showArrestData,
+    showMissingPersonsData,
+    missingPersonQ,
+    missingPersonYear,
+    showConsentAgeData,
+    politicalLayerIds,
+    houseDistrictPartyMode,
+    healthMetricId,
+    searchQuery,
+  });
+
+  /** Applies a saved profile's config back onto the map, falling back to
+   * sensible defaults for any field an older profile may be missing. */
+  const applyConfig = (config: Record<string, any>) => {
+    const c = config || {};
+    setMapPins(Array.isArray(c.mapPins) ? c.mapPins : []);
+    setSelectedLayers(Array.isArray(c.selectedLayers) ? c.selectedLayers : []);
+    setChoroplethMetric(c.choroplethMetric ?? "pct_white");
+    setShowChoropleth(!!c.showChoropleth);
+    setSelectedAgeGroupId(c.selectedAgeGroupId ?? null);
+    setSelectedRaceCensusId(c.selectedRaceCensusId ?? "all");
+    setSelectedSexId(c.selectedSexId ?? null);
+    setShowPoliceKillingData(!!c.showPoliceKillingData);
+    setPoliceKillingQ(c.PoliceKillingQ ?? "Q1");
+    setPoliceKillingYear(c.PoliceKillingYear ?? 2026);
+    setShowMurderData(!!c.showMurderData);
+    setMurderCategory(c.murderCategory ?? "victim");
+    setMurderAttribute(c.murderAttribute ?? "age");
+    setArrestCategory(c.arrestCategory ?? "Arrestee Sex");
+    setShowArrestData(!!c.showArrestData);
+    setShowMissingPersonsData(!!c.showMissingPersonsData);
+    setMissingPersonQ(c.missingPersonQ ?? "Q1");
+    setMissingPersonYear(c.missingPersonYear ?? 2026);
+    setShowConsentAgeData(!!c.showConsentAgeData);
+    setPoliticalLayerIds(Array.isArray(c.politicalLayerIds) ? c.politicalLayerIds : []);
+    setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
+    setHealthMetricId(c.healthMetricId ?? null);
+    setSearchQuery(c.searchQuery ?? "");
+    // Make sure the loaded configuration is actually visible.
+    setShowLanding(false);
+    setSidebarOpen(true);
+  };
+
+  // Restore the logged-in session (and plan) on page load using the stored JWT.
+  useEffect(() => {
+    if (!getAuthToken()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { user } = await fetchMe();
+        if (cancelled || !user) return;
+        setIsLoggedIn(true);
+        setUserEmail(user.email);
+        setCurrentPlan(user.plan ?? null);
+        setIsVerified(!!user.verified);
+      } catch {
+        // Token invalid/expired — clear it so the UI reflects a logged-out state.
+        setAuthToken(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Newsletter popup timer
   useEffect(() => {
     const timer = setTimeout(() => setIsNewsletterPopupOpen(true), 60000);
     return () => clearTimeout(timer);
   }, []);
+
+  /** Drop health / SPLC choropleths when user turns on census race / age / sex layers */
+  useEffect(() => {
+    const censusActive =
+      selectedRaceCensusId !== "all" ||
+      selectedAgeGroupId != null ||
+      selectedSexId != null;
+    if (!censusActive) return;
+    if (healthMetricId) {
+      setHealthMetricId(null);
+      setSelectedLayers((prev) =>
+        prev.filter((id) => !HEALTH_ALL_LAYER_IDS.has(id))
+      );
+    }
+    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id)));
+  }, [selectedRaceCensusId, selectedAgeGroupId, selectedSexId, healthMetricId]);
+
+  /** Population choropleth and SPLC are mutually exclusive for the colored layer */
+  const handleTogglePopulationChoropleth = () => {
+    setShowChoropleth((v) => {
+      const next = !v;
+      if (next) {
+        setSelectedLayers((prev) =>
+          prev.filter((id) => !SPLC_LAYER_IDS.has(id))
+        );
+      }
+      return next;
+    });
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -224,7 +460,7 @@ export default function MainPage() {
                 aria-pressed={isPinDropMode}
               >
                 <img
-                  className="w-[17px] h-[17px]"
+                  className="h-[17px] w-[11px] object-contain object-center shrink-0"
                   alt="Drop Pin"
                   src="/figmaAssets/map-pin.png"
                 />
@@ -260,7 +496,7 @@ export default function MainPage() {
                     src="/figmaAssets/create-account.svg"
                     style={{ filter: 'brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(119%) contrast(119%)' }}
                   />
-                  <span className="font-inter text-white text-[11px]">Sign Up</span>
+                  <span className="font-inter text-white text-[11px]">{isLoggedIn ? 'Account' : 'Sign Up'}</span>
                 </Button>
 
                 {/* Sign Up Dropdown Menu */}
@@ -268,6 +504,7 @@ export default function MainPage() {
                   <div className="absolute top-[45px] right-0 z-50">
                     <div className="bg-gray-700 rounded-lg p-4 w-64 text-white shadow-lg">
                       {/* Sign Up Option */}
+                      { !isLoggedIn && (
                       <div 
                         className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                         onClick={handleSignUpClick}
@@ -280,6 +517,7 @@ export default function MainPage() {
                         />
                         <span className="text-[10.5px] text-white">Create Account</span>
                       </div>
+                      )}
 
                       {/* User Account Options (when logged in) */}
                       {isLoggedIn && (
@@ -295,7 +533,7 @@ export default function MainPage() {
                           </div>
                           
                           <div 
-                            className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-500 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+                            className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
                               handlePricingClick();
                               setIsSignUpDropdownOpen(false);
@@ -307,6 +545,17 @@ export default function MainPage() {
                               src="/figmaAssets/Plan.svg"
                             />
                             <span className="text-[10.5px] text-white">Plan</span>
+                          </div>
+
+                          <div
+                            className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-500 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+                            onClick={() => {
+                              setIsProfilesOpen(true);
+                              setIsSignUpDropdownOpen(false);
+                            }}
+                          >
+                            <UserPlusIcon className="w-[16px] h-[16px] text-white" />
+                            <span className="text-[10.5px] text-white">My Profiles</span>
                           </div>
                           
                           <div className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors">
@@ -338,8 +587,8 @@ export default function MainPage() {
                   </div>
                 )}
               </div>
-
               {/* Login Button */}
+              { !isLoggedIn &&
               <Button 
                 onClick={() => setIsLoginOpen(true)}
                 className="h-[39px] bg-[#06012a] rounded-[29.09px] border border-[#312b7a] flex items-center gap-2"
@@ -347,15 +596,17 @@ export default function MainPage() {
                 <img className="w-[22px] h-[17px]" alt="Login" src="/figmaAssets/login.svg" />
                 <span className="font-inter text-white text-[11px]">Login</span>
               </Button>
+              }
 
               <button onClick={toggleMenu} className="p-2" aria-label="Open Menu">
                 <div className="flex flex-col gap-2 w-[30px] h-[26px] justify-center">
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
-                  <div className="w-[30px] h-[1px] bg-[#0c1022] rounded-[2px]" />
+                  <div className={barClass} />
+                  <div className={barClass} />
+                  <div className={barClass} />
                 </div>
               </button>
             </div>
+            
 
             {/* Slide-out App Menu (your existing modal/drawer) */}
             <SideBarMenu
@@ -406,7 +657,10 @@ export default function MainPage() {
               {/* Map layer */}
               <div className="absolute inset-0 z-0">
                 <LeafletMap 
+                  loading={isLoading}
+                  setLoading={setLoading}
                   sidebarOffsetPx={sidebarOpen ? SIDEBAR_WIDTH_OPEN : 0}
+
                   hideInsets={showLanding}
                   pinDropMode={isPinDropMode}
                   pins={mapPins}
@@ -443,7 +697,10 @@ export default function MainPage() {
                   selectedAgeGroupId={selectedAgeGroupId}
                   selectedRaceCensusId={selectedRaceCensusId}
                   selectedSexId={selectedSexId}
-                  politicalCategory={politicalCategory}
+                  politicalLayerIds={politicalLayerIds}
+                  houseDistrictPartyMode={houseDistrictPartyMode}
+                  healthMetricId={healthMetricId}
+                  showSplcHateMap={selectedLayers.includes("most-racist")}
                 />
               </div>
 
@@ -537,7 +794,7 @@ export default function MainPage() {
                   choroplethMetric={choroplethMetric}
                   onChoroplethMetricChange={setChoroplethMetric}
                   showChoropleth={showChoropleth}
-                  onToggleChoropleth={() => setShowChoropleth((v) => !v)}
+                  onToggleChoropleth={handleTogglePopulationChoropleth}
 
                   showPoliceKillingData={showPoliceKillingData}
                   onTogglePoliceKillingData={() => setShowPoliceKillingData((v) => !v)}
@@ -577,8 +834,10 @@ export default function MainPage() {
                   
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
-                  politicalCategory={politicalCategory}
-                  onPoliticalCategoryChange={setPoliticalCategory}
+                  politicalLayerIds={politicalLayerIds}
+                  onPoliticalLayerToggle={handlePoliticalLayerToggle}
+                  houseDistrictPartyMode={houseDistrictPartyMode}
+                  onHouseDistrictPartyModeChange={setHouseDistrictPartyMode}
                   onResetAllFilters={handleResetAllFilters}
                 />
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
@@ -588,15 +847,6 @@ export default function MainPage() {
                     <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
                   </div>
                 )}
-                {/* <div className="px-6 pt-6 pb-20">
-                  <NavigationMenuSection
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    handleSearchTrigger={handleSearchTrigger}
-                    selectedLayers={selectedLayers}
-                    onLayerToggle={handleLayerToggle}
-                  />
-                </div> */}
               </aside>
 
               {/* TOGGLE BUTTON */}
@@ -634,7 +884,21 @@ export default function MainPage() {
       </div>
 
       {/* Pricing Cards */}
-      {isPricingOpen && <PricingCards isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} />}
+      {isPricingOpen && (
+        <PricingCards
+          isOpen={isPricingOpen}
+          onClose={() => setIsPricingOpen(false)}
+          isLoggedIn={isLoggedIn}
+          isVerified={isVerified}
+          userEmail={userEmail}
+          currentPlan={currentPlan}
+          onRequireAuth={handleRequirePlanAuth}
+          onFreeTrial={() => {
+            setIsPricingOpen(false);
+            setIsSignUpOpen(true);
+          }}
+        />
+      )}
 
       {/* CONTACT US FORM MODAL */}
       {isContactOpen && <ContactUsform isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />}
@@ -647,6 +911,11 @@ export default function MainPage() {
         <NewsletterPopup isOpen={isNewsletterPopupOpen} onClose={() => setIsNewsletterPopupOpen(false)} />
       )}
 
+      {/* Loading Popup */}
+      {isLoading && (
+        <LoadingBar isOpen={isLoading} onClose={() => setLoading(false)} />
+      )}
+
       {/* Share Popup */}
       <SharePopup 
         isOpen={isShareOpen} 
@@ -654,12 +923,36 @@ export default function MainPage() {
         mapContainerRef={mapSectionRef}
       />
 
+      {/* Saved Map Profiles */}
+      {isProfilesOpen && (
+        <Profiles
+          isOpen={isProfilesOpen}
+          onClose={() => setIsProfilesOpen(false)}
+          getCurrentConfig={getCurrentConfig}
+          onLoadProfile={applyConfig}
+          planLabel={currentPlan}
+        />
+      )}
+
       {/* Sign Up Modal */}
       {isSignUpOpen && (
         <SignUp 
-          isOpen={isSignUpOpen} 
+          isOpen={isSignUpOpen}
           onClose={() => setIsSignUpOpen(false)}
+          onLogin={(email) => {
+            handleUserLogin(email);
+            setIsLoginOpen(false);
+          }}
           onSwitchToLogin={() => setIsLoginOpen(true)}
+        />
+      )}
+
+      {/* Forgot Password Modal */}
+      {isForgotPasswordOpen && (
+        <ForgotPassword
+          isOpen={isForgotPasswordOpen}
+          onClose={() => setIsForgotPasswordOpen(false)}
+          onSwitchToSignUp={() => setIsSignUpOpen(true)}
         />
       )}
 
@@ -667,12 +960,35 @@ export default function MainPage() {
       {isLoginOpen && (
         <Login 
           isOpen={isLoginOpen} 
-          onClose={() => setIsLoginOpen(false)}
-          onLogin={(email) => {
-            handleUserLogin(email);
+          onClose={() => {
+            setIsLoginOpen(false);
+            setPendingPlan(null);
+          }}
+          onLogin={(email, plan, verified) => {
+            handleUserLogin(email, plan ?? null, verified ?? false);
             setIsLoginOpen(false);
           }}
           onSwitchToSignUp={() => setIsSignUpOpen(true)}
+          onSwitchToForgot={() => setIsForgotPasswordOpen(true)}
+        />
+      )}
+      {/* Verify Modal */}
+      {isVerifyOpen && (
+        <Verify
+          isOpen={isVerifyOpen} 
+          onClose={() => setIsVerifyOpen(false)}
+          onLogin={(email) => {
+            // Reaching this callback means the email was just verified.
+            handleUserLogin(email, null, true);
+            setIsVerifyOpen(false);
+          }}
+        />
+      )}
+      {/* Password Reset Modal */}
+      {isResetOpen && (
+        <Reset
+          isOpen={isResetOpen} 
+          onClose={() => setIsResetOpen(false)}
         />
       )}
     </>

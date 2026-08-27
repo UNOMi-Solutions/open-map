@@ -1,22 +1,57 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { getApiBaseUrl, setAuthToken } from '@/lib/apiClient';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin?: (email: string) => void;
+  onLogin?: (email: string, plan?: string | null, verified?: boolean) => void;
   onSwitchToSignUp?: () => void;
+  onSwitchToForgot?: () => void;
 }
 
-export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp, onSwitchToForgot }: LoginModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isError, setIsError] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     console.log('Email:', email, 'Password:', password);
     // Handle login logic here
-    if (onLogin && email) {
-      onLogin(email);
+
+    /*
+    THIS CODE HANDLES THE CALL TO THE BACK END
+    */
+    const baseURL = getApiBaseUrl();
+    const response = await fetch(baseURL+ "/api/auth/login", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      }),
+    });
+
+    if (!response.ok) {
+      setIsError(true);
+      setError("Something went wrong. Please try again later");
+      return;
+    }
+
+    const data = await response.json();
+    console.log('Success:', data);
+
+    // Persist the JWT so per-user features (saved profiles) work and the
+    // session survives a page refresh.
+    if (data?.token) {
+      setAuthToken(data.token);
+    }
+
+    if (onLogin && email && password) {
+      onLogin(email, data?.user?.plan ?? null, data?.user?.verified ?? false);
     }
   };
 
@@ -37,6 +72,13 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp 
       onSwitchToSignUp();
     }
   };
+
+  const handleForgotPassword = () => {
+    onClose();
+    if (onSwitchToForgot) {
+      onSwitchToForgot();
+    }
+  }
 
   if (!isOpen) return null;
 
@@ -73,6 +115,19 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp 
         <h2 className="text-white text-2xl font-semibold text-center mb-8">
           Login
         </h2>
+
+        {/* Forgot Password Link */}
+        { isError &&
+          <p className="text-center text-red-400 text-sm mb-4">
+          Forgot your password?{' '}
+          <button
+            onClick={handleForgotPassword}
+            className="text-green-400 hover:text-green-300 transition-colors"
+          >
+            Reset here
+          </button>
+        </p>
+        }
 
         {/* Email Input */}
         <div className="mb-4">

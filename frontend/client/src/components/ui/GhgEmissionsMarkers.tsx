@@ -1,9 +1,7 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
-
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 // Green marker icon to distinguish GHG emissions facilities from other markers 
 const GHG_EMISSIONS_ICON = L.divIcon({
@@ -40,6 +38,7 @@ type GhgEmissionFacility = {
 type GhgEmissionsMarkersProps = {
   // 2-letter state code of the state the user clicked; only this state's facilities are fetched 
   selectedStateCode: string | null;
+  setLoading: (loading: boolean) => void;
 };
 
 function formatNumber(value: unknown): string {
@@ -51,43 +50,44 @@ function formatNumber(value: unknown): string {
 }
 
 // Fetch ghg emissions data from api and set state 
-const GhgEmissionsMarkers = ({ selectedStateCode }: GhgEmissionsMarkersProps) => {
+const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMarkersProps) => {
   const [facilities, setFacilities] = useState<GhgEmissionFacility[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!selectedStateCode) {
       setFacilities([]);
-      setLoading(false);
       return;
     }
 
     setFacilities([]);
     setLoading(true);
 
-    const url = `${apiURL}/api/v1/environment/ghgEmissions?stateCode=${encodeURIComponent(
-      selectedStateCode,
-    )}`;
+    let cancelled = false;
+    const path = `/api/v1/environment/ghgEmissions?stateCode=${encodeURIComponent(selectedStateCode)}`;
 
-    fetch(url, {
-      method: "GET",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey || "" },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
+    cachedApiGet<{ ghgEmissions?: GhgEmissionFacility[] }>(
+      `environment:ghgEmissions:${selectedStateCode}`,
+      path,
+      CACHE_TTL.ENVIRONMENT_STATE,
+    )
       .then((data) => {
+        if (cancelled) return;
         const list = data?.ghgEmissions ?? [];
         setFacilities(Array.isArray(list) ? list : []);
       })
       .catch((error) => {
         console.error("[GhgEmissionsMarkers] Fetch error:", error);
-        setFacilities([]);
+        if (!cancelled) setFacilities([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        // Unguarded: re-clicking a state cancels the previous run, which would
+        // otherwise leave the app-wide overlay up.
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedStateCode]);
 
   // Don't render anything if no state is selected
@@ -96,7 +96,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode }: GhgEmissionsMarkersProps) =>
   }
 
   // While loading and we have no facilities yet, also render nothing to avoid stray markers
-  if (loading && facilities.length === 0) {
+  if (facilities.length === 0) {
     return null;
   }
 

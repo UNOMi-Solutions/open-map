@@ -46,27 +46,155 @@ const US_STATE_ABBREVIATIONS = [
     "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
     "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
 ];
-const currentDate = new Date();
-const currentYear = currentDate.getFullYear();
+// FBI CDE data is not always available for the current calendar year.
+// Use a stable completed year by default, while still allowing ?year=YYYY.
+const DEFAULT_CRIME_YEAR = "2023";
+
+const FBI_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const FBI_STATE_DELAY_MS = 300;
+const murderCache = new Map();
+const arrestCache = new Map();
+const inFlightFetches = new Map();
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function readCache(cache, key) {
+    const entry = cache.get(key);
+    if (!entry) return null;
+    if (Date.now() - entry.cachedAt > FBI_CACHE_TTL_MS) {
+        cache.delete(key);
+        return null;
+    }
+    return entry.data;
+}
+
+function writeCache(cache, key, data) {
+    cache.set(key, { data, cachedAt: Date.now() });
+}
+
+async function fetchFbiUrl(url, retries = 4) {
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            const response = await axios.get(url);
+            return response.data;
+        } catch (error) {
+            const status = error.response?.status;
+            if (status === 429 && attempt < retries - 1) {
+                await sleep(1500 * (attempt + 1));
+                continue;
+            }
+            throw error;
+        }
+    }
+}
+
+/** Fetch one state at a time to avoid FBI api.data.gov rate limits (429). */
+async function fetchAllStatesSequentially(buildUrl) {
+    const result = {};
+    for (const state of US_STATE_ABBREVIATIONS) {
+        result[state] = await fetchFbiUrl(buildUrl(state));
+        await sleep(FBI_STATE_DELAY_MS);
+    }
+    return result;
+}
+
+async function getCachedFbiData(cacheKey, cache, fetchFn) {
+    const cached = readCache(cache, cacheKey);
+    if (cached) return cached;
+
+    if (inFlightFetches.has(cacheKey)) {
+        return inFlightFetches.get(cacheKey);
+    }
+
+    const promise = fetchFn()
+        .then((data) => {
+            writeCache(cache, cacheKey, data);
+            inFlightFetches.delete(cacheKey);
+            return data;
+        })
+        .catch((error) => {
+            inFlightFetches.delete(cacheKey);
+            throw error;
+        });
+
+    inFlightFetches.set(cacheKey, promise);
+    return promise;
+}
+
+function hasValidFbiKey() {
+    const key = process.env.FBI_CRIME_KEY?.trim();
+    return key && !["your-", "replace-me", "changeme", "your_fbi_key_here"].some((p) =>
+        key.toLowerCase().startsWith(p)
+    );
+}
+
+function normalizeCrimeYear(year) {
+    const value = String(year || DEFAULT_CRIME_YEAR);
+    return /^\d{4}$/.test(value) ? value : DEFAULT_CRIME_YEAR;
+}
+
+function normalizeState(state) {
+    const value = String(state || "").trim().toUpperCase();
+    return US_STATE_ABBREVIATIONS.includes(value) ? value : null;
+}
+
+function handleFbiRouteError(res, error, label) {
+    const status = error.response?.status;
+    console.error(`[crime] ${label} failed:`, error.message);
+    if (status === 429) {
+        return res.status(429).json({
+            success: false,
+            message: "FBI crime API rate limit reached. Wait a minute and try again, or use cached production data.",
+        });
+    }
+    return res.status(500).json({
+        success: false,
+        message: `Failed to fetch ${label} from FBI API`,
+    });
+}
 
 // Get general murder data for all states
 // Takes in year as optional parameter, will output current year by default
 router.get('/murderByState', async (req, res) => {
-    const year = req.query.year || currentYear;
-    let murderJSON = {}
+    if (!hasValidFbiKey()) {
+        return res.status(503).json({
+            success: false,
+            message: "FBI_CRIME_KEY is not configured. Add a valid api.data.gov key to backend/.env and restart the server.",
+        });
+    }
+
+    const year = normalizeCrimeYear(req.query.year);
+    const requestedState = normalizeState(req.query.state);
+
+    if (req.query.state && !requestedState) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid state. Use a valid two-letter state abbreviation like AZ.",
+        });
+    }
+
+    const cacheKey = requestedState ? `murder:${year}:${requestedState}` : `murder:${year}`;
 
     try {
-        const results = await Promise.all(
-            US_STATE_ABBREVIATIONS.map(async (state) => {
-                const response = await axios.get(`https://api.usa.gov/crime/fbi/cde/shr/state/${state}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`);
-                let stateMurders = response.data;
-                murderJSON[state] = stateMurders;
-            })
+        const murderJSON = await getCachedFbiData(cacheKey, murderCache, () =>
+            requestedState
+                ? fetchFbiUrl(`https://api.usa.gov/crime/fbi/cde/shr/state/${requestedState}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`)
+                : fetchAllStatesSequentially((state) =>
+                    `https://api.usa.gov/crime/fbi/cde/shr/state/${state}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`,
+                ),
         );
-        res.json(murderJSON);
+
+        res.json({
+            success: true,
+            source: "FBI Crime Data API",
+            endpoint: "murderByState",
+            year,
+            state: requestedState || "all",
+            data: murderJSON,
+        });
+        
     } catch (error) {
-        console.error(error);
-        res.status(500).json( { error: error });
+        handleFbiRouteError(res, error, "murderByState");
     }
 });
 
@@ -119,28 +247,53 @@ const offenseCodes = {
 // Takes in year as optional parameter, will output current year by default
 // Takes in offenseCode as optional parameter, will output all offenses if blank or invalid
 router.get('/arrestsByState', async (req, res) => {
-    const year = req.query.year || currentYear;
+    if (!hasValidFbiKey()) {
+        return res.status(503).json({
+            success: false,
+            message: "FBI_CRIME_KEY is not configured. Add a valid api.data.gov key to backend/.env and restart the server.",
+        });
+    }
+
+    const year = normalizeCrimeYear(req.query.year);
+    const requestedState = normalizeState(req.query.state);
+
+    if (req.query.state && !requestedState) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid state. Use a valid two-letter state abbreviation like AZ.",
+        });
+    }
+
     let offenseCode = req.query.offenseCode || "all";
     if (offenseCodes[offenseCode] == undefined) {
         offenseCode = "all";
     }
 
-    let arrestsJSON = {}
+    const cacheKey = requestedState
+        ? `arrests:${year}:${offenseCode}:${requestedState}`
+        : `arrests:${year}:${offenseCode}`;
 
     try {
-        const results = await Promise.all(
-            US_STATE_ABBREVIATIONS.map(async (state) => {
-                const response = await axios.get(`https://api.usa.gov/crime/fbi/cde/arrest/state/${state}/${offenseCode}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`);
-                let stateArrests = response.data;
-                // stateArrests.state = state;
-                // return stateArrests;
-                arrestsJSON[state] = stateArrests;
-            })
+        const arrestsJSON = await getCachedFbiData(cacheKey, arrestCache, () =>
+            requestedState
+                ? fetchFbiUrl(`https://api.usa.gov/crime/fbi/cde/arrest/state/${requestedState}/${offenseCode}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`)
+                : fetchAllStatesSequentially((state) =>
+                    `https://api.usa.gov/crime/fbi/cde/arrest/state/${state}/${offenseCode}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`,
+                ),
         );
-        res.json(arrestsJSON);
+
+        res.json({
+            success: true,
+            source: "FBI Crime Data API",
+            endpoint: "arrestsByState",
+            year,
+            state: requestedState || "all",
+            offenseCode,
+            offenseLabel: offenseCodes[offenseCode],
+            data: arrestsJSON,
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error });
+        handleFbiRouteError(res, error, "arrestsByState");
     }
 });
 

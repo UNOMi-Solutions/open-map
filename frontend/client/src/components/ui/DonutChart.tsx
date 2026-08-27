@@ -24,23 +24,17 @@ export default function DonutChart({ data, color }: DataProps) {
           innerRadius={50}
           outerRadius={100}
           fill="#8884d8"
-          paddingAngle={0}
-          label={ false }
+          paddingAngle={3}
+          label
         >
           {filteredData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={`hsl(${ color },80%,${index * (50 / filteredData.length)}%)`} />
           ))}
         </Pie>
-        <Tooltip
-          formatter={(value) => value.toLocaleString()}
-        />
-        <Legend
-          wrapperStyle={{
-            maxHeight: 150,
-            overflowY: "auto",
-            paddingLeft: 10
-          }}
-        />
+        <Tooltip />
+        { (filteredData.length < 15) &&
+        (<Legend />)
+        }
       </PieChart>
     </div>
   );

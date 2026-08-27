@@ -1,0 +1,97 @@
+{
+  "source": "https://www.supremecourt.gov/about/biographies.aspx (current members)",
+  "fetchedAt": "2026-04-07T23:33:58.694Z",
+  "count": 9,
+  "justices": [
+    {
+      "id": "jus-john-g-roberts-jr",
+      "name": "John G. Roberts, Jr.",
+      "title": "Chief Justice of the United States",
+      "state": "IN",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Official_roberts_CJ.jpg/200px-Official_roberts_CJ.jpg",
+      "website": "https://www.oyez.org/justices/john_g_roberts_jr",
+      "lat": 39.849426,
+      "lng": -86.258278
+    },
+    {
+      "id": "jus-amy-coney-barrett",
+      "name": "Amy Coney Barrett",
+      "title": "Associate Justice",
+      "state": "LA",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Official_Amy_Barrett_photo.jpg/200px-Official_Amy_Barrett_photo.jpg",
+      "website": "https://www.oyez.org/justices/amy_coney_barrett",
+      "lat": 31.169546,
+      "lng": -91.867805
+    },
+    {
+      "id": "jus-brett-m-kavanaugh",
+      "name": "Brett M. Kavanaugh",
+      "title": "Associate Justice",
+      "state": "DC",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Associate_Justice_Brett_Kavanaugh_Official_Portrait_%28full_length%29.jpg/200px-Associate_Justice_Brett_Kavanaugh_Official_Portrait_%28full_length%29.jpg",
+      "website": "https://www.oyez.org/justices/brett_m_kavanaugh",
+      "lat": 38.9072,
+      "lng": -76.9269
+    },
+    {
+      "id": "jus-clarence-thomas",
+      "name": "Clarence Thomas",
+      "title": "Associate Justice",
+      "state": "GA",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Clarence_Thomas_official_SCOTUS_portrait_%283x4_cropped%29.jpg/200px-Clarence_Thomas_official_SCOTUS_portrait_%283x4_cropped%29.jpg",
+      "website": "https://www.oyez.org/justices/clarence_thomas",
+      "lat": 33.040619,
+      "lng": -83.643074
+    },
+    {
+      "id": "jus-elena-kagan",
+      "name": "Elena Kagan",
+      "title": "Associate Justice",
+      "state": "NY",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Elena_Kagan_Official_SCOTUS_Portrait_%282013%29.jpg/200px-Elena_Kagan_Official_SCOTUS_Portrait_%282013%29.jpg",
+      "website": "https://www.oyez.org/justices/elena_kagan",
+      "lat": 42.165726,
+      "lng": -74.83805100000001
+    },
+    {
+      "id": "jus-ketanji-brown-jackson",
+      "name": "Ketanji Brown Jackson",
+      "title": "Associate Justice",
+      "state": "DC",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Ketanji_Brown_Jackson_official_SCOTUS_portrait.jpg/200px-Ketanji_Brown_Jackson_official_SCOTUS_portrait.jpg",
+      "website": "https://www.oyez.org/justices/ketanji_brown_jackson",
+      "lat": 38.9072,
+      "lng": -77.1469
+    },
+    {
+      "id": "jus-neil-m-gorsuch",
+      "name": "Neil M. Gorsuch",
+      "title": "Associate Justice",
+      "state": "CO",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Associate_Justice_Neil_Gorsuch_Official_Portrait.jpg/200px-Associate_Justice_Neil_Gorsuch_Official_Portrait.jpg",
+      "website": "https://www.oyez.org/justices/neil_gorsuch",
+      "lat": 39.059811,
+      "lng": -105.311104
+    },
+    {
+      "id": "jus-samuel-a-alito-jr",
+      "name": "Samuel A. Alito, Jr.",
+      "title": "Associate Justice",
+      "state": "NJ",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Samuel_Alito_official_photo.jpg/200px-Samuel_Alito_official_photo.jpg",
+      "website": "https://www.oyez.org/justices/samuel_alito",
+      "lat": 40.298904,
+      "lng": -74.521011
+    },
+    {
+      "id": "jus-sonia-sotomayor",
+      "name": "Sonia Sotomayor",
+      "title": "Associate Justice",
+      "state": "NY",
+      "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Sonia_Sotomayor_in_SCOTUS_robe.jpg/200px-Sonia_Sotomayor_in_SCOTUS_robe.jpg",
+      "website": "https://www.oyez.org/justices/sonia_sotomayor",
+      "lat": 42.165726,
+      "lng": -75.058051
+    }
+  ]
+}

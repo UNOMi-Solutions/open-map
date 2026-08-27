@@ -1,0 +1,86 @@
+{
+  "title": "Notable U.S. gerrymandering and redistricting snapshots",
+  "sourceNote": "Educational summaries; pin locations are approximate (often state capitols where maps are debated). Images from Wikimedia Commons.",
+  "cases": [
+    {
+      "id": "germ-ma-1812",
+      "title": "The name 'gerrymander' is born",
+      "subtitle": "Boston area · Massachusetts · 1812",
+      "lat": 42.3601,
+      "lng": -71.0589,
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Elbridge-gerry-painting.jpg/400px-Elbridge-gerry-painting.jpg",
+      "body": "Governor Elbridge Gerry approved a state senate map that wrapped Essex County in odd shapes to help his Democratic-Republican party. Federalists mocked one district as a salamander; the portmanteau 'Gerry-mander' stuck and later became shorthand for drawing districts for partisan advantage.",
+      "learnMoreUrl": "https://en.wikipedia.org/wiki/Gerrymandering"
+    },
+    {
+      "id": "germ-nc-racial",
+      "title": "North Carolina and racial gerrymandering",
+      "subtitle": "Raleigh · North Carolina · 1990s–2020s",
+      "lat": 35.7804,
+      "lng": -78.6391,
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/2015_North_Carolina_State_Capitol.JPG/400px-2015_North_Carolina_State_Capitol.JPG",
+      "body": "North Carolina has been at the center of repeated federal litigation over maps that packed or cracked Black voters to dilute their electoral influence. Courts have struck down congressional and legislative plans multiple times, ordering redraws and shaping how states may use race when districting.",
+      "learnMoreUrl": "https://en.wikipedia.org/wiki/Racial_gerrymandering_in_the_United_States"
+    },
+    {
+      "id": "germ-wi-whitford",
+      "title": "Partisan symmetry in Wisconsin",
+      "subtitle": "Madison · Wisconsin · Gill v. Whitford era",
+      "lat": 43.0747,
+      "lng": -89.3848,
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Wisconsin_State_Capitol_Building_6.jpg/400px-Wisconsin_State_Capitol_Building_6.jpg",
+      "body": "Voters challenged Wisconsin Assembly maps as an extreme partisan gerrymander. The case pushed courts to consider measurable partisan bias (efficiency gap and related tools) and how much lock-in one party should get from line-drawing—issues that still frame reform debates.",
+      "learnMoreUrl": "https://en.wikipedia.org/wiki/Gill_v._Whitford"
+    },
+    {
+      "id": "germ-pa-2018",
+      "title": "Pennsylvania redraws Congress mid-decade",
+      "subtitle": "Harrisburg · Pennsylvania · 2018",
+      "lat": 40.264,
+      "lng": -76.8839,
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pennsylvania_State_Capital_%282020%29.jpg/400px-Pennsylvania_State_Capital_%282020%29.jpg",
+      "body": "The state Supreme Court found Pennsylvania's congressional map an unconstitutional partisan gerrymander under the state constitution and imposed a new plan before the 2018 elections. The episode showed state courts—not only federal ones—can reshape districts when partisan skew crosses legal lines.",
+      "learnMoreUrl": "https://en.wikipedia.org/wiki/League_of_Women_Voters_of_Pennsylvania_v._Commonwealth_of_Pennsylvania"
+    },
+    {
+      "id": "germ-al-milligan",
+      "title": "Alabama and Section 2 opportunity districts",
+      "subtitle": "Montgomery · Alabama · Allen v. Milligan (2023)",
+      "lat": 32.3777,
+      "lng": -86.3006,
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Alabama_State_Capitol%2C_Montgomery%2C_West_view_20160713_1.jpg/400px-Alabama_State_Capitol%2C_Montgomery%2C_West_view_20160713_1.jpg",
+      "body": "The U.S. Supreme Court ruled Alabama likely violated the Voting Rights Act by not creating a second congressional district where Black voters could elect their preferred candidates. The decision reinforced that mapmakers must consider minority opportunity in redistricting—not only partisan balance.",
+      "learnMoreUrl": "https://en.wikipedia.org/wiki/Allen_v._Milligan"
+    },
+    {
+      "id": "germ-tx-maps",
+      "title": "Texas maps and rapid growth",
+      "subtitle": "Austin · Texas · 2000s–2020s",
+      "lat": 30.2747,
+      "lng": -97.7404,
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/TexasStateCapitol-2010-01.JPG/400px-TexasStateCapitol-2010-01.JPG",
+      "body": "Litigation over Texas congressional and legislative lines has recurred after each census, often touching race, partisanship, and whether new growth in diverse suburbs is fairly reflected. Outcomes shift who holds power in one of the country's largest delegations.",
+      "learnMoreUrl": "https://en.wikipedia.org/wiki/Redistricting_in_Texas"
+    },
+    {
+      "id": "germ-ga-2020s",
+      "title": "Georgia's shifting battleground maps",
+      "subtitle": "Atlanta · Georgia · 2020s",
+      "lat": 33.749,
+      "lng": -84.388,
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Georgia_State_Capitol%2C_Atlanta%2C_West_view_20160716_1.jpg/400px-Georgia_State_Capitol%2C_Atlanta%2C_West_view_20160716_1.jpg",
+      "body": "After close statewide races, fights over Georgia's congressional and legislative maps intensified. Plaintiffs argued lines diluted Black voting strength or entrenched one party; courts ordered changes in some contexts—highlighting how line-drawing interacts with a competitive Sun Belt electorate.",
+      "learnMoreUrl": "https://en.wikipedia.org/wiki/Redistricting_in_Georgia"
+    },
+    {
+      "id": "germ-oh-reform",
+      "title": "Ohio and voter-led redistricting reform",
+      "subtitle": "Columbus · Ohio · 2010s–2020s",
+      "lat": 39.9623,
+      "lng": -82.9997,
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Ohio_Statehouse_exterior.jpg/400px-Ohio_Statehouse_exterior.jpg",
+      "body": "Ohio voters amended the constitution to change how state legislative maps are drawn, aiming to curb partisan gerrymandering. Repeated impasse between the commission and the courts showed that rules on paper still collide with politics—until maps finally clear legal muster.",
+      "learnMoreUrl": "https://en.wikipedia.org/wiki/Redistricting_in_Ohio"
+    }
+  ]
+}

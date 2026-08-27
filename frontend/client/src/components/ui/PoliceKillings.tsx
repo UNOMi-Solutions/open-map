@@ -5,12 +5,10 @@ import {
 } from "react-leaflet";
 
 import { CreateMarker } from "./CreateMarker";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 const provider = new OpenStreetMapProvider();
-
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
 
 
 export type PoliceKillingQKey = 
@@ -37,9 +35,6 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
     }
     const [PDKillingData, setPDKillingData] = useState<Incident[]>([]);
     const [loadingPDKillingData, setLoadingPDKillingData] = useState<boolean>(true);
-
-    let raw = localStorage.getItem("OpenMap-Police-Killing-Data") || "null";
-    let browserData = JSON.parse(raw);
 
     const [startDate, setStartDate] = useState<Date>(new Date("2026-01-01"));
     const [endDate, setEndDate] = useState<Date>(new Date("2026-03-31"));
@@ -69,36 +64,24 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
     }, [PoliceKillingQ, PoliceKillingYear]);
 
     useEffect(() => {
-        if(browserData == null) {
-            fetch(`${apiURL}/api/v1/lawEnforcement/policeVictimCases`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": apiKey|| ""   
-               }
+        let cancelled = false;
+        cachedApiGet<Incident[]>(
+            "lawEnforcement:policeVictimCases",
+            "/api/v1/lawEnforcement/policeVictimCases",
+            CACHE_TTL.LAW_ENFORCEMENT,
+        )
+            .then((data) => {
+                if (!cancelled) setPDKillingData(Array.isArray(data) ? data : []);
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
+            .catch((error) => {
+                console.error("[PoliceKillings] Fetch error:", error);
             })
-            .then(data => {
-                console.log("API Repsonse:", data);
-                setPDKillingData(data);
-                //localStorage.setItem("OpenMap-Police-Killing-Data", JSON.stringify(data));
-                setLoadingPDKillingData(false);
-            })
-            .catch(error => {
-                console.error("Fetch error:", error);
+            .finally(() => {
+                if (!cancelled) setLoadingPDKillingData(false);
             });
-        } else {
-            console.log("API Repsonse:", browserData);
-            setPDKillingData(browserData);
-            //localStorage.setItem("OpenMap-Police-Killing-Data", JSON.stringify(browserData));
-            setLoadingPDKillingData(false);
-        }
-
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     return (!showPoliceKillingData) ? null : <>
@@ -108,12 +91,10 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
                 const { locationData } = incident;
                 const excelEpoch = new Date(Date.UTC(1899, 11, 30));
                 const incidentDate = new Date(excelEpoch.getTime() + incident['Date of Incident (month/day/year)'] * 86400000);
-                const randXOffset = (Math.random() - 0.5) * 0.1;
-                const randYOffset = (Math.random() - 0.5) * 0.1;
                 
                 if(incidentDate > startDate && incidentDate < endDate) {
                     return (
-                        (locationData != null) ? <Marker icon={CreateMarker(`hsl(${color},80%,50%)`)} key={index} position={[Number(locationData["latitude"]) + randXOffset, Number(locationData["longitude"]) + randYOffset]}>
+                        (locationData != null) ? <Marker icon={CreateMarker(`hsl(${color},80%,50%)`)} key={index} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]}>
                             <Popup>
                                 <h1>{ incidentDate.getMonth() + 1 }/{ incidentDate.getDate() + 1 }/{ incidentDate.getFullYear() } </h1>
                                 <h1>{ incident["Media description of the circumstances surrounding the death"] }</h1>

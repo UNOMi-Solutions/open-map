@@ -1,9 +1,7 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
-
-const apiURL = import.meta.env.VITE_API_LINK || "";
-const apiKey = import.meta.env.VITE_API_DEV_KEY || "";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 /* Orange marker icon to distinguish air quality from other markers */
 const AIR_QUALITY_ICON = L.divIcon({
@@ -82,24 +80,27 @@ const AirQualityMarkers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const baseUrl = `${apiURL}/api/v1/environment/airQuality`;
+    let cancelled = false;
     const seen = new Set<string>();
 
     Promise.all(
       AIR_QUALITY_CITIES.map(([lat, lon]) =>
-        fetch(`${baseUrl}?lat=${lat}&long=${lon}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json", "x-api-key": apiKey || "" },
-        })
-          .then((res) => (res.ok ? res.json() : []))
+        cachedApiGet<unknown>(
+          `environment:airQuality:loc:${lat.toFixed(4)},${lon.toFixed(4)}`,
+          `/api/v1/environment/airQuality?lat=${lat}&long=${lon}`,
+          CACHE_TTL.AIR_QUALITY,
+        )
           .then((data) => {
-            const arr = Array.isArray(data) ? data : [];
-            return arr.map((obs: Record<string, unknown>) => normalizeStation(obs, lat, lon));
+            const arr = Array.isArray(data) ? data : data != null ? [data] : [];
+            return arr.map((obs: Record<string, unknown>) =>
+              normalizeStation(obs, lat, lon),
+            );
           })
-          .catch(() => [])
-      )
+          .catch(() => []),
+      ),
     )
       .then((results) => {
+        if (cancelled) return;
         const all: AirQualityStation[] = [];
         for (const list of results) {
           for (const s of list) {
@@ -114,9 +115,15 @@ const AirQualityMarkers = () => {
       })
       .catch((err) => {
         console.error("[AirQualityMarkers] Fetch error:", err);
-        setStations([]);
+        if (!cancelled) setStations([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

@@ -6,8 +6,12 @@
   "scripts": {
     "geo:build": "node scripts/build-geojson.mjs",
     "data:senators": "node scripts/fetch-senators.mjs",
+    "data:governors": "node scripts/fetch-governors.mjs",
     "data:president": "node scripts/fetch-president.mjs",
     "data:congressional": "node scripts/fetch-congressional-data.mjs",
+    "data:scotus": "node scripts/fetch-scotus.mjs",
+    "data:health": "node scripts/fetch-health-places.mjs",
+    "data:splc": "node scripts/build-splc-hate-map-from-csv.mjs",
     "web": "npm run geo:build && vite",
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "npm run geo:build && vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
