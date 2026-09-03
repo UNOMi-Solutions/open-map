@@ -156,6 +156,7 @@ export default function SenatorMarkers({ setLoading }: SenatorMarkersProps) {
       })
       .finally(() => {
         // Unguarded — see HouseMarkers: the overlay blocks the whole app.
+        if (!cancelled)
         setLoading(false);
       })
     return () => {

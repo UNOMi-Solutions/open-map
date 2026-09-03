@@ -47,6 +47,7 @@ type NaturalDisasterIncident = {
 type NaturalDisasterIncidentMarkersProps = {
   selectedStateCode: string | null;
   selectedIncidentTypes?: string[];
+  setLoading: (loading: boolean) => void;
 };
 
 // Removes unecessary words from the county name that was returned from the api
@@ -118,6 +119,7 @@ const GRADES = [0, 1, 2, 5, 10, 20, 30, 50];
 const NaturalDisasterIncidentMarkers = ({
   selectedStateCode,
   selectedIncidentTypes = [],
+  setLoading,
 }: NaturalDisasterIncidentMarkersProps) => {
   const map = useMap(); // Leaflet map instance
 
@@ -132,8 +134,6 @@ const NaturalDisasterIncidentMarkers = ({
 
   // all incidents data from api
   const [incidentData, setIncidentData] = useState<NaturalDisasterIncident[]>([]);
-
-  const [loading, setLoading] = useState(false);
 
   // Load county GeoJSON properties
   useEffect(() => {
@@ -240,7 +240,7 @@ const NaturalDisasterIncidentMarkers = ({
       legendRef.current = null;
     }
 
-    if (loading || allCountyFeatures.length === 0) return;
+    if ( allCountyFeatures.length === 0) return;
 
     // Info control (top-right hover panel)
     const info = new L.Control({ position: "topright" });
@@ -365,7 +365,7 @@ const NaturalDisasterIncidentMarkers = ({
         legendRef.current = null;
       }
     };
-  }, [allCountyFeatures, countsByCounty, incidentsByCounty, filteredIncidents, loading, map]);
+  }, [allCountyFeatures, countsByCounty, incidentsByCounty, filteredIncidents, map]);
 
   return null;
 };

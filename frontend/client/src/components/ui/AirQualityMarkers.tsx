@@ -75,9 +75,12 @@ function normalizeStation(obs: Record<string, unknown>, fallbackLat: number, fal
   };
 }
 
-const AirQualityMarkers = () => {
+type AirQualityMarkersProps = {
+  setLoading: (loading: boolean) => void;
+}
+
+const AirQualityMarkers = ({setLoading} : AirQualityMarkersProps) => {
   const [stations, setStations] = useState<AirQualityStation[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,7 +137,7 @@ const AirQualityMarkers = () => {
           position={[station.lat, station.lon]}
           icon={AIR_QUALITY_ICON}
         >
-          {!loading ? (
+          {
             <Popup>
               <div className="min-w-0 max-w-[280px] overflow-y-auto overflow-x-hidden break-words">
                 <h3 className="text-base font-bold">
@@ -147,9 +150,7 @@ const AirQualityMarkers = () => {
                 {station.dateObserved && <p><strong>Date:</strong> {String(station.dateObserved)}</p>}
               </div>
             </Popup>
-          ) : (
-            <Popup>Loading...</Popup>
-          )}
+          }
         </Marker>
       ))}
     </>

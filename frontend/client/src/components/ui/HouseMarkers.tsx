@@ -183,6 +183,7 @@ export default function HouseMarkers({ setLoading }: HouseMarkersProps) {
       .finally(() => {
         // Not guarded by `cancelled`: the overlay is app-wide, so toggling the
         // layer off mid-fetch must still clear it.
+        if (!cancelled)
         setLoading(false);
       });
     return () => {

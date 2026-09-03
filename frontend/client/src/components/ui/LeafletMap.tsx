@@ -1667,17 +1667,18 @@ export default function LeafletMap({
           <NaturalDisasterIncidentMarkers
             selectedStateCode={clickedStateCode}
             selectedIncidentTypes={naturalDisasterIncidentTypes}
+            setLoading={setLoading}
           />
         )}
 
         {/* Air quality – fetches only for the state selected */}
         {showAirQuality && (
-          <AirQualityMarkers />
+          <AirQualityMarkers setLoading={setLoading}/>
         )}
 
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
-          <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} />
+          <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
         )}
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}
@@ -1686,7 +1687,7 @@ export default function LeafletMap({
         )}
 
         {/* Data centers – shown when Data Centers is selected in sidebar */}
-        {showDataCenters && <DataCenterMarkers />}
+        {showDataCenters && <DataCenterMarkers setLoading={setLoading}/>}
 
         {politicalLayerIds.includes("senators") && <SenatorMarkers setLoading={setLoading}/>}
         {politicalLayerIds.includes("governors") && <GovernorMarkers />}
@@ -1695,17 +1696,19 @@ export default function LeafletMap({
           <PresidentMarker
             showPresident={politicalLayerIds.includes("president")}
             showVicePresident={politicalLayerIds.includes("vice-president")}
+            setLoading={setLoading}
           />
         )}
         {politicalLayerIds.includes("house") && <HouseMarkers setLoading={setLoading}/>}
-        {politicalLayerIds.includes("supreme-court") && <SupremeCourtMarkers />}
+        {politicalLayerIds.includes("supreme-court") && <SupremeCourtMarkers/>}
         {politicalLayerIds.includes("gerrymandering") && <GerrymanderingMarkers />}
 
         {/* TESTING - Case by case police killings */}
         <PoliceKillings
           PoliceKillingQ={PoliceKillingQ}
           PoliceKillingYear={PoliceKillingYear}
-          showPoliceKillingData={showPoliceKillingData}></PoliceKillings>
+          showPoliceKillingData={showPoliceKillingData}
+          ></PoliceKillings>
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>

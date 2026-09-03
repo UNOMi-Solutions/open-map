@@ -114,15 +114,16 @@ function PinPopupBody({ pin }: { pin: PresidentPin }) {
 type PresidentMarkerProps = {
   showPresident?: boolean;
   showVicePresident?: boolean;
+  setLoading: (loading: boolean) => void;
 };
 
 export default function PresidentMarker({
   showPresident = true,
   showVicePresident = true,
+  setLoading
 }: PresidentMarkerProps) {
   const [file, setFile] = useState<PresidentFile | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
