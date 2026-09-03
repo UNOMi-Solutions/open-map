@@ -9,11 +9,37 @@
     </style>
     <link rel="icon" type="image/png" href="/favicon.png" />
   <title>OpenMap</title>
-  <!-- Google Analytics (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1EJF9NZGL"></script>
+
+  <!-- Consent Mode v2. This must stay above the Analytics and AdSense tags: both
+       read the default consent state as they initialise, and anything they queue
+       before it is set is treated as granted. Only a stored "accepted" counts as
+       consent, so closing the banner leaves tracking off. Key is duplicated from
+       CookieConsentBanner.tsx because this runs before any module loads. -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
+    (function () {
+      var granted = false;
+      try {
+        granted = localStorage.getItem('cookieConsent_v2') === 'accepted';
+      } catch (e) {
+        // localStorage blocked (private mode); stay denied.
+      }
+      var state = granted ? 'granted' : 'denied';
+      gtag('consent', 'default', {
+        ad_storage: state,
+        ad_user_data: state,
+        ad_personalization: state,
+        analytics_storage: state,
+        functionality_storage: 'granted',
+        security_storage: 'granted'
+      });
+    })();
+  </script>
+
+  <!-- Google Analytics (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1EJF9NZGL"></script>
+  <script>
     gtag('js', new Date());
     gtag('config', 'G-C1EJF9NZGL');
   </script>

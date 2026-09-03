@@ -78,7 +78,9 @@ const corsOptions = {
       callback(new Error(`CORS blocked for origin: ${origin}`));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  // PATCH is required by the account settings page; omitting a method here
+  // makes the browser reject the preflight before Express ever sees the call.
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   // x-api-key MUST be listed here or the browser rejects the preflight
   allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
   credentials: true,
@@ -133,6 +135,7 @@ app.post("/api/auth/login", loginLimiter, async (req, res) => {
       message: "Login successful",
       token,
       user: {
+        name: user.name || "",
         email: user.email,
         verified: !!user.verified,
         plan: user.plan || null,

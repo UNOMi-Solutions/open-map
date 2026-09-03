@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { PRICE_MAP } from "../stripePriceMap.js";
 import User from "../models/User.js";
+import requireAuth from "../middleware/requireAuth.js";
 
 dotenv.config();
 
@@ -114,6 +115,165 @@ router.post("/create-checkout-session", async (req, res) => {
   } catch (err) {
     console.error("create-checkout-session error:", err);
     return res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Describes the logged-in user's plan for the account settings page.
+ *
+ * `isPaid` is what the UI keys off to decide between "View Plans" and
+ * "Unsubscribe": a user is only on a paid plan when they have a live Stripe
+ * subscription, so an account with `plan: null` (or a cancelled one) is
+ * treated as a free trial.
+ */
+router.get("/subscription", requireAuth, (req, res) => {
+  const user = req.authUser;
+  const planKey = user.plan && PRICE_MAP[user.plan] ? user.plan : null;
+  const isPaid =
+    !!planKey &&
+    planKey !== "freeTrial" &&
+    !!user.stripeSubscriptionId &&
+    user.subscriptionStatus !== "canceled";
+
+  return res.json({
+    plan: planKey,
+    displayName: isPaid ? PRICE_MAP[planKey].displayName : "Free Trial",
+    isPaid,
+    interval: user.subscriptionInterval || null,
+    status: user.subscriptionStatus || null,
+    currentPeriodEnd: user.currentPeriodEnd || null,
+    cancelAtPeriodEnd: !!user.cancelAtPeriodEnd,
+  });
+});
+
+/**
+ * Unsubscribes at the end of the paid period rather than immediately, so the
+ * user keeps the access they've already paid for. Stripe emits
+ * `customer.subscription.deleted` when the period ends, which clears the plan.
+ */
+router.post("/cancel-subscription", requireAuth, async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: "Stripe not configured." });
+
+  const user = req.authUser;
+  if (!user.stripeSubscriptionId) {
+    return res.status(400).json({ error: "You don't have an active subscription to cancel." });
+  }
+
+  try {
+    const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    user.cancelAtPeriodEnd = true;
+    user.subscriptionStatus = subscription.status;
+    const periodEnd = subscription.current_period_end || subscription.items?.data?.[0]?.current_period_end;
+    if (periodEnd) user.currentPeriodEnd = new Date(periodEnd * 1000);
+    await user.save();
+
+    return res.json({
+      success: true,
+      cancelAtPeriodEnd: true,
+      currentPeriodEnd: user.currentPeriodEnd || null,
+    });
+  } catch (err) {
+    console.error("cancel-subscription error:", err);
+    return res.status(500).json({ error: "Could not cancel your subscription. Please try again." });
+  }
+});
+
+// Undoes a pending cancellation while the subscription is still in its paid period.
+router.post("/resume-subscription", requireAuth, async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: "Stripe not configured." });
+
+  const user = req.authUser;
+  if (!user.stripeSubscriptionId) {
+    return res.status(400).json({ error: "You don't have a subscription to resume." });
+  }
+
+  try {
+    const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+      cancel_at_period_end: false,
+    });
+
+    user.cancelAtPeriodEnd = false;
+    user.subscriptionStatus = subscription.status;
+    await user.save();
+
+    return res.json({ success: true, cancelAtPeriodEnd: false });
+  } catch (err) {
+    console.error("resume-subscription error:", err);
+    return res.status(500).json({ error: "Could not resume your subscription. Please try again." });
+  }
+});
+
+/**
+ * Upgrades or downgrades an existing subscription in place.
+ *
+ * This swaps the price on the live Stripe subscription rather than sending the
+ * user back through checkout — a second checkout would create a second
+ * subscription and bill them twice. Stripe prorates the difference onto the
+ * next invoice, so an upgrade takes effect immediately and a downgrade credits
+ * the unused time.
+ */
+router.post("/change-plan", requireAuth, async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: "Stripe not configured." });
+
+  const { plan, interval } = req.body || {};
+  const planEntry = PRICE_MAP[plan];
+
+  if (!planEntry) return res.status(400).json({ error: "Invalid plan." });
+  if (plan === "freeTrial") {
+    return res.status(400).json({
+      error: "To move to the free trial, cancel your subscription instead.",
+      code: "USE_CANCEL",
+    });
+  }
+
+  const priceId = planEntry[interval];
+  if (!priceId) return res.status(400).json({ error: "Invalid billing interval for this plan." });
+
+  const user = req.authUser;
+  if (!user.stripeSubscriptionId || user.subscriptionStatus === "canceled") {
+    return res.status(400).json({
+      error: "You don't have an active subscription to change.",
+      code: "NO_SUBSCRIPTION",
+    });
+  }
+
+  try {
+    const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+    const item = subscription.items?.data?.[0];
+    if (!item) return res.status(400).json({ error: "Your subscription has no billable item." });
+
+    if (item.price?.id === priceId) {
+      return res.status(400).json({ error: "You're already on that plan." });
+    }
+
+    const updated = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+      items: [{ id: item.id, price: priceId }],
+      proration_behavior: "create_prorations",
+      // Switching plans is an active choice to stay, so drop any pending cancel.
+      cancel_at_period_end: false,
+    });
+
+    user.plan = plan;
+    user.subscriptionInterval = interval;
+    user.subscriptionStatus = updated.status;
+    user.cancelAtPeriodEnd = false;
+    const periodEnd = updated.current_period_end || updated.items?.data?.[0]?.current_period_end;
+    if (periodEnd) user.currentPeriodEnd = new Date(periodEnd * 1000);
+    await user.save();
+
+    return res.json({
+      success: true,
+      plan,
+      interval,
+      displayName: planEntry.displayName,
+      currentPeriodEnd: user.currentPeriodEnd || null,
+    });
+  } catch (err) {
+    console.error("change-plan error:", err);
+    return res.status(500).json({ error: "Could not change your plan. Please try again." });
   }
 });
 

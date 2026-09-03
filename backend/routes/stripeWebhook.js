@@ -46,6 +46,7 @@ async function applySubscriptionToUser(user, subscription) {
   user.stripeCustomerId = subscription.customer || user.stripeCustomerId;
   user.stripeSubscriptionId = subscription.id;
   user.subscriptionStatus = subscription.status;
+  user.cancelAtPeriodEnd = !!subscription.cancel_at_period_end;
   if (mapped?.plan) user.plan = mapped.plan;
   if (mapped?.interval) user.subscriptionInterval = mapped.interval;
   if (periodEnd) user.currentPeriodEnd = new Date(periodEnd * 1000);
@@ -128,6 +129,8 @@ router.post("/", async (req, res) => {
         if (user) {
           user.subscriptionStatus = "canceled";
           user.plan = null;
+          user.stripeSubscriptionId = undefined;
+          user.cancelAtPeriodEnd = false;
           await user.save();
         }
         break;

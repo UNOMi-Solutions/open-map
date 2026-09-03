@@ -37,6 +37,23 @@ function validateEmailString(currentEmail: string): string {
   return '';
 }
 
+function validateNameString(currentName: string): string {
+  // Name validation rules
+
+  // Must not be blank
+  // Must be at most 80 characters (matches the User schema)
+
+  if (currentName.trim().length == 0) {
+    return "Please input your name";
+  }
+
+  if (currentName.trim().length > 80) {
+    return "Name must be 80 characters or fewer";
+  }
+
+  return '';
+}
+
 function validatePasswordString(currentPassword: string): string {
   // Password validation rules
 
@@ -77,6 +94,7 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState('');
   const [input, setInput] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isEmail, setIsEmail] = useState(true);
@@ -93,6 +111,15 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
       2. Check if the email is in the database
     */
     if (isEmail) {
+      // The first step collects the name alongside the email, so the account
+      // has a display name from the moment it's created.
+      const nameError: string = validateNameString(name);
+      if (nameError != '') {
+        setIsError(true);
+        setError(nameError);
+        return;
+      }
+
       // Check for valid email
       const errorString: string = validateEmailString(input);
       if (errorString != '') {
@@ -137,14 +164,18 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          name: name.trim(),
           email: email,
           password: password
         }),
       });
 
       if (!response.ok) {
+        // Surface the server's reason (e.g. "email already exists") instead of
+        // a generic failure the user can't act on.
+        const failure = await response.json().catch(() => null);
         setIsError(true);
-        setError("Something went wrong. Please try again later");
+        setError(failure?.message || "Something went wrong. Please try again later");
         return;
       }
 
@@ -239,6 +270,20 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
           {error}
         </p>
         }
+
+        {/* Name Input */}
+        { isEmail && !isDone &&
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Full name"
+            value={name}
+            maxLength={80}
+            onChange={(e) => {setName(e.target.value); setIsError(false);}}
+            className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+          />
+        </div>
+}
 
         {/* Email Input */}
         { !isDone &&

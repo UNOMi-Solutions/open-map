@@ -15,13 +15,15 @@ import AboutUsModal from "./sections/AboutUs";
 import NewsletterPopup from "./sections/NewsLetterPopup";
 import SharePopup from "./sections/SharePopup";
 import Profiles from "./sections/Profiles";
-import { fetchMe, getAuthToken, setAuthToken } from "@/lib/apiClient";
+import AccountSettings from "./sections/AccountSettings";
+import EmailChangeVerification from "./sections/EmailChangeVerification";
+import { fetchMe, getAuthToken, setAuthToken, type AccountUser } from "@/lib/apiClient";
 import LeafletMap, {
   ChoroplethMetricKey,
   HouseDistrictPartyMode,
 } from "@/components/ui/LeafletMap";
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
-import { X, UserPlusIcon } from "lucide-react";
+import { X, UserPlusIcon, SettingsIcon } from "lucide-react";
 import { BannerAd, VideoAd } from "@/components/ads";
 
 import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
@@ -44,6 +46,8 @@ export default function MainPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
+  // Display name from the account settings page; empty until the user sets one.
+  const [userName, setUserName] = useState("");
   // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
   // logged-in user, or null when they have no active subscription.
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
@@ -61,6 +65,7 @@ export default function MainPage() {
   const [isNewsletterPopupOpen, setIsNewsletterPopupOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isProfilesOpen, setIsProfilesOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isSignUpDropdownOpen, setIsSignUpDropdownOpen] = useState(false);
   const [isPinDropMode, setIsPinDropMode] = useState(false);
   const [mapPins, setMapPins] = useState<
@@ -137,6 +142,10 @@ export default function MainPage() {
 
   const [isResetOpen, setIsResetOpen] = useState(checkReset());
 
+  const checkEmailChange = (() => window.location.href.includes("/verify-email?"));
+
+  const [isEmailChangeOpen, setIsEmailChangeOpen] = useState(checkEmailChange());
+
   const handleSearchTrigger = () => {
     setIsSearchOpen(true);
     setIsSignUpDropdownOpen(false);
@@ -175,6 +184,14 @@ export default function MainPage() {
     setIsPinDropMode((prev) => !prev);
     setIsSignUpDropdownOpen(false);
   };
+  /** Mirrors the server's copy of the account into the shell's UI state. */
+  const applyAccount = (user: AccountUser) => {
+    setUserName(user.name || "");
+    setUserEmail(user.email);
+    setCurrentPlan(user.plan ?? null);
+    setIsVerified(!!user.verified);
+  };
+
   const handleUserLogin = (
     email: string,
     plan: string | null = null,
@@ -185,6 +202,13 @@ export default function MainPage() {
     setCurrentPlan(plan);
     setIsVerified(verified);
     setIsSignUpOpen(false);
+    // The login/verify responses don't carry every account field (e.g. the
+    // display name), so pull the full record once the token is stored.
+    fetchMe()
+      .then(({ user }) => user && applyAccount(user))
+      .catch(() => {
+        /* Session restore already handles a bad token; nothing to do here. */
+      });
     // If the user was trying to pick a plan before authenticating, bring them
     // back to the pricing screen to finish choosing.
     if (pendingPlan) {
@@ -213,9 +237,12 @@ export default function MainPage() {
     setAuthToken(null);
     setIsLoggedIn(false);
     setUserEmail("");
+    setUserName("");
     setCurrentPlan(null);
     setIsVerified(false);
     setIsSignUpDropdownOpen(false);
+    setIsAccountOpen(false);
+    setIsProfilesOpen(false);
   };
   const handlePricingClick = () => {
     setIsPricingOpen(true);
@@ -380,10 +407,8 @@ export default function MainPage() {
       try {
         const { user } = await fetchMe();
         if (cancelled || !user) return;
+        applyAccount(user);
         setIsLoggedIn(true);
-        setUserEmail(user.email);
-        setCurrentPlan(user.plan ?? null);
-        setIsVerified(!!user.verified);
       } catch {
         // Token invalid/expired — clear it so the UI reflects a logged-out state.
         setAuthToken(null);
@@ -529,9 +554,25 @@ export default function MainPage() {
                               alt="User"
                               src="/figmaAssets/user-head.svg"
                             />
-                            <span className="text-[10.5px] text-gray-200">{userEmail}</span>
+                            <div className="min-w-0">
+                              {userName && (
+                                <p className="text-[10.5px] text-white truncate">{userName}</p>
+                              )}
+                              <p className="text-[10.5px] text-gray-200 truncate">{userEmail}</p>
+                            </div>
                           </div>
-                          
+
+                          <div
+                            className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+                            onClick={() => {
+                              setIsAccountOpen(true);
+                              setIsSignUpDropdownOpen(false);
+                            }}
+                          >
+                            <SettingsIcon className="w-[16px] h-[16px] text-white" />
+                            <span className="text-[10.5px] text-white">Account Settings</span>
+                          </div>
+
                           <div 
                             className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
@@ -893,6 +934,7 @@ export default function MainPage() {
           userEmail={userEmail}
           currentPlan={currentPlan}
           onRequireAuth={handleRequirePlanAuth}
+          onPlanChanged={setCurrentPlan}
           onFreeTrial={() => {
             setIsPricingOpen(false);
             setIsSignUpOpen(true);
@@ -931,6 +973,26 @@ export default function MainPage() {
           getCurrentConfig={getCurrentConfig}
           onLoadProfile={applyConfig}
           planLabel={currentPlan}
+        />
+      )}
+
+      {/* Account Settings */}
+      {isAccountOpen && (
+        <AccountSettings
+          isOpen={isAccountOpen}
+          onClose={() => setIsAccountOpen(false)}
+          onOpenPlans={() => setIsPricingOpen(true)}
+          onAccountUpdated={applyAccount}
+          onAccountDeleted={handleUserLogout}
+        />
+      )}
+
+      {/* Confirmation screen for the "change email" link */}
+      {isEmailChangeOpen && (
+        <EmailChangeVerification
+          isOpen={isEmailChangeOpen}
+          onClose={() => setIsEmailChangeOpen(false)}
+          onConfirmed={(email) => setUserEmail(email)}
         />
       )}
 
