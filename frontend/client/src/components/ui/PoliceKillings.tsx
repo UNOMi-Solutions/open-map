@@ -4,7 +4,7 @@ import {
   Popup
 } from "react-leaflet";
 
-import { CreateMarker } from "./CreateMarker";
+import { CreateMarker, CreatePulsingIcon } from "./CreateMarker";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
@@ -94,7 +94,7 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
                 
                 if(incidentDate > startDate && incidentDate < endDate) {
                     return (
-                        (locationData != null) ? <Marker icon={CreateMarker(`hsl(${color},80%,50%)`)} key={index} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]}>
+                        (locationData != null) ? <Marker icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)} key={index} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]}>
                             <Popup>
                                 <h1>{ incidentDate.getMonth() + 1 }/{ incidentDate.getDate() + 1 }/{ incidentDate.getFullYear() } </h1>
                                 <h1>{ incident["Media description of the circumstances surrounding the death"] }</h1>

@@ -6,7 +6,7 @@ import {
 
 import DonutChart from "./DonutChart";
 
-import { CreateMarker } from "./CreateMarker";
+import { CreatePulsingIcon } from "./CreateMarker";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 // All states and their centers
@@ -104,7 +104,7 @@ const HomicideMarkers = ({ arrestCategory, showArrestData } : ArrestMarkersProps
           showArrestData &&
           states.map(({state, latitude, longitude}) => {
             //if((state != "AK") && (state != "HI")) {
-              return <Marker position={[ latitude, longitude ]} icon={CreateMarker(`hsl(${color},80%,50%)`)} key={state}>
+              return <Marker position={[ latitude, longitude ]} icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)} key={state}>
                 {
                   (!loadingMurderData) ?
                     <Popup>
