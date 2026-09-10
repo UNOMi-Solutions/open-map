@@ -149,7 +149,7 @@ function handleFbiRouteError(res, error, label) {
     }
     return res.status(500).json({
         success: false,
-        message: `Failed to fetch ${label} from FBI API`,
+        message: `Failed to fetch ${label} from FBI API: ${error}`,
     });
 }
 
