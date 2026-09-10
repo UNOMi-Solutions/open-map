@@ -67,6 +67,7 @@ function isAllowedOrigin(origin) {
   // Vite may use 5173, 5174, 5175, … when ports are in use
   if (/^http:\/\/localhost:\d+$/.test(origin)) return true;
   if (/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) return true;
+  if (/\.vercel\.app$/.test(origin)) return true;
   return false;
 }
 
