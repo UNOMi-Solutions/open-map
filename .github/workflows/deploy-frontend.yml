@@ -25,34 +25,23 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci --include=dev
-
+      # The Vercel project's Root Directory is "frontend", and the CLI appends
+      # it to whatever directory it runs in. These steps must therefore run from
+      # the repository root; from frontend/ they resolve to frontend/frontend.
       - name: Pull Vercel environment
-        working-directory: frontend
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Build project
-        working-directory: frontend
-        # Do not use `vercel build`: the Vite preset looks for index.html at
-        # frontend/, but this app's entry is frontend/client/index.html and the
-        # real config lives in vite.config.ts.
-        run: |
-          vercel env pull .env.production --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-          npx vite build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy to Vercel
-        working-directory: frontend
-        run: |
-          printf '%s\n' '{"rewrites":[{"source":"/(.*)","destination":"/index.html"}]}' > dist/public/vercel.json
-          vercel deploy dist/public --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
