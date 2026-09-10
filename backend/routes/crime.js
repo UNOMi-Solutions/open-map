@@ -184,6 +184,8 @@ router.get('/murderByState', async (req, res) => {
                 ),
         );
 
+        res.set('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
+
         res.json({
             success: true,
             source: "FBI Crime Data API",
