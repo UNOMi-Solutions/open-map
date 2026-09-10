@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
 
 jobs:
   deploy:
@@ -24,6 +25,10 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --include=dev
+
       - name: Pull Vercel environment
         working-directory: frontend
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
@@ -33,7 +38,11 @@ jobs:
 
       - name: Build project
         working-directory: frontend
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        # vercel build runs `vite build` (not npx). Put node_modules/.bin on PATH
+        # so the Vite binary from --include=dev is found on the GitHub runner.
+        run: |
+          export PATH="$(pwd)/node_modules/.bin:$PATH"
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
