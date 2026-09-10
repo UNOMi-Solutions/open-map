@@ -183,9 +183,7 @@ router.get('/murderByState', async (req, res) => {
                     `https://api.usa.gov/crime/fbi/cde/shr/state/${state}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`,
                 ),
         );
-
-        res.set('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
-
+        
         res.json({
             success: true,
             source: "FBI Crime Data API",
