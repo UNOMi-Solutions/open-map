@@ -38,18 +38,21 @@ jobs:
 
       - name: Build project
         working-directory: frontend
-        # vercel build runs `vite build` (not npx). Put node_modules/.bin on PATH
-        # so the Vite binary from --include=dev is found on the GitHub runner.
+        # Do not use `vercel build`: the Vite preset looks for index.html at
+        # frontend/, but this app's entry is frontend/client/index.html and the
+        # real config lives in vite.config.ts.
         run: |
-          export PATH="$(pwd)/node_modules/.bin:$PATH"
-          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel env pull .env.production --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          npx vite build
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy to Vercel
         working-directory: frontend
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          printf '%s\n' '{"rewrites":[{"source":"/(.*)","destination":"/index.html"}]}' > dist/public/vercel.json
+          vercel deploy dist/public --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

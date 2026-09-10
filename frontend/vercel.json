@@ -2,6 +2,5 @@
   "installCommand": "npm ci --include=dev",
   "buildCommand": "npx vite build",
   "outputDirectory": "dist/public",
-  "framework": "vite",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
