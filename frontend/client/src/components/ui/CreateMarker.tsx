@@ -17,3 +17,17 @@ export const CreateMarker = (color: string) =>
     iconAnchor: [16, 44],
     popupAnchor: [0, -38],
   });
+
+export const CreatePulsingIcon = (color: string) =>
+  L.divIcon({
+    className: "",
+    html: `
+      <div class="pulsing-marker" style="--pulse-color: ${color}">
+        <div class="pulse-ring"></div>
+        <div class="pulse-dot"></div>
+      </div>
+    `,
+    iconSize: [32, 44],
+    iconAnchor: [16, 44],
+    popupAnchor: [0, -38],
+  });

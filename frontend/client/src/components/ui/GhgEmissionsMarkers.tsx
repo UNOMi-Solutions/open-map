@@ -82,6 +82,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
       .finally(() => {
         // Unguarded: re-clicking a state cancels the previous run, which would
         // otherwise leave the app-wide overlay up.
+        if (!cancelled)
         setLoading(false);
       });
 

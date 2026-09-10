@@ -42,6 +42,10 @@ type DataCenter = {
   [key: string]: unknown;
 };
 
+type DataCenterMarkersProps = {
+  setLoading: (loading: boolean) => void;
+}
+
 // Get coordinates from data center object
 function getCoords(center: DataCenter): [number, number] | null {
   const lat = Number(center.latitude ?? center.lat);
@@ -64,12 +68,12 @@ function formatValue(value: unknown): string {
   return String(value);
 }
 
-const DataCenterMarkers = () => {
+const DataCenterMarkers = ({setLoading} : DataCenterMarkersProps) => {
   const [data, setData] = useState<DataCenter[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     cachedApiGet<{ dataCenters?: DataCenter[] }>(
       "environment:dataCenters",
       "/api/v1/environment/dataCenters",
@@ -83,7 +87,7 @@ const DataCenterMarkers = () => {
         if (!cancelled) setData([]);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       });
     return () => {
       cancelled = true;
@@ -108,7 +112,7 @@ const DataCenterMarkers = () => {
             position={[lat, lng]}
             icon={DATA_CENTER_ICON}
           >
-            {!loading ? (
+            {(
               <Popup>
                 <div className="min-w-0 max-w-[320px] break-words overflow-y-auto overflow-x-hidden">
                   <h3 className="text-base font-bold">{title}</h3>
@@ -158,8 +162,6 @@ const DataCenterMarkers = () => {
                   </ul>
                 </div>
               </Popup>
-            ) : (
-              <Popup>Loading...</Popup>
             )}
           </Marker>
         );

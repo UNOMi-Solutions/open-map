@@ -117,7 +117,7 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp,
         </h2>
 
         {/* Forgot Password Link */}
-        { isError &&
+        { 
           <p className="text-center text-red-400 text-sm mb-4">
           Forgot your password?{' '}
           <button

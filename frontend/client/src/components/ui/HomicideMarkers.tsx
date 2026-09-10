@@ -6,8 +6,10 @@ import {
 
 import DonutChart from "./DonutChart";
 
-import { CreateMarker } from "./CreateMarker";
+import { CreatePulsingIcon } from "./CreateMarker";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import '../../index.css';
+import L from "leaflet";
 
 // All states and their centers
 const states = [
@@ -112,7 +114,7 @@ const HomicideMarkers = ( { murderCategory, murderAttribute, showMurderData } : 
         {
             showMurderData &&
           statesOffset.map(({state, latitude, longitude}) => {
-              return <Marker position={[ latitude, longitude ]} key={state} icon={CreateMarker(`hsl(${color},80%,50%)`)}>
+              return <Marker position={[ latitude, longitude ]} key={state} icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)}>
                 {
                   (!loadingMurderData) ?
                     <Popup>

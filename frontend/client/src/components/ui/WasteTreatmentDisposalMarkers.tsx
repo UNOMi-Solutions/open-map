@@ -123,11 +123,11 @@ function normalizeFacility(item: Record<string, unknown>, index: number, lat: nu
 type WasteTreatmentDisposalMarkersProps = {
   /** 2-letter state code of the state the user clicked; only this state is fetched */
   selectedStateCode: string | null;
+  setLoading: (loading: boolean) => void;
 };
 
-const WasteTreatmentDisposalMarkers = ({ selectedStateCode }: WasteTreatmentDisposalMarkersProps) => {
+const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteTreatmentDisposalMarkersProps) => {
   const [siteData, setSiteData] = useState<ParsedFacility[]>([]);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!selectedStateCode) {
@@ -198,7 +198,7 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode }: WasteTreatmentDisp
         if (!cancelled) setSiteData([]);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       });
 
     return () => {
@@ -210,7 +210,7 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode }: WasteTreatmentDisp
     <>
       {siteData.map((site) => (
         <Marker key={site.id} position={[site.lat, site.lon]} icon={WASTE_TREATMENT_ICON}>
-          {!loading ? (
+          {(
             <Popup>
               <div className="min-w-0 max-w-[280px] overflow-y-auto overflow-x-hidden break-words">
                 <h3 className="text-base font-bold">{site.name}</h3>
@@ -222,8 +222,6 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode }: WasteTreatmentDisp
                 {site.status && <p className="text-sm"><strong>Status:</strong> {site.status}</p>}
               </div>
             </Popup>
-          ) : (
-            <Popup>Loading...</Popup>
           )}
         </Marker>
       ))}

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import { Marker, Popup } from "react-leaflet";
 
-import { CreateMarker } from "./CreateMarker";
+import { CreateMarker, CreatePulsingIcon } from "./CreateMarker";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
 interface MissingPersonsProps {
@@ -87,7 +87,7 @@ const MissingPersons = ({ showMissingPersonsData, missingPersonQ, missingPersonY
                 const { locationData, DLC, "Case Number": caseNumber, "Legal First Name": legalFirstName, "Legal Last Name": legalLastName } = cleanedObj;
                 const missingPersonDate = new Date(DLC);
 
-                return (locationData != null && missingPersonDate >= startDate && missingPersonDate <= endDate) ? <Marker icon={CreateMarker(`hsl(${color},80%,50%)`)} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]} key={index}>
+                return (locationData != null && missingPersonDate >= startDate && missingPersonDate <= endDate) ? <Marker icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]} key={index}>
                     <Popup>
                         <h1>Case Number: { caseNumber }</h1>
                         <h1>{ legalFirstName } { legalLastName }</h1>
