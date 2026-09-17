@@ -6,7 +6,9 @@ import rateLimit from "express-rate-limit";
  */
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // each IP gets 100 requests
+  // A single map session fires dozens of layer requests, so 100 locked out
+  // ordinary visitors. Requires app.set("trust proxy") to count real clients.
+  max: 600,
   message: {
     success: false,
     message: "Too many requests from this IP, please try again later.",

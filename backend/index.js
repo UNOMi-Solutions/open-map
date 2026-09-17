@@ -28,11 +28,11 @@ import bcrypt from "bcryptjs";
 
 // Route imports
 import censusRoutes from "./routes/census.js";
-import crimeRoutes from "./routes/crime.js";
+import crimeRoutes, { warmCrimeCache } from "./routes/crime.js";
 import economicsRoutes from "./routes/economics.js";
 import environmentRoutes from "./routes/environment.js";
 import healthRoutes from "./routes/health.js";
-import lawEnforcementRoutes from "./routes/lawEnforcement.js";
+import lawEnforcementRoutes, { warmLawEnforcementCache } from "./routes/lawEnforcement.js";
 import politicsRoutes from "./routes/politics.js";
 import socialRoutes from "./routes/social.js";
 import stripeRoutes from "./routes/stripe.js";
@@ -52,6 +52,9 @@ if (!process.env.JWT_SECRET) {
 
 // Express setup
 const app = express();
+// Cloud Run terminates TLS and proxies the request, so without this every
+// visitor looks like the same client IP and they share one rate-limit bucket.
+app.set("trust proxy", 1);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -177,4 +180,16 @@ app.use(errorHandler);
 
 // Server start
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Secure OpenMap backend running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Secure OpenMap backend running on port ${PORT}`);
+
+  // Build the slowest datasets in the background. Failures are non-fatal: the
+  // routes rebuild on demand, and a crash here would take down the container.
+  Promise.allSettled([warmCrimeCache(), warmLawEnforcementCache()]).then((results) => {
+    for (const result of results) {
+      if (result.status === "rejected") {
+        console.warn("[startup] cache warm-up failed:", result.reason?.message);
+      }
+    }
+  });
+});
