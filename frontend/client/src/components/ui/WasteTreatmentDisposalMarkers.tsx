@@ -130,19 +130,14 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteT
   const [siteData, setSiteData] = useState<ParsedFacility[]>([]);
 
   useEffect(() => {
-    if (!selectedStateCode) {
-      setSiteData([]);
-      setLoading(false);
-      return;
-    }
     setSiteData([]);
     setLoading(true);
 
     let cancelled = false;
-    const path = `/api/v1/environment/wasteTreatmentDisposalSites?stateCode=${encodeURIComponent(selectedStateCode)}`;
+    const path = `/api/v1/environment/wasteTreatmentDisposalSites`;
 
     cachedApiGet<unknown>(
-      `environment:wasteTreatment:${selectedStateCode}`,
+      `environment:wasteTreatment`,
       path,
       CACHE_TTL.ENVIRONMENT_STATE,
     )
@@ -204,7 +199,7 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteT
     return () => {
       cancelled = true;
     };
-  }, [selectedStateCode]);
+  }, []);
 
   return (
     <>
