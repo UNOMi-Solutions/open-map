@@ -54,16 +54,18 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
   const [facilities, setFacilities] = useState<GhgEmissionFacility[]>([]);
 
   useEffect(() => {
+    /*
     if (!selectedStateCode) {
       setFacilities([]);
       return;
     }
+    */
 
     setFacilities([]);
     setLoading(true);
 
     let cancelled = false;
-    const path = `/api/v1/environment/ghgEmissions?stateCode=${encodeURIComponent(selectedStateCode)}`;
+    const path = `/api/v1/environment/ghgEmissions`;
 
     cachedApiGet<{ ghgEmissions?: GhgEmissionFacility[] }>(
       `environment:ghgEmissions:${selectedStateCode}`,
@@ -89,12 +91,14 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
     return () => {
       cancelled = true;
     };
-  }, [selectedStateCode]);
+  }, []);
 
   // Don't render anything if no state is selected
+  /*
   if (!selectedStateCode) {
     return null;
   }
+  */
 
   // While loading and we have no facilities yet, also render nothing to avoid stray markers
   if (facilities.length === 0) {

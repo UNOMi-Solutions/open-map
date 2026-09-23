@@ -91,10 +91,12 @@ router.get("/ghgEmissions", async (req, res) => {
     try {
       const stateCode = (req.query.stateCode || "").toString().trim().toUpperCase();
       const facilityNameQuery = (req.query.facilityName || "").toString().trim().toLowerCase();
-  
+
+      /*
       if (!stateCode) {
         return res.status(400).json({ error: "Please provide state code" });
       }
+        */
   
       // Download + cache if needed
       if (!ghgEmissionsCache) {
@@ -148,9 +150,7 @@ router.get("/ghgEmissions", async (req, res) => {
       };
   
       // Filter rows for this state
-      let facilities = ghgEmissionsCache.filter((row) => {
-        return getRowStateCode(row) === stateCode;
-      });
+      let facilities = ghgEmissionsCache;
   
       // Optional: further filter by facility name if query provided
       if (facilityNameQuery) {
