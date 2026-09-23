@@ -742,6 +742,7 @@ export default function MainPage() {
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
+                  showFlockData={selectedLayers.includes("flock-cameras")}
                 />
               </div>
 
