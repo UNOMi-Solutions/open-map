@@ -68,7 +68,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
     const path = `/api/v1/environment/ghgEmissions`;
 
     cachedApiGet<{ ghgEmissions?: GhgEmissionFacility[] }>(
-      `environment:ghgEmissions:${selectedStateCode}`,
+      `environment:ghgEmissions`,
       path,
       CACHE_TTL.ENVIRONMENT_STATE,
     )
