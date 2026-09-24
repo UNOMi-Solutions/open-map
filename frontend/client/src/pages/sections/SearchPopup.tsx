@@ -1,32 +1,32 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import ContinueWithGoogle from '@/components/ContinueWithGoogle';
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLogin?: (email: string, plan?: string | null, verified?: boolean) => void;
+  onSwitchToLogin?: () => void;
+  onSwitchToSignUp?: () => void;
 }
 
-export default function SearchPopup({ isOpen, onClose }: SearchModalProps) {
-  const [email, setEmail] = useState('');
+export default function SearchPopup({
+  isOpen,
+  onClose,
+  onLogin,
+  onSwitchToLogin,
+  onSwitchToSignUp,
+}: SearchModalProps) {
+  const [error, setError] = useState('');
 
   const handleContinue = () => {
-    console.log('Email:', email);
-    // Handle email sign up logic here
-  };
-
-  const handleAppleSignUp = () => {
-    console.log('Continue with Apple');
-    // Handle Apple sign up logic here
-  };
-
-  const handleGoogleSignUp = () => {
-    console.log('Continue with Google');
-    // Handle Google sign up logic here
+    onClose();
+    onSwitchToSignUp?.();
   };
 
   const handleLogin = () => {
-    console.log('Navigate to login');
-    // Handle navigation to login page
+    onClose();
+    onSwitchToLogin?.();
   };
 
   if (!isOpen) return null;
@@ -79,23 +79,16 @@ export default function SearchPopup({ isOpen, onClose }: SearchModalProps) {
             Sign Up
           </h2>
 
-          {/* Email Input */}
-          <div className="w-full max-w-sm mb-4">
-            <input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-200 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-            />
-          </div>
+          {error && (
+            <p className="text-center text-red-400 text-sm mb-4">{error}</p>
+          )}
 
           {/* Continue Button */}
           <button
             onClick={handleContinue}
             className="w-full max-w-sm bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 mb-4"
           >
-            Continue
+            Continue with email
           </button>
 
           {/* Login Link */}
@@ -119,31 +112,14 @@ export default function SearchPopup({ isOpen, onClose }: SearchModalProps) {
             </div>
           </div>
 
-          {/* Apple Sign Up Button */}
-          <button
-            onClick={handleAppleSignUp}
-            className="w-full max-w-sm bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 mb-3 flex items-center justify-center gap-2"
-          >
-            <img
-              className="w-[17px] h-[21px] opacity-100"
-              alt="Apple"
-              src="/figmaAssets/Apple.svg"
-            />
-            Continue with Apple
-          </button>
-
-          {/* Google Sign Up Button */}
-          <button
-            onClick={handleGoogleSignUp}
-            className="w-full max-w-sm bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-          >
-            <img
-              className="w-[18px] h-[19px] opacity-100"
-              alt="Google"
-              src="/figmaAssets/Google.svg"
+          <ContinueWithGoogle
+            className="w-full max-w-sm bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            onSignedIn={(user) => {
+              onLogin?.(user.email, user.plan ?? null, user.verified ?? false);
+              onClose();
+            }}
+            onError={setError}
           />
-            Continue with Google
-          </button>
         </div>
       </div>
     </div>

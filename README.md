@@ -90,6 +90,8 @@ DOMAIN=https://getopenmap.com
 STRIPE_SECRET_KEY=sk_live_...        # Stripe API key (used for Checkout + webhook)
 STRIPE_WEBHOOK_SECRET=whsec_...      # Signing secret for /api/v1/stripe/webhook
 NODE_ENV=production
+GOOGLE_CLIENT_ID=...                 # OAuth 2.0 Web client ID (Sign in with Google)
+GOOGLE_CLIENT_SECRET=...             # OAuth 2.0 Web client secret
 ```
 
 Stripe Checkout lives on the backend (`backend/routes/stripe.js` +
@@ -99,6 +101,27 @@ Stripe Checkout lives on the backend (`backend/routes/stripe.js` +
 `customer.subscription.deleted`, `invoice.payment_succeeded`) and copy its
 signing secret into `STRIPE_WEBHOOK_SECRET`. Plan price IDs are defined in
 `backend/stripePriceMap.js`.
+
+**Sign in with Google.** Create an OAuth 2.0 **Web application** client in
+[Google Cloud Console](https://console.cloud.google.com/apis/credentials) (APIs
+& Services → Credentials). Use the same client ID in `GOOGLE_CLIENT_ID` and
+`VITE_GOOGLE_CLIENT_ID`, and put the client secret in `GOOGLE_CLIENT_SECRET`.
+
+Authorized JavaScript origins:
+
+- `http://localhost:5173` (Vite)
+- `https://getopenmap.com`
+- `https://www.getopenmap.com`
+
+Authorized redirect URIs (GIS popup uses `postmessage` automatically, but the
+origins above should still be listed as redirect URIs):
+
+- `http://localhost:5173`
+- `https://getopenmap.com`
+- `https://www.getopenmap.com`
+
+After adding production values, set them in Cloud Run (backend) and Vercel
+(frontend `VITE_GOOGLE_CLIENT_ID`), then redeploy.
 
 ### `frontend/.env`
 
@@ -113,6 +136,7 @@ VITE_EMAILJS_PUBLIC_KEY=...
 VITE_EMAILJS_PAYMENT_TEMPLATE_ID=...
 VITE_EMAILJS_WAITLIST_TEMPLATE_ID=...
 VITE_MAILCHIMP_URL=...
+VITE_GOOGLE_CLIENT_ID=...            # Same OAuth Web client ID as backend GOOGLE_CLIENT_ID
 
 # Google AdSense (banner + video / in-feed ads)
 VITE_ADSENSE_CLIENT=ca-pub-4397282403486242
@@ -159,6 +183,7 @@ Auth routes (no API key needed):
 | `POST /api/v1/auth/register` | Register a new user |
 | `GET /api/v1/auth/verify?token=...` | Verify email address |
 | `POST /api/auth/login` | Login |
+| `POST /api/v1/auth/google` | Sign in with Google |
 
 ---
 

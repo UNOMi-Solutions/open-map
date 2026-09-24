@@ -663,7 +663,22 @@ export default function MainPage() {
             {isSearchOpen && (
               <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setIsSearchOpen(false)} />
             )}
-            <SearchPopup isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+            <SearchPopup
+              isOpen={isSearchOpen}
+              onClose={() => setIsSearchOpen(false)}
+              onLogin={(email, plan, verified) => {
+                handleUserLogin(email, plan ?? null, verified ?? false);
+                setIsSearchOpen(false);
+              }}
+              onSwitchToLogin={() => {
+                setIsSearchOpen(false);
+                setIsLoginOpen(true);
+              }}
+              onSwitchToSignUp={() => {
+                setIsSearchOpen(false);
+                setIsSignUpOpen(true);
+              }}
+            />
 
             {/* Landing logo / Share button */}
             {showLanding ? (
@@ -1001,8 +1016,8 @@ export default function MainPage() {
         <SignUp 
           isOpen={isSignUpOpen}
           onClose={() => setIsSignUpOpen(false)}
-          onLogin={(email) => {
-            handleUserLogin(email);
+          onLogin={(email, plan, verified) => {
+            handleUserLogin(email, plan ?? null, verified ?? false);
             setIsLoginOpen(false);
           }}
           onSwitchToLogin={() => setIsLoginOpen(true)}

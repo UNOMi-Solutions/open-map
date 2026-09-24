@@ -16,9 +16,17 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
   },
+  // Optional for Google-only accounts. Email/password signups still set one.
   password: {
     type: String,
-    required: true,
+    required: false,
+  },
+  // Google's stable user id (`sub` from the ID token). Sparse so existing
+  // email/password accounts (which have no Google link) stay unique-index safe.
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
   verified: {
     type: Boolean,

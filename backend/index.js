@@ -19,8 +19,7 @@ import errorHandler from "./middleware/errorHandler.js";
 import auth from "./middleware/auth.js";
 import requireAuth from "./middleware/requireAuth.js";
 import loginLimiter from "./middleware/loginLimiter.js";
-import authRoutes from "./auth.js";
-import { signUserToken } from "./utils/jwt.js";
+import authRoutes, { buildAuthResponse } from "./auth.js";
 
 // Auth helpers
 import User from "./models/User.js";
@@ -47,6 +46,11 @@ connectDB();
 if (!process.env.JWT_SECRET) {
   console.error(
     "[startup] JWT_SECRET is not set — all logins will fail with a 500. Set it in backend/.env."
+  );
+}
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  console.warn(
+    "[startup] GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are not set — Sign in with Google will fail until they are added to backend/.env."
   );
 }
 
@@ -126,26 +130,21 @@ app.post("/api/auth/login", loginLimiter, async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+    if (!user.password) {
+      return res.status(401).json({
+        success: false,
+        message: "This account uses Google sign-in. Please continue with Google.",
+      });
+    }
+    if (!(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
     // Issue a JWT so per-user features (e.g. saved profiles) can identify the
     // caller on subsequent requests.
-    const token = signUserToken(user);
-
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token,
-      user: {
-        name: user.name || "",
-        email: user.email,
-        verified: !!user.verified,
-        plan: user.plan || null,
-        subscriptionStatus: user.subscriptionStatus || null,
-        subscriptionInterval: user.subscriptionInterval || null,
-      },
-    });
+    res.status(200).json(buildAuthResponse(user));
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, message: "Server error" });
