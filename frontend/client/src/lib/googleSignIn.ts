@@ -28,8 +28,16 @@ declare global {
 
 let gisLoad: Promise<void> | null = null;
 
+// OAuth client IDs are public (every visitor's browser receives it), so the
+// production one is committed as the default. Vercel can hand CI builds an
+// empty VITE_GOOGLE_CLIENT_ID, which would otherwise disable Google sign-in.
+const DEFAULT_GOOGLE_CLIENT_ID = "302293275645-emlprub4qh97ho5retckan5eh9v31s45.apps.googleusercontent.com";
+
 function getGoogleClientId(): string {
-  return (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined)?.trim() || "";
+  return (
+    (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined)?.trim() ||
+    DEFAULT_GOOGLE_CLIENT_ID
+  );
 }
 
 function loadGis(): Promise<void> {
