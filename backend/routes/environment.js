@@ -85,6 +85,151 @@ router.get('/airQuality', async (req, res) => {
     }
 });
 
+// Retrieve current pollen risk and species data using latitude/longitude or state centroid
+router.get('/pollen', async (req, res) => {
+    const { lat, long, stateCode } = req.query;
+
+    let latitude, longitude;
+
+    if (lat != null && long != null) {
+        latitude = parseFloat(lat);
+        longitude = parseFloat(long);
+
+        if (isNaN(latitude) || isNaN(longitude)) {
+            return res.status(400).json({
+                error: "Latitude and longitude must be numbers"
+            });
+        }
+    } else if (stateCode) {
+        const code = stateCode.toString().trim().toUpperCase();
+        const centroid = US_STATE_CENTROIDS[code];
+
+        if (!centroid) {
+            return res.status(400).json({
+                error: `Unknown state code: ${stateCode}. Use a 2-letter US state code.`
+            });
+        }
+
+        [latitude, longitude] = centroid;
+    } else {
+        return res.status(400).json({
+            error: "Provide either lat & long or stateCode"
+        });
+    }
+
+    const apiKey = process.env.ATMOSPORE_API_KEY;
+
+    if (!apiKey) {
+        return res.status(500).json({
+            error: "ATMOSPORE_API_KEY is not configured. Add it to your .env file."
+        });
+    }
+
+    try {
+        const today = new Date().toISOString().split("T")[0];
+
+        const response = await axios.get(
+            "https://pollenapi.com/v1/pollen",
+            {
+                params: {
+                    lat: latitude,
+                    lon: longitude,
+                    dt: today,
+                    forecast_days: 1,
+                    species: "tree,grass,weed"
+                },
+                headers: {
+                    "x-api-key": apiKey
+                }
+            }
+        );
+
+        const current = response.data?.data?.[0];
+
+        if (!current) {
+            return res.status(404).json({
+                error: "No pollen data available for this location"
+            });
+        }
+
+        const speciesList = Object.values(current.species || {});
+
+const riskRank = {
+    low: 1,
+    moderate: 2,
+    high: 3,
+    "very high": 4,
+    very_high: 4
+};
+
+const summarizeCategory = (category) => {
+    const categorySpecies = speciesList.filter(
+        (item) => item.category === category
+    );
+
+    if (categorySpecies.length === 0) {
+        return {
+            risk: "unknown",
+            maxValue: 0
+        };
+    }
+
+    const highestRiskSpecies = categorySpecies.reduce((highest, currentItem) => {
+        const currentRisk =
+            riskRank[currentItem.risk_level?.toLowerCase()] || 0;
+
+        const highestRisk =
+            riskRank[highest.risk_level?.toLowerCase()] || 0;
+
+        return currentRisk > highestRisk ? currentItem : highest;
+    });
+
+    const maxValue = Math.max(
+        ...categorySpecies.map((item) => Number(item.value) || 0)
+    );
+
+    return {
+        risk: highestRiskSpecies.risk_level,
+        maxValue: Number(maxValue.toFixed(3))
+    };
+};
+
+const topSpecies = speciesList
+    .filter((item) => Number(item.value) > 0)
+    .sort((a, b) => Number(b.value) - Number(a.value))
+    .slice(0, 5)
+    .map((item) => ({
+        name: item.display_name,
+        category: item.category,
+        value: item.value,
+        risk: item.risk_level
+    }));
+
+res.json({
+    location: response.data.meta.location,
+    units: response.data.meta.units,
+    date: current.date,
+    overallRisk: current.overall_risk,
+    categories: {
+        tree: summarizeCategory("tree"),
+        grass: summarizeCategory("grass"),
+        weed: summarizeCategory("weed")
+    },
+    topSpecies
+});
+
+    } catch (error) {
+        console.error(
+            "Pollen API error:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch pollen data"
+        });
+    }
+});
+
 
 // Retrieve green house gas emissions from factories/mines in different industry sectors 
 router.get("/ghgEmissions", async (req, res) => {
