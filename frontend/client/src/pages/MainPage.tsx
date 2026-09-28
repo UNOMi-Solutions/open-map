@@ -100,6 +100,9 @@ export default function MainPage() {
   const [arrestCategory, setArrestCategory] = useState<string>("Arrestee Sex");
   const [showArrestData, setShowArrestData] = useState(false);
 
+  const [showHomeInvasionData, setShowHomeInvasionData] = useState(false);
+  const [homeInvasionYear, setHomeInvasionYear] = useState(2026);
+
   // Props for missing persons data
   const [showMissingPersonsData, setShowMissingPersonsData] = useState(false);
   const [missingPersonQ, setMissingPersonQ] = useState<string>("Q1");
@@ -330,6 +333,8 @@ export default function MainPage() {
     setMurderAttribute("age");
     setArrestCategory("Arrestee Sex");
     setShowArrestData(false);
+    setShowHomeInvasionData(false);
+    setHomeInvasionYear(2026);
     setShowMissingPersonsData(false);
     setMissingPersonQ("Q1");
     setMissingPersonYear(2026);
@@ -357,6 +362,8 @@ export default function MainPage() {
     murderAttribute,
     arrestCategory,
     showArrestData,
+    showHomeInvasionData,
+    homeInvasionYear,
     showMissingPersonsData,
     missingPersonQ,
     missingPersonYear,
@@ -386,6 +393,8 @@ export default function MainPage() {
     setMurderAttribute(c.murderAttribute ?? "age");
     setArrestCategory(c.arrestCategory ?? "Arrestee Sex");
     setShowArrestData(!!c.showArrestData);
+    setShowHomeInvasionData(!!c.showHomeInvasionData);
+    setHomeInvasionYear(c.homeInvasionYear ?? 2026);
     setShowMissingPersonsData(!!c.showMissingPersonsData);
     setMissingPersonQ(c.missingPersonQ ?? "Q1");
     setMissingPersonYear(c.missingPersonYear ?? 2026);
@@ -736,6 +745,9 @@ export default function MainPage() {
                   arrestCategory={arrestCategory}
                   showArrestData={showArrestData}
 
+                  showHomeInvasionData={showHomeInvasionData}
+                  homeInvasionYear={homeInvasionYear}
+
                   showMissingPersonsData={showMissingPersonsData}
                   missingPersonQ={missingPersonQ}
                   missingPersonYear={missingPersonYear}
@@ -871,6 +883,11 @@ export default function MainPage() {
                   setArrestCategory={setArrestCategory}
                   onToggleArrestData={() => setShowArrestData((v) => !v)}
                   onSetChoroplethActive={setShowChoropleth}
+
+                  showHomeInvasionData={showHomeInvasionData}
+                  onToggleHomeInvasionData={() => setShowHomeInvasionData((v) => !v)}
+                  homeInvasionYear={homeInvasionYear}
+                  onHomeInvasionYearChange={setHomeInvasionYear}
 
                   showMissingPersonsData={showMissingPersonsData}
                   onToggleMissingPersonsData={() => setShowMissingPersonsData((v) => !v)}

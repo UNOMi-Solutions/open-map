@@ -46,6 +46,11 @@ interface NavigationMenuSectionProps {
   onToggleArrestData: () => void;
   onSetChoroplethActive: (active: boolean) => void;
 
+  showHomeInvasionData: boolean;
+  onToggleHomeInvasionData: () => void;
+  homeInvasionYear: number;
+  onHomeInvasionYearChange: (value: number) => void;
+
   showMissingPersonsData: boolean;
   onToggleMissingPersonsData: () => void;
   missingPersonQ: string;
@@ -99,6 +104,11 @@ export const NavigationMenuSection = ({
   setArrestCategory,
   onToggleArrestData,
   onSetChoroplethActive,
+
+  showHomeInvasionData,
+  onToggleHomeInvasionData,
+  homeInvasionYear,
+  onHomeInvasionYearChange,
 
   showMissingPersonsData,
   onToggleMissingPersonsData,
@@ -532,6 +542,48 @@ export const NavigationMenuSection = ({
 
                   </select>
                   </> : null }
+            </div>
+
+            <div className="ml-4">
+              <div className="mt-2 flex items-center left">
+                <Checkbox
+                  id="home-invasion-data"
+                  checked={showHomeInvasionData}
+                  onCheckedChange={onToggleHomeInvasionData}
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                />
+                <label
+                  htmlFor="home-invasion-data"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]"
+                >
+                  Home Invasions
+                </label>
+              </div>
+
+              {showHomeInvasionData && (
+                <div className="mt-2 flex w-full max-w-[240px] flex-col gap-2">
+                  <label className="text-[11px] text-white/80">
+                    Year
+                    <select
+                      aria-label="Home invasion year"
+                      className="mt-1 w-full rounded-md border border-white/70 bg-white/10 px-2 py-1 text-[11px] text-white outline-none focus:border-white focus:ring-1 focus:ring-white/40"
+                      value={homeInvasionYear}
+                      onChange={(event) => onHomeInvasionYearChange(Number(event.target.value))}
+                    >
+                      {Array.from({ length: 12 }, (_, index) => 2026 - index).map((year) => (
+                        <option className="text-black" key={year} value={year}>
+                          {year === 2026 ? "2026 (YTD)" : year}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {homeInvasionYear === 2026 && (
+                    <p className="text-[10px] leading-3 text-white/60">
+                      Year-to-date FBI data; totals may change as agencies submit updates.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="ml-4">

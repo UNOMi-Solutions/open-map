@@ -74,6 +74,7 @@ import CongressionalDistrictsLayer from "./CongressionalDistrictsLayer";
 import HouseMarkers from "./HouseMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
+import HomeInvasionMarkers from "./HomeInvasionMarkers";
 
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
@@ -361,6 +362,9 @@ export default function LeafletMap({
   arrestCategory = "Arrestee Sex",
   showArrestData = false,
 
+  showHomeInvasionData = false,
+  homeInvasionYear = 2026,
+
   showMissingPersonsData = false,
   missingPersonQ = "Q1",
   missingPersonYear = 2026,
@@ -406,6 +410,9 @@ export default function LeafletMap({
 
   arrestCategory?: string;
   showArrestData?: boolean;
+
+  showHomeInvasionData?: boolean;
+  homeInvasionYear?: number;
 
   showMissingPersonsData?: boolean;
   missingPersonQ?: string;
@@ -1712,6 +1719,11 @@ export default function LeafletMap({
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
+
+        <HomeInvasionMarkers
+          show={showHomeInvasionData}
+          year={homeInvasionYear}
+        />
 
         <MissingPersons 
           missingPersonQ={missingPersonQ}

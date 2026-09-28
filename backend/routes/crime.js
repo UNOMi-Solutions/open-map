@@ -20,6 +20,11 @@ import csvParser from "csv-parser";
 
 import { getZipData } from "../utils/zipData.js";
 import { getCached, mapWithConcurrency } from "../utils/dataCache.js";
+import {
+    fetchHomeInvasionState,
+    getHomeInvasionDefinition,
+    parseHomeInvasionQuery,
+} from "../services/homeInvasion.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MISSING_PERSONS_CSV = path.join(__dirname, "..", "data", "missingPersons.csv");
@@ -274,6 +279,60 @@ router.get('/arrestsByState', async (req, res) => {
         });
     } catch (error) {
         handleFbiRouteError(res, error, "arrestsByState");
+    }
+});
+
+router.get('/homeInvasionsByState', async (req, res) => {
+    if (!hasValidFbiKey()) {
+        return res.status(503).json({
+            success: false,
+            message: "FBI_CRIME_KEY is not configured. Add a valid api.data.gov key to backend/.env and restart the server.",
+        });
+    }
+
+    const parsed = parseHomeInvasionQuery(req.query);
+    if (parsed.error) {
+        return res.status(400).json({ success: false, message: parsed.error });
+    }
+
+    const requestedState = normalizeState(req.query.state);
+    if (!requestedState) {
+        return res.status(400).json({
+            success: false,
+            message: req.query.state
+                ? "Invalid state. Use a valid two-letter state abbreviation like AZ."
+                : "State is required. Use a two-letter state abbreviation like AZ.",
+        });
+    }
+
+    const { year } = parsed;
+    const cacheKey = `home-invasions:${year}:${requestedState}`;
+    const fetchState = (state) => fetchHomeInvasionState({
+        state,
+        year,
+        apiKey: process.env.FBI_CRIME_KEY,
+        baseUrl: process.env.FBI_CDE_BASE_URL,
+        fetchJson: fetchFbiUrl,
+    });
+
+    try {
+        const data = await getCached(cacheKey, FBI_CACHE_TTL_MS, () =>
+            fetchState(requestedState),
+        );
+
+        res.json({
+            success: true,
+            source: "FBI National Incident-Based Reporting System (NIBRS)",
+            sourceUrl: "https://cde.ucr.cjis.gov/",
+            endpoint: "homeInvasionsByState",
+            year,
+            provisional: year === 2026,
+            state: requestedState,
+            definition: getHomeInvasionDefinition(),
+            data,
+        });
+    } catch (error) {
+        handleFbiRouteError(res, error, "homeInvasionsByState");
     }
 });
 

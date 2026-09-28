@@ -88,6 +88,7 @@ const HomicideMarkers = ( { murderCategory, murderAttribute, showMurderData } : 
     const [currentAttribute, setCurrentAttribute] = useState<string>("age");
 
     useEffect(() => {
+        if (!showMurderData) return;
         let cancelled = false;
         cachedApiGet<Record<string, unknown>>(
             "crime:murderByState",
@@ -106,7 +107,7 @@ const HomicideMarkers = ( { murderCategory, murderAttribute, showMurderData } : 
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [showMurderData]);
 
     return <>
     
