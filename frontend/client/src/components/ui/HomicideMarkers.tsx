@@ -88,6 +88,7 @@ const HomicideMarkers = ( { murderCategory, murderAttribute, showMurderData } : 
     const [currentAttribute, setCurrentAttribute] = useState<string>("age");
 
     useEffect(() => {
+        // Avoid the all-state FBI request until the Homicide layer is enabled.
         if (!showMurderData) return;
         let cancelled = false;
         cachedApiGet<Record<string, unknown>>(

@@ -48,6 +48,7 @@ export default function HomeInvasionMarkers({
     setMetadata(null);
   }, [year]);
 
+  // Loads a state's two FBI categories only when its popup is opened.
   const loadState = useCallback((state: string) => {
     if (!show || stateData[state] || loadingStates[state]) return;
     const query = new URLSearchParams({

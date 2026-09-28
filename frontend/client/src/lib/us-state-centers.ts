@@ -1,3 +1,4 @@
+// Provides one stable marker position for each U.S. state.
 export const US_STATE_CENTERS = [
   { state: "AL", latitude: 32.806671, longitude: -86.79113 },
   { state: "AK", latitude: 61.370716, longitude: -152.404419 },

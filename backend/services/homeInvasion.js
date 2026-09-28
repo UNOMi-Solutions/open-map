@@ -1,3 +1,4 @@
+// Normalizes FBI NIBRS responses into the state-level map data contract.
 const DEFAULT_FBI_CDE_BASE_URL = "https://cde.ucr.cjis.gov/LATEST";
 
 export const HOME_INVASION_OFFENSES = Object.freeze({

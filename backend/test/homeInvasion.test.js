@@ -8,6 +8,7 @@ import {
   readResidentialCount,
 } from "../services/homeInvasion.js";
 
+// Verifies query validation, FBI response parsing, and the public route contract.
 test("parseHomeInvasionQuery returns normalized defaults", () => {
   assert.deepEqual(parseHomeInvasionQuery({}), {
     year: 2026,

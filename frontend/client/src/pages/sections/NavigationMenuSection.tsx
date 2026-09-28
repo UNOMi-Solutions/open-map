@@ -544,6 +544,7 @@ export const NavigationMenuSection = ({
                   </> : null }
             </div>
 
+            {/* Controls the Home Invasions layer and reporting year. */}
             <div className="ml-4">
               <div className="mt-2 flex items-center left">
                 <Checkbox

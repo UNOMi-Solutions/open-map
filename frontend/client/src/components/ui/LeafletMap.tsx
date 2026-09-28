@@ -1720,6 +1720,7 @@ export default function LeafletMap({
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
 
+        {/* Displays state markers for the selected Home Invasions year. */}
         <HomeInvasionMarkers
           show={showHomeInvasionData}
           year={homeInvasionYear}

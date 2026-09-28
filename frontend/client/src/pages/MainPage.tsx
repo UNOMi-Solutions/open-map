@@ -100,6 +100,7 @@ export default function MainPage() {
   const [arrestCategory, setArrestCategory] = useState<string>("Arrestee Sex");
   const [showArrestData, setShowArrestData] = useState(false);
 
+  // Stores the Home Invasions layer visibility and selected reporting year.
   const [showHomeInvasionData, setShowHomeInvasionData] = useState(false);
   const [homeInvasionYear, setHomeInvasionYear] = useState(2026);
 

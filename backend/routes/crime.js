@@ -282,6 +282,7 @@ router.get('/arrestsByState', async (req, res) => {
     }
 });
 
+// Returns residential robbery and burglary totals for one state and year.
 router.get('/homeInvasionsByState', async (req, res) => {
     if (!hasValidFbiKey()) {
         return res.status(503).json({
