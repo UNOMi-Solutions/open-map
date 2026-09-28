@@ -60,6 +60,7 @@ import PoliceKillings, { PoliceKillingQKey } from "./PoliceKillings";
 import ArrestMarkers from "./ArrestMarkers";
 import MissingPersons from "./MissingPersons";
 import ConsentAge from "./ConsentAge";
+import ArsonMarkers from "./ArsonMarkers";
 
 // GHG emissions facilities data
 import GhgEmissionsMarkers from "./GhgEmissionsMarkers";
@@ -366,6 +367,7 @@ export default function LeafletMap({
   missingPersonYear = 2026,
 
   showConsentAgeData = false,
+  showArsonData = false,
 
   /*toggle environmental information */
   showOilSpills = false,  
@@ -412,6 +414,7 @@ export default function LeafletMap({
   missingPersonYear?: any;
 
   showConsentAgeData?: boolean;
+  showArsonData?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
@@ -1719,6 +1722,7 @@ export default function LeafletMap({
           showMissingPersonsData={showMissingPersonsData}></MissingPersons>
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
+        {showArsonData && <ArsonMarkers arrestCategory={arrestCategory} />}
 
         <ZoomControl position="topright" />
       </MapContainer>

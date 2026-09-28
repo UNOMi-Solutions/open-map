@@ -741,6 +741,7 @@ export default function MainPage() {
                   missingPersonYear={missingPersonYear}
 
                   showConsentAgeData={showConsentAgeData}
+                  showArsonData={selectedLayers.includes("arson")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
                   showNaturalDisasterIncidents={selectedLayers.includes("natural-disaster-incidents")}
                   naturalDisasterIncidentTypes={selectedLayers

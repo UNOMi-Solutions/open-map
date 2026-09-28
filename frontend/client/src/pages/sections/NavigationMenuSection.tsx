@@ -231,6 +231,7 @@ export const NavigationMenuSection = ({
   const crimeItems = [
     // { id: "homicide", label: "Homicide"},
     // { id: "arrests", label: "Arrests" }
+    { id: "arson", label: "Arson" },
   ];
 
   const politicalTopics = [
@@ -452,6 +453,25 @@ export const NavigationMenuSection = ({
           </AccordionTrigger>
           <AccordionContent className="pt-0 pb-0">
             <div className="ml-4">
+              {crimeItems.map((item) => (
+                <div key={item.id} className="mt-2 flex items-center">
+                  <Checkbox
+                    id={item.id}
+                    checked={selectedLayers.includes(item.id)}
+                    onCheckedChange={(checked) =>
+                      onLayerToggle?.(item.id, checked === true)
+                    }
+                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  />
+                  <label
+                    htmlFor={item.id}
+                    className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                  >
+                    {item.label}
+                  </label>
+                </div>
+              ))}
+
               <div className="mt-2 flex items-center left">
                 <Checkbox
                   id="murder-data"
