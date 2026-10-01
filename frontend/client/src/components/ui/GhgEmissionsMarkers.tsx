@@ -2,6 +2,7 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import MarkerCompound from "./MarkerCompound";
 
 // Green marker icon to distinguish GHG emissions facilities from other markers 
 const GHG_EMISSIONS_ICON = L.divIcon({
@@ -106,7 +107,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
   }
 
   return (
-    <>
+    <MarkerCompound>
       {facilities
         .filter(
           (facility) =>
@@ -171,7 +172,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
             </Marker>
           );
         })}
-    </>
+    </MarkerCompound>
   );
 };
 
