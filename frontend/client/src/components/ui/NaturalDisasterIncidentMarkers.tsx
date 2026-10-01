@@ -1,7 +1,9 @@
-import L from "leaflet";
+import L from "@/lib/leafletGlobal";
+import "leaflet.heat";
 import { useMap } from "react-leaflet";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { feature } from "topojson-client";
+import * as turf from "@turf/turf";
 import { cachedApiGetBatch, CACHE_TTL } from "@/lib/apiCache";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from "geojson";
@@ -71,16 +73,19 @@ function formatDate(dateStr: string | undefined): string {
   return `${y}-${m}-${day}`;
 }
 
-// Color gradient for incident count
-function getColor(count: number): string {
-  if (count >= 50) return "#800026";
-  if (count >= 30) return "#BD0026";
-  if (count >= 20) return "#E31A1C";
-  if (count >= 10) return "#FC4E2A";
-  if (count >= 5) return "#FD8D3C";
-  if (count >= 2) return "#FEB24C";
-  if (count >= 1) return "#FED976";
-  return "#FFEDA0";
+const HEAT_GRADIENT: Record<number, string> = {
+  0.2: "#FED976",
+  0.4: "#FEB24C",
+  0.6: "#FD8D3C",
+  0.8: "#E31A1C",
+  1.0: "#800026",
+};
+
+// Using the 95th percentile as the heat ceiling keeps a few outlier counties from washing out the rest
+function heatCeiling(counts: number[]): number {
+  if (counts.length === 0) return 1;
+  const sorted = [...counts].sort((a, b) => a - b);
+  return Math.max(1, sorted[Math.floor(0.95 * (sorted.length - 1))]);
 }
 
 function Popup(countyName: string, stateAbbrev: string, incidents: NaturalDisasterIncident[]): string {
@@ -114,8 +119,6 @@ function Popup(countyName: string, stateAbbrev: string, incidents: NaturalDisast
     </div>`;
 }
 
-const GRADES = [0, 1, 2, 5, 10, 20, 30, 50];
-
 const NaturalDisasterIncidentMarkers = ({
   selectedStateCode,
   selectedIncidentTypes = [],
@@ -124,7 +127,8 @@ const NaturalDisasterIncidentMarkers = ({
   const map = useMap(); // Leaflet map instance
 
   // Reference layers that can be removed when state changes
-  // These references are the counties, info box in top right, and legend in bottom right
+  // These references are the heat layer, the transparent county hit areas, info box in top right, and legend in bottom right
+  const heatLayerRef = useRef<L.HeatLayer | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null); 
   const infoRef = useRef<L.Control | null>(null); 
   const legendRef = useRef<L.Control | null>(null); 
@@ -225,8 +229,24 @@ const NaturalDisasterIncidentMarkers = ({
     return counts;
   }, [incidentsByCounty]);
 
-  // Build choropleth layer
+  // County centroids (keyed by stateFips-normalizedCounty) used as heat points
+  const countyCentroids = useMemo(() => {
+    const centroids = new Map<string, [number, number]>();
+    for (const f of allCountyFeatures) {
+      const fips = String(f.id ?? "").slice(0, 2);
+      const key = `${fips}-${normalizeCountyName(f.properties?.name ?? "")}`;
+      const [lng, lat] = turf.centroid(f).geometry.coordinates;
+      centroids.set(key, [lat, lng]);
+    }
+    return centroids;
+  }, [allCountyFeatures]);
+
+  // Build heatmap layer
   useEffect(() => {
+    if (heatLayerRef.current) {
+      map.removeLayer(heatLayerRef.current);
+      heatLayerRef.current = null;
+    }
     if (geoLayerRef.current) {
       map.removeLayer(geoLayerRef.current);
       geoLayerRef.current = null;
@@ -261,7 +281,27 @@ const NaturalDisasterIncidentMarkers = ({
     info.addTo(map);
     infoRef.current = info;
 
-    // Build GeoJSON with incident counts for all US counties
+    const heatPoints: Array<[number, number, number]> = [];
+    countsByCounty.forEach((count, key) => {
+      const centroid = countyCentroids.get(key);
+      if (centroid && count > 0) heatPoints.push([centroid[0], centroid[1], count]);
+    });
+    const maxIntensity = heatCeiling(heatPoints.map((p) => p[2]));
+
+    // leaflet.heat halves point intensity for each zoom level below maxZoom, offsetting how densely
+    // packed small eastern counties pile up when zoomed out
+    const heatLayer = L.heatLayer(heatPoints, {
+      radius: 15,
+      blur: 15,
+      maxZoom: 9,
+      max: maxIntensity,
+      minOpacity: 0.3,
+      gradient: HEAT_GRADIENT,
+    });
+    heatLayer.addTo(map);
+    heatLayerRef.current = heatLayer;
+
+    // Transparent county shapes on top of the heat layer for hover info and click popups
     const fc: FeatureCollection<
       Polygon | MultiPolygon,
       County & { incidentCount: number }
@@ -280,19 +320,11 @@ const NaturalDisasterIncidentMarkers = ({
     };
 
     const geoLayer = L.geoJSON(fc, {
-      style: (feat) => {
-        const count =
-          (feat as Feature<Polygon | MultiPolygon, { incidentCount: number }>)
-            .properties?.incidentCount ?? 0;
-        return {
-          fillColor: getColor(count),
-          weight: 1,
-          opacity: 1,
-          color: "#fff",
-          dashArray: "3",
-          fillOpacity: 0.7,
-        };
-      },
+      style: () => ({
+        weight: 0,
+        opacity: 0,
+        fillOpacity: 0,
+      }),
       onEachFeature: (_feat, layer) => {
         const props = (
           _feat as Feature<
@@ -316,12 +348,10 @@ const NaturalDisasterIncidentMarkers = ({
           mouseover: (e: L.LeafletMouseEvent) => {
             const target = e.target as L.Path;
             target.setStyle({
-              weight: 3,
-              color: "#666",
-              dashArray: "",
-              fillOpacity: 0.85,
+              weight: 2,
+              opacity: 1,
+              color: "#444",
             });
-            target.bringToFront();
             const hoverLabel = stateAbbrev ? `${props.name}, ${stateAbbrev}` : props.name;
             updateInfo(hoverLabel, props.incidentCount);
           },
@@ -339,19 +369,25 @@ const NaturalDisasterIncidentMarkers = ({
     // Legend control (bottom-right)
     const legend = new L.Control({ position: "bottomright" });
     legend.onAdd = function () {
-      const div = L.DomUtil.create("div", "choropleth-info choropleth-legend");
-      for (let i = 0; i < GRADES.length; i++) {
-        div.innerHTML +=
-          `<i style="background:${getColor(GRADES[i] + 1)}"></i> ` +
-          GRADES[i] +
-          (GRADES[i + 1] ? `&ndash;${GRADES[i + 1]}<br/>` : "+");
-      }
+      const div = L.DomUtil.create("div", "choropleth-info heatmap-legend");
+      const stops = Object.entries(HEAT_GRADIENT)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([stop, color]) => `${color} ${Number(stop) * 100}%`)
+        .join(", ");
+      div.innerHTML =
+        "<h4>Incident density</h4>" +
+        `<div class="heatmap-legend-bar" style="background:linear-gradient(to right, transparent 0%, ${stops})"></div>` +
+        `<div class="heatmap-legend-labels"><span>Low</span><span>${maxIntensity}+ per county</span></div>`;
       return div;
     };
     legend.addTo(map);
     legendRef.current = legend;
 
     return () => {
+      if (heatLayerRef.current) {
+        map.removeLayer(heatLayerRef.current);
+        heatLayerRef.current = null;
+      }
       if (geoLayerRef.current) {
         map.removeLayer(geoLayerRef.current);
         geoLayerRef.current = null;
@@ -365,7 +401,7 @@ const NaturalDisasterIncidentMarkers = ({
         legendRef.current = null;
       }
     };
-  }, [allCountyFeatures, countsByCounty, incidentsByCounty, filteredIncidents, map]);
+  }, [allCountyFeatures, countyCentroids, countsByCounty, incidentsByCounty, map]);
 
   return null;
 };

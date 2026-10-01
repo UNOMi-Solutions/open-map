@@ -293,6 +293,24 @@ body {
   line-height: 18px;
   color: #555;
 }
+.heatmap-legend {
+  min-width: 180px;
+  color: #555;
+}
+.heatmap-legend-bar {
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+}
+.heatmap-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.leaflet-heatmap-layer {
+  pointer-events: none;
+}
 
 /* Custom Pulsing Marker Styles */
 .pulsing-marker {
