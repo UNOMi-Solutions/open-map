@@ -60,7 +60,7 @@ import PoliceKillings, { PoliceKillingQKey } from "./PoliceKillings";
 import ArrestMarkers from "./ArrestMarkers";
 import MissingPersons from "./MissingPersons";
 import ConsentAge from "./ConsentAge";
-import ArsonMarkers from "./ArsonMarkers";
+import ArsonMap from "./ArsonMap";
 
 // GHG emissions facilities data
 import GhgEmissionsMarkers from "./GhgEmissionsMarkers";
@@ -1722,7 +1722,7 @@ export default function LeafletMap({
           showMissingPersonsData={showMissingPersonsData}></MissingPersons>
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
-        {showArsonData && <ArsonMarkers arrestCategory={arrestCategory} />}
+        {showArsonData && <ArsonMap arrestCategory={arrestCategory} />}
 
         <ZoomControl position="topright" />
       </MapContainer>
