@@ -230,6 +230,66 @@ res.json({
     }
 });
 
+// Retrieve Groundwater Quality Data
+router.get("/groundwater", async (req, res) => {
+    try {
+        const endDate = new Date();
+        const startDate = new Date();
+
+        startDate.setFullYear(endDate.getFullYear() - 1);
+
+        const formatDate = (date) => date.toISOString().split("T")[0];
+
+        const start = formatDate(startDate);
+        const end = formatDate(endDate);
+
+        const response = await axios.get(
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements/items",
+            {
+                params: {
+                    parameter_code: "72019",
+                    datetime: `${start}/${end}`,
+                    limit: 100,
+                    f: "json",
+                },
+            }
+        );
+
+        const groundwaterData = response.data.features
+            .filter((feature) => feature.geometry?.coordinates)
+            .map((feature) => {
+                const properties = feature.properties;
+                const [longitude, latitude] = feature.geometry.coordinates;
+
+                return {
+                    siteId: properties.monitoring_location_id,
+                    latitude,
+                    longitude,
+                    depth: Number(properties.value),
+                    unit: properties.unit_of_measure,
+                    measurementDate: properties.time,
+                    approvalStatus: properties.approval_status,
+                };
+            });
+
+        res.json({
+            source: "USGS Water Data",
+            parameterCode: "72019",
+            description: "Depth to groundwater below land surface",
+            count: groundwaterData.length,
+            data: groundwaterData,
+        });
+    } catch (error) {
+        console.error(
+            "Groundwater API error:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch groundwater data",
+        });
+    }
+});
 
 // Retrieve green house gas emissions from factories/mines in different industry sectors 
 router.get("/ghgEmissions", async (req, res) => {
