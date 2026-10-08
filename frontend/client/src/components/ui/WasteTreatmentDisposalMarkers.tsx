@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import MarkerCompound from "./MarkerCompound";
 
 /** Green marker icon for waste treatment/disposal sites */
 const WASTE_TREATMENT_ICON = L.divIcon({
@@ -202,7 +203,7 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteT
   }, []);
 
   return (
-    <>
+    <MarkerCompound>
       {siteData.map((site) => (
         <Marker key={site.id} position={[site.lat, site.lon]} icon={WASTE_TREATMENT_ICON}>
           {(
@@ -220,7 +221,7 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteT
           )}
         </Marker>
       ))}
-    </>
+    </MarkerCompound>
   );
 };
 
