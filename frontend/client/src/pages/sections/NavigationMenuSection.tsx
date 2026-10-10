@@ -131,6 +131,7 @@ export const NavigationMenuSection = ({
     { id: "air-quality", label: "Air Quality" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
     // { id: "toxic-spills", label: "Toxic Spills" },
     // { id: "toxic-area", label: "Toxic Area" },
   ];

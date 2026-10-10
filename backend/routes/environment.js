@@ -12,6 +12,8 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import { getCached } from "../utils/dataCache.js";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
 
@@ -734,4 +736,60 @@ router.get("/dataCenters", async (req, res) => {
         res.status(500).json({ error: err.message || "Failed to load data center data" });
     }
 })
+
+
+
+const NOISE_SERVICE_ROOT =
+  "https://tiles.arcgis.com/tiles/xOi1kZaI0eWDREZv/arcgis/rest/services";
+const NOISE_SERVICES = [
+  { region: "CONUS",  name: "NTAD_Noise_2022_CONUS_aviation_rail_road" },
+  { region: "Alaska", name: "NTAD_Noise_2022_Alaska_aviation_rail_road" },
+  { region: "Hawaii", name: "NTAD_Noise_2022_Hawaii_aviation_road" }, // Hawaii has no rail service in 2022.
+];
+const NOISE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Metadata and legend for the BTS National Transportation Noise Map (2022).
+router.get("/noiseTransportation", async (req, res) => {
+  try {
+    // cache holds the service metadata and legend
+    const data = await getCached("environment:noiseTransportation:v2", NOISE_TTL_MS, async () => {
+      const services = await Promise.all( 
+        NOISE_SERVICES.map(async ({ region, name }) => {
+          const base = `${NOISE_SERVICE_ROOT}/${name}/MapServer`;
+          const info = (await axios.get(base, { params: { f: "json" } })).data;
+          return {
+            region,
+            sourceUrl: base,
+            tileUrlTemplate: `${base}/tile/{z}/{y}/{x}`,
+            maxNativeZoom: info.maxLOD ?? 12,
+            fullExtent: info.fullExtent,  // Web Mercator
+          };
+        })
+      );
+
+      // Legend comes from the CONUS file. All three services share the same LAeq bands.
+      const conusBase = `${NOISE_SERVICE_ROOT}/${NOISE_SERVICES[0].name}/MapServer`;
+      const legend = (await axios.get(`${conusBase}/legend`, { params: { f: "json" } })).data;
+      const imageLayer = (legend.layers ?? []).find((l) => l.type === "Raster Layer");
+
+      // Per-service fields live in `services`; other fields share base meta data
+      return {
+        attribution: "US DOT BTS National Transportation Noise Map 2022",
+        metric: "24-hour LAeq (dB), modeled",
+        legend: (imageLayer?.legend ?? []).map((e) => ({
+          label: e.label,
+          imageData: e.imageData,
+          contentType: e.contentType,
+        })),
+        services,
+      };
+    });
+    res.json(data);
+  } catch (err) {
+    console.error("[environment/noiseTransportation]", err.message);
+    res.status(502).json({ error: "Failed to fetch noise map metadata" });
+  }
+});
+
+
 export default router;

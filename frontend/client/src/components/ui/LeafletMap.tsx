@@ -50,6 +50,9 @@ import NaturalDisasterIncidentMarkers from "./NaturalDisasterIncidentMarkers";
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
+// Noise pollution data
+import NoisePollutionLayer from "./NoisePollutionLayer";
+
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
@@ -370,6 +373,7 @@ export default function LeafletMap({
   /*toggle environmental information */
   showOilSpills = false,  
   showAirQuality = false,
+  showNoisePollution = false,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showNaturalDisasterIncidents = false,
@@ -415,6 +419,7 @@ export default function LeafletMap({
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
+  showNoisePollution?: boolean;
   showWasteTreatmentDisposal?: boolean;
   showNaturalDisasterIncidents?: boolean;
   naturalDisasterIncidentTypes?: string[];
@@ -1675,6 +1680,9 @@ export default function LeafletMap({
         {showAirQuality && (
           <AirQualityMarkers setLoading={setLoading}/>
         )}
+
+        {/* Noise pollution - loads image tile map for selected area */}
+        {showNoisePollution && <NoisePollutionLayer/>}
 
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (

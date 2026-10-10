@@ -23,6 +23,8 @@ export const CACHE_TTL = {
   AIR_QUALITY: 2 * 60 * 60 * 1000,
   /** Politics - refreshes infrequently */
   POLITICS: 24 * 60 * 60 * 1000,
+  /** NOISE POLLUTION - refreshes infrequently on a multi-year cycle */
+  NOISE_TRANSPORTATION: 7 * 24 * 60 * 60 * 1000,
 } as const;
 
 function storageKey(key: string): string {
