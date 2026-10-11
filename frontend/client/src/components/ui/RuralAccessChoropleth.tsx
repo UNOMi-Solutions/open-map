@@ -90,11 +90,13 @@ function popupHtml(
 // year selection menu
 type Props = {
   year?: number;
+  onYearChange?: (year: number) => void;
   setLoading?: (state: boolean) => void;
 };
 
 const RuralAccessChoropleth = ({
   year = RURAL_ACCESS_DEFAULT_YEAR,
+  onYearChange,
   setLoading,
 }: Props) => {
   const map = useMap();
@@ -120,7 +122,7 @@ const RuralAccessChoropleth = ({
       );
   }, []);
 
-  // BTS attributes through caching system (one-shot, so the global loading bar fits)
+  // BTS attributes through caching system
   useEffect(() => {
     let cancelled = false;
     setLoading?.(true);
@@ -144,9 +146,10 @@ const RuralAccessChoropleth = ({
   }, [year, setLoading]);
 
   const byFips = useMemo(() => {
+    // key'd map of BTS rows
     const m = new Map<string, RuralAccessRow>();
     for (const r of data?.rows ?? []) m.set(r.geoid, r);
-    return m;
+    return m; // returns
   }, [data]);
 
   // display choropleth and legend
@@ -157,14 +160,12 @@ const RuralAccessChoropleth = ({
     legendRef.current = null;
     if (!counties.length || !data) return;
 
-    // copies datapoints from counties to BTS maps
-    // features is the same list of county shapes, 
-    // each now carrying properties.access that colorFor(...) and popupHtml(...) read directly
-    const features: CountyFeature[] = counties.map((f) => ({
-      ...f, 
+    // copies datapoints from counties to BTS maps. Features is the same list of county shapes
+    const features: CountyFeature[] = counties.map((countyFeatures) => ({
+      ...countyFeatures,
       properties: {
-        ...f.properties, // reference copy saves having to copy polygons of each county
-        access: byFips.get(String(f.id).padStart(5, "0")), // pad geometry to match backend names
+        ...countyFeatures.properties, // reference copy saves having to copy polygons of each county
+        access: byFips.get(String(countyFeatures.id).padStart(5, "0")), // pad geometry to match backend names
       },
     }));
 
@@ -203,14 +204,45 @@ const RuralAccessChoropleth = ({
     const legend = new L.Control({ position: "bottomright" });
     legend.onAdd = () => {
       const div = L.DomUtil.create("div", "choropleth-info choropleth-legend");
-      div.innerHTML = `<h4>Rural residents with intercity transportation access (%)</h4>`;
+      // keeps clicks and scrolls on the dropdown from moving the map 
+      L.DomEvent.disableClickPropagation(div);
+      L.DomEvent.disableScrollPropagation(div);
+
+      const h4 = L.DomUtil.create("h4", "", div);
+      h4.textContent =
+        "Rural residents with intercity transportation access (%)";
+
+      // year selector
+      const row = L.DomUtil.create("div", "", div);
+      row.style.cssText =
+        "display:flex;align-items:center;gap:6px;margin:4px 0 8px";
+      const label = L.DomUtil.create("label", "", row);
+      label.textContent = "Year";
+      label.htmlFor = "rural-access-year";
+      label.style.fontSize = "12px";
+      const select = L.DomUtil.create("select", "", row) as HTMLSelectElement;
+      select.id = "rural-access-year";
+      select.style.cssText =
+        "font-size:12px;padding:2px 4px;border:1px solid #ccc;border-radius:4px;background:#fff";
+      for (const y of data.availableYears) {
+        const opt = L.DomUtil.create("option", "", select) as HTMLOptionElement;
+        opt.value = String(y);
+        opt.textContent = String(y);
+        if (y === data.year) opt.selected = true;
+      }
+      L.DomEvent.on(select, "change", () =>
+        onYearChange?.(Number(select.value)),
+      );
+      if (!onYearChange) select.disabled = true;
+
+      // color bands
+      const bands = L.DomUtil.create("div", "", div);
       BANDS.forEach((lo, i) => {
         const hi = BANDS[i + 1];
-        div.innerHTML += `<i style="background:${BAND_COLORS[i]}"></i> ${hi != null ? `${lo}–${hi}` : `${lo}+`}<br/>`;
+        bands.innerHTML += `<i style="background:${BAND_COLORS[i]}"></i> ${hi != null ? `${lo}–${hi}` : `${lo}+`}<br/>`;
       });
-      div.innerHTML +=
-        '<i style="background:${NO_DATA_COLOR}"></i> No rural population / not available<br/>';
-      div.innerHTML += `<small>${data.year}. Rural = Census block groups outside urban areas, summarized by county.<br/>Source: ${data.attribution}</small>`;
+      bands.innerHTML += `<i style="background:${NO_DATA_COLOR}"></i> No rural population / not available<br/>`;
+      bands.innerHTML += `<small>Rural = Census block groups outside urban areas, summarized by county.<br/>Source: ${data.attribution}</small>`;
       return div;
     };
     legend.addTo(map);

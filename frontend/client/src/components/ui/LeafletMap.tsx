@@ -378,6 +378,8 @@ export default function LeafletMap({
   showAirQuality = false,
   showNoisePollution = false,
   showRuralAccess = false,
+  ruralAccessYear = 2021,
+  onRuralAccessYearChange,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showNaturalDisasterIncidents = false,
@@ -424,7 +426,9 @@ export default function LeafletMap({
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
-  showRuralAccess?: boolean;
+  showRuralAccess?: boolean;  
+  ruralAccessYear?: number;
+  onRuralAccessYearChange?: (year: number) => void;
   
   showWasteTreatmentDisposal?: boolean;
   showNaturalDisasterIncidents?: boolean;
@@ -1691,7 +1695,13 @@ export default function LeafletMap({
         {showNoisePollution && <NoisePollutionLayer/>}
 
         {/* Rural access to intercity transportation – county choropleth */}
-        {showRuralAccess && <RuralAccessChoropleth setLoading={setLoading} />}
+        {showRuralAccess && (
+          <RuralAccessChoropleth
+            year={ruralAccessYear}
+            onYearChange={onRuralAccessYearChange}
+            setLoading={setLoading}
+          />
+        )}        
         
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
