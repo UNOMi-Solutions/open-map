@@ -53,6 +53,9 @@ import AirQualityMarkers from "./AirQualityMarkers";
 // Noise pollution data
 import NoisePollutionLayer from "./NoisePollutionLayer";
 
+// Rural access to intercity transportation (BTS)
+import RuralAccessChoropleth from "./RuralAccessChoropleth";
+
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
@@ -374,6 +377,7 @@ export default function LeafletMap({
   showOilSpills = false,  
   showAirQuality = false,
   showNoisePollution = false,
+  showRuralAccess = false,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showNaturalDisasterIncidents = false,
@@ -420,6 +424,8 @@ export default function LeafletMap({
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
+  showRuralAccess?: boolean;
+  
   showWasteTreatmentDisposal?: boolean;
   showNaturalDisasterIncidents?: boolean;
   naturalDisasterIncidentTypes?: string[];
@@ -1684,6 +1690,9 @@ export default function LeafletMap({
         {/* Noise pollution - loads image tile map for selected area */}
         {showNoisePollution && <NoisePollutionLayer/>}
 
+        {/* Rural access to intercity transportation – county choropleth */}
+        {showRuralAccess && <RuralAccessChoropleth setLoading={setLoading} />}
+        
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
