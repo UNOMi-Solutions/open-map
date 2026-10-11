@@ -160,6 +160,35 @@ export const NavigationMenuSection = ({
     ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
     ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
     ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    
+    // { id: "toxic-spills", label: "Toxic Spills" },
+    // { id: "toxic-area", label: "Toxic Area" },
+  ];
+
+  // Category data for Transportation section
+  const transportationItems = [
+    { id: "rural-access", label: "Rural Access to Intercity Transportation" },
+  ];
+
+  // Sub-filters for Natural Disaster Incidents (matches backend incident types)
+  const naturalDisasterIncidentTypes = [
+    { id: "nd-type:Flood", label: "Flood" },
+    { id: "nd-type:Fire", label: "Fire" },
+    { id: "nd-type:Hurricane", label: "Hurricane" },
+    { id: "nd-type:Tornado", label: "Tornado" },
+    { id: "nd-type:Severe Storm", label: "Severe Storm" },
+    { id: "nd-type:Winter Storm", label: "Winter Storm" },
+    { id: "nd-type:Earthquake", label: "Earthquake" },
+    { id: "nd-type:Tropical Storm", label: "Tropical Storm" },
+    { id: "nd-type:Coastal Storm", label: "Coastal Storm" },
+    { id: "nd-type:Snowstorm", label: "Snowstorm" },
+    { id: "nd-type:Severe Ice Storm", label: "Severe Ice Storm" },
+    { id: "nd-type:Mud/Landslide", label: "Mud/Landslide" },
+    { id: "nd-type:Dam/Levee Break", label: "Dam/Levee Break" },
+    { id: "nd-type:Straight-Line Winds", label: "Straight-Line Winds" },
+    { id: "nd-type:Tropical Depression", label: "Tropical Depression" },
+    { id: "nd-type:Biological", label: "Biological" },
+    { id: "nd-type:Other", label: "Other" },
   ];
 
   const incidentMenuOpen =
