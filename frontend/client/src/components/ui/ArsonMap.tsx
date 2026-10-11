@@ -242,7 +242,6 @@ export default function ArsonMap({ arrestCategory }: ArsonMapProps) {
         const popupHtml = `
           <div style="min-width:180px;color:#0c1022;">
             <h3 style="margin:0 0 6px;font-size:15px;font-weight:700;">Arson arrests in ${safeStateName} (${escapeHtml(response?.year ?? "2023")})</h3>
-            <div style="font-size:13px;"><strong>${safeCategory}:</strong> ${count == null ? "No data" : count.toLocaleString()}</div>
             ${breakdown ? `<div style="margin-top:8px;font-size:12px;">${breakdown}</div>` : ""}
           </div>`;
 
