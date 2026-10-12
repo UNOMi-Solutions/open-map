@@ -53,6 +53,9 @@ import AirQualityMarkers from "./AirQualityMarkers";
 //Groundwater levels data
 import GroundwaterMarkers from "./GroundwaterMarkers";
 
+//Invasive Species data
+import InvasiveSpeciesMarkers from "./InvasiveSpeciesMarkers";
+
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
@@ -374,6 +377,7 @@ export default function LeafletMap({
   showOilSpills = false,  
   showAirQuality = false,
   showGroundwaterLevels = false,
+  showInvasiveSpecies = false,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showNaturalDisasterIncidents = false,
@@ -419,6 +423,7 @@ export default function LeafletMap({
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGroundwaterLevels?: boolean;
+  showInvasiveSpecies?: boolean;
   showGHGEmissions?: boolean;
   showWasteTreatmentDisposal?: boolean;
   showNaturalDisasterIncidents?: boolean;
@@ -1689,6 +1694,11 @@ export default function LeafletMap({
         {/* Groundwater levels */}
         {showGroundwaterLevels && (
           <GroundwaterMarkers setLoading={setLoading} />
+        )}
+
+        {/* Invasive species */}
+        {showInvasiveSpecies && (
+          <InvasiveSpeciesMarkers setLoading={setLoading} />
         )}
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}

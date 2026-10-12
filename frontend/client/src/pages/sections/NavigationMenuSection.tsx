@@ -131,6 +131,7 @@ export const NavigationMenuSection = ({
     { id: "air-quality", label: "Air Quality" },
     { id: "pollen-risk", label: "Pollen Risk"},
     { id: "groundwater-levels", label: "Groundwater Levels" },
+    { id: "invasive-species", label: "Invasive Species" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
     // { id: "toxic-spills", label: "Toxic Spills" },

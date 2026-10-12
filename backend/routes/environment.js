@@ -291,6 +291,67 @@ router.get("/groundwater", async (req, res) => {
     }
 });
 
+// Retrieve invasive species occurrence data from USGS NAS
+router.get("/invasive-species", async (req, res) => {
+    try {
+        const speciesIds = [514, 549, 551, 713, 963];
+
+        const speciesResults = await Promise.all(
+            speciesIds.map((speciesId) =>
+                axios.get(
+                    "https://nas.er.usgs.gov/api/v2/occurrence/search",
+                    {
+                        params: {
+                            species_ID: speciesId,
+                            limit: 25,
+                        },
+                    }
+                )
+            )
+        );
+
+        const invasiveSpeciesData = speciesResults.flatMap((response) =>
+            (response.data.results || [])
+                .filter(
+                    (record) =>
+                        Number.isFinite(Number(record.decimalLatitude)) &&
+                        Number.isFinite(Number(record.decimalLongitude))
+                )
+                .map((record) => ({
+                    occurrenceId: record.key,
+                    speciesId: record.speciesID,
+                    species: record.commonName,
+                    scientificName: record.scientificName,
+                    group: record.group,
+                    latitude: Number(record.decimalLatitude),
+                    longitude: Number(record.decimalLongitude),
+                    state: record.state,
+                    county: record.county,
+                    locality: record.locality,
+                    date: record.date,
+                    year: record.year,
+                    status: record.status,
+                    recordType: record.recordType,
+                }))
+        );
+
+        res.json({
+            source: "USGS Nonindigenous Aquatic Species",
+            count: invasiveSpeciesData.length,
+            data: invasiveSpeciesData,
+        });
+    } catch (error) {
+        console.error(
+            "Invasive Species API error:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch invasive species data",
+        });
+    }
+});
+
 // Retrieve green house gas emissions from factories/mines in different industry sectors 
 router.get("/ghgEmissions", async (req, res) => {
     try {
