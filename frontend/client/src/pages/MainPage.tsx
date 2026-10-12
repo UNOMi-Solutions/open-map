@@ -747,6 +747,7 @@ export default function MainPage() {
                     .filter((id) => id.startsWith("nd-type:"))
                     .map((id) => id.replace("nd-type:", ""))}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showGroundwaterLevels={selectedLayers.includes("groundwater-levels")}
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
                   showDataCenters={selectedLayers.includes("data-centers")}

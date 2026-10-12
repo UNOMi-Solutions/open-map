@@ -130,6 +130,7 @@ export const NavigationMenuSection = ({
     { id: "natural-disaster-incidents", label: "Natural Disaster Incidents" },
     { id: "air-quality", label: "Air Quality" },
     { id: "pollen-risk", label: "Pollen Risk"},
+    { id: "groundwater-levels", label: "Groundwater Levels" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
     // { id: "toxic-spills", label: "Toxic Spills" },

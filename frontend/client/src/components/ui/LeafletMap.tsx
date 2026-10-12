@@ -50,6 +50,9 @@ import NaturalDisasterIncidentMarkers from "./NaturalDisasterIncidentMarkers";
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
+//Groundwater levels data
+import GroundwaterMarkers from "./GroundwaterMarkers";
+
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
@@ -370,6 +373,7 @@ export default function LeafletMap({
   /*toggle environmental information */
   showOilSpills = false,  
   showAirQuality = false,
+  showGroundwaterLevels = false,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showNaturalDisasterIncidents = false,
@@ -414,6 +418,7 @@ export default function LeafletMap({
   showConsentAgeData?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
+  showGroundwaterLevels?: boolean;
   showGHGEmissions?: boolean;
   showWasteTreatmentDisposal?: boolean;
   showNaturalDisasterIncidents?: boolean;
@@ -1679,6 +1684,11 @@ export default function LeafletMap({
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
+        )}
+
+        {/* Groundwater levels */}
+        {showGroundwaterLevels && (
+          <GroundwaterMarkers setLoading={setLoading} />
         )}
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}
