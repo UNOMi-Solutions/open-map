@@ -724,6 +724,17 @@ export const NavigationMenuSection = ({
                 </> : null
                 
               }
+            <div className="mt-2 flex items-center left">
+              <Checkbox
+                className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                checked={selectedLayers.includes("flock-cameras")}
+                onCheckedChange={(checked) => onLayerToggle?.("flock-cameras", checked === true)}
+              />
+
+              <span className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
+                Flock Cameras
+              </span>
+            </div>
             </div>
           </AccordionContent>
         </AccordionItem>
