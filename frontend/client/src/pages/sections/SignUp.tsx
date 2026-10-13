@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { X, ArrowLeft } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/apiClient';
+import ContinueWithGoogle from '@/components/ContinueWithGoogle';
 
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin?: (email: string) => void;
+  onLogin?: (email: string, plan?: string | null, verified?: boolean) => void;
   onSwitchToLogin?: () => void;
 }
 
@@ -198,16 +199,6 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
     setPassword('');
   }
 
-  const handleAppleSignUp = () => {
-    console.log('Continue with Apple');
-    // Handle Apple sign up logic here
-  };
-
-  const handleGoogleSignUp = () => {
-    console.log('Continue with Google');
-    // Handle Google sign up logic here
-  };
-
   const handleLogin = () => {
     onClose();
     // Navigate to login - this will be handled by parent component
@@ -359,31 +350,16 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
           </div>
         </div>
 
-        {/* Apple Sign Up Button */}
-        <button
-          onClick={handleAppleSignUp}
-          className="w-full bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 mb-3 flex items-center justify-center gap-2"
-        >
-          <img
-              className="w-[17px] h-[21px] opacity-100"
-              alt="Apple"
-              src="/figmaAssets/Apple.svg"
-          />
-          Continue with Apple
-        </button>
-
-        {/* Google Sign Up Button */}
-        <button
-          onClick={handleGoogleSignUp}
-          className="w-full bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-        >
-          <img
-              className="w-[18px] h-[19px] opacity-100"
-              alt="Apple"
-              src="/figmaAssets/Google.svg"
-          />
-          Continue with Google
-        </button>
+        <ContinueWithGoogle
+          onSignedIn={(user) => {
+            onLogin?.(user.email, user.plan ?? null, user.verified ?? false);
+            onClose();
+          }}
+          onError={(message) => {
+            setIsError(true);
+            setError(message);
+          }}
+        />
       </div>
     </div>
   );

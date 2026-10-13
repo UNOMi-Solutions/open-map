@@ -4,7 +4,10 @@ import bcrypt from "bcryptjs";
 import User from "./models/User.js";
 import Profile from "./models/Profile.js";
 import requireAuth from "./middleware/requireAuth.js";
+import loginLimiter from "./middleware/loginLimiter.js";
 import stripe from "./utils/stripeClient.js";
+import { signUserToken } from "./utils/jwt.js";
+import { loadGoogleProfile } from "./lib/googleOAuth.js";
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -19,8 +22,12 @@ const PASSWORD_RESET_TTL_MS = 15 * 60 * 1000;
 /** How long a pending email-change confirmation link stays valid. */
 const EMAIL_CHANGE_TTL_MS = 24 * 60 * 60 * 1000;
 
+function userHasPassword(user) {
+  return typeof user.password === "string" && user.password.length > 0;
+}
+
 /** The account shape returned to the client. Never includes the password hash. */
-function serializeUser(user) {
+export function serializeUser(user) {
   return {
     name: user.name || "",
     email: user.email,
@@ -33,6 +40,18 @@ function serializeUser(user) {
     // Set while an email change is awaiting confirmation, so the settings page
     // can show "pending confirmation" next to the old address.
     pendingEmail: user.pendingEmail || null,
+    hasPassword: userHasPassword(user),
+    googleLinked: Boolean(user.googleId),
+  };
+}
+
+/** JWT + public user record, shared by password login and Google sign-in. */
+export function buildAuthResponse(user, message = "Login successful") {
+  return {
+    success: true,
+    message,
+    token: signUserToken(user),
+    user: serializeUser(user),
   };
 }
 
@@ -91,12 +110,18 @@ router.post("/me/email", requireAuth, async (req, res) => {
   if (!isValidEmail(email)) {
     return res.status(400).json({ message: "Please enter a valid email address." });
   }
-  if (!password) {
-    return res.status(400).json({ message: "Please enter your current password." });
-  }
 
   const newEmail = email.trim().toLowerCase();
   const user = req.authUser;
+
+  if (!userHasPassword(user)) {
+    return res.status(400).json({
+      message: "This email is managed by Google Sign-In, so it can't be changed here.",
+    });
+  }
+  if (!password) {
+    return res.status(400).json({ message: "Please enter your current password." });
+  }
 
   if (newEmail === user.email) {
     return res.status(400).json({ message: "That's already your email address." });
@@ -197,16 +222,24 @@ router.post("/me/password-reset", requireAuth, async (req, res) => {
 // Permanently deletes the account: cancels any Stripe subscription immediately,
 // removes the user's saved map profiles, then the user document itself.
 router.delete("/me", requireAuth, async (req, res) => {
-  const { password } = req.body || {};
-  if (!password) {
-    return res.status(400).json({ message: "Please enter your password to delete your account." });
-  }
-
+  const { password, confirmEmail } = req.body || {};
   const user = req.authUser;
 
   try {
-    if (!(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "That password is incorrect." });
+    if (userHasPassword(user)) {
+      if (!password) {
+        return res.status(400).json({ message: "Please enter your password to delete your account." });
+      }
+      if (!(await bcrypt.compare(password, user.password))) {
+        return res.status(401).json({ message: "That password is incorrect." });
+      }
+    } else {
+      const typed = typeof confirmEmail === "string" ? confirmEmail.trim().toLowerCase() : "";
+      if (typed !== user.email) {
+        return res.status(400).json({
+          message: "Type your email address to confirm deletion.",
+        });
+      }
     }
 
     // Billing must be verifiably stopped *before* the user document goes away,
@@ -254,6 +287,64 @@ router.delete("/me", requireAuth, async (req, res) => {
   }
 });
 
+// Google Sign-In: GIS popup returns an auth code; we exchange it for a verified
+// ID token, then find-or-create the user and issue the same JWT as password login.
+router.post("/google", loginLimiter, async (req, res) => {
+  const { code, credential } = req.body || {};
+
+  try {
+    const profile = await loadGoogleProfile({ code, credential });
+
+    let user = await User.findOne({ googleId: profile.googleId });
+    if (!user) {
+      user = await User.findOne({ email: profile.email });
+      if (user?.googleId && user.googleId !== profile.googleId) {
+        return res.status(409).json({
+          success: false,
+          message: "An account with this email already exists. Please sign in.",
+        });
+      }
+    }
+
+    if (user) {
+      if (!user.googleId) user.googleId = profile.googleId;
+      if (!user.name && profile.name) user.name = profile.name;
+      if (!user.verified) user.verified = true;
+      await user.save();
+    } else {
+      user = await User.create({
+        name: profile.name,
+        email: profile.email,
+        googleId: profile.googleId,
+        verified: true,
+      });
+    }
+
+    return res.status(200).json(buildAuthResponse(user));
+  } catch (err) {
+    if (err.expose) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    if (err?.response?.data?.error === "invalid_grant") {
+      return res.status(401).json({
+        success: false,
+        message: "Google sign-in expired or was already used. Please try again.",
+      });
+    }
+    if (err?.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "An account with this email already exists. Please sign in.",
+      });
+    }
+    console.error("Google sign-in error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Google sign-in failed. Please try again.",
+    });
+  }
+});
+
 // Step 1: Register user
 router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
@@ -267,8 +358,14 @@ router.post("/register", async (req, res) => {
 
   try {
     const existing = await User.findOne({ email });
-    if (existing)
-      return res.status(409).json({ message: "An account with this email already exists." });
+    if (existing) {
+      const viaGoogle = Boolean(existing.googleId) && !userHasPassword(existing);
+      return res.status(409).json({
+        message: viaGoogle
+          ? "An account with this email already exists. Please continue with Google."
+          : "An account with this email already exists.",
+      });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const token = crypto.randomBytes(32).toString("hex");

@@ -90,6 +90,7 @@ export default function AccountSettings({
   const [emailDraft, setEmailDraft] = useState('');
   const [emailPassword, setEmailPassword] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
+  const [deleteEmail, setDeleteEmail] = useState('');
 
   const applyAccount = (user: AccountUser) => {
     setAccount(user);
@@ -136,7 +137,10 @@ export default function AccountSettings({
       setEmailDraft(account?.email || '');
       setEmailPassword('');
     }
-    if (section === 'delete') setDeletePassword('');
+    if (section === 'delete') {
+      setDeletePassword('');
+      setDeleteEmail('');
+    }
   };
 
   const closeEditor = () => {
@@ -239,7 +243,11 @@ export default function AccountSettings({
     setPending('delete');
     setError(null);
     try {
-      await deleteAccount(deletePassword);
+      await deleteAccount(
+        account?.hasPassword === false
+          ? { confirmEmail: deleteEmail.trim() }
+          : { password: deletePassword }
+      );
       onAccountDeleted();
     } catch (e) {
       setError(messageFor(e, 'Could not delete your account. Please try again.'));
@@ -253,6 +261,7 @@ export default function AccountSettings({
   const busy = pending !== null;
 
   const displayName = account?.name?.trim() || 'Add your name';
+  const hasPassword = account?.hasPassword !== false;
   const isPaid = !!subscription?.isPaid;
   const pendingCancel = isPaid && !!subscription?.cancelAtPeriodEnd;
   const renewalDate = formatDate(subscription?.currentPeriodEnd ?? null);
@@ -363,13 +372,17 @@ export default function AccountSettings({
                   label="Email:"
                   value={account.email}
                   action={
-                    <button
-                      className={linkClass}
-                      onClick={() => openEditor('email')}
-                      disabled={busy}
-                    >
-                      {editing === 'email' ? 'Cancel' : 'Edit'}
-                    </button>
+                    hasPassword ? (
+                      <button
+                        className={linkClass}
+                        onClick={() => openEditor('email')}
+                        disabled={busy}
+                      >
+                        {editing === 'email' ? 'Cancel' : 'Edit'}
+                      </button>
+                    ) : (
+                      <span className="text-[11px] text-white/40">Google</span>
+                    )
                   }
                 >
                   {editing === 'email' && (
@@ -408,13 +421,24 @@ export default function AccountSettings({
                   )}
                 </Row>
 
-                {/* Password — reuses the login flow's reset email and screen. */}
+                {/* Password — reuses the login flow's reset email and screen.
+                    Google-only accounts can add a password this way if they want. */}
                 <Row
                   label="Password:"
-                  value={<span className="tracking-[0.15em]">••••••••••••</span>}
+                  value={
+                    hasPassword ? (
+                      <span className="tracking-[0.15em]">••••••••••••</span>
+                    ) : (
+                      <span className="text-white/40">Sign in with Google</span>
+                    )
+                  }
                   action={
                     <button className={linkClass} onClick={handleChangePassword} disabled={busy}>
-                      {pending === 'password' ? 'Sending…' : 'Edit'}
+                      {pending === 'password'
+                        ? 'Sending…'
+                        : hasPassword
+                          ? 'Edit'
+                          : 'Add a password'}
                     </button>
                   }
                 />
@@ -499,21 +523,36 @@ export default function AccountSettings({
                       This permanently deletes your account, your saved profiles and any active
                       subscription. It can't be undone.
                     </p>
-                    <input
-                      type="password"
-                      value={deletePassword}
-                      autoFocus
-                      placeholder="Confirm your password"
-                      onChange={(e) => setDeletePassword(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !busy && deletePassword) handleDelete();
-                        if (e.key === 'Escape') closeEditor();
-                      }}
-                      className="w-full rounded-md border border-red-500/40 bg-[#06012A] px-3 py-2 text-[11px] text-white placeholder-white/30 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400"
-                    />
+                    {hasPassword ? (
+                      <input
+                        type="password"
+                        value={deletePassword}
+                        autoFocus
+                        placeholder="Confirm your password"
+                        onChange={(e) => setDeletePassword(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !busy && deletePassword) handleDelete();
+                          if (e.key === 'Escape') closeEditor();
+                        }}
+                        className="w-full rounded-md border border-red-500/40 bg-[#06012A] px-3 py-2 text-[11px] text-white placeholder-white/30 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                    ) : (
+                      <input
+                        type="email"
+                        value={deleteEmail}
+                        autoFocus
+                        placeholder="Type your email to confirm"
+                        onChange={(e) => setDeleteEmail(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !busy && deleteEmail) handleDelete();
+                          if (e.key === 'Escape') closeEditor();
+                        }}
+                        className="w-full rounded-md border border-red-500/40 bg-[#06012A] px-3 py-2 text-[11px] text-white placeholder-white/30 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400"
+                      />
+                    )}
                     <button
                       onClick={handleDelete}
-                      disabled={busy || !deletePassword}
+                      disabled={busy || (hasPassword ? !deletePassword : !deleteEmail.trim())}
                       className="w-full rounded-md bg-red-600 py-2 text-[11px] font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
                     >
                       {pending === 'delete' ? 'Deleting…' : 'Permanently delete account'}

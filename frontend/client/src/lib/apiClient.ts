@@ -132,6 +132,9 @@ export interface AccountUser {
   cancelAtPeriodEnd: boolean;
   /** New address awaiting confirmation, or null when no change is pending. */
   pendingEmail: string | null;
+  /** False for Google-only accounts that have never set a password. */
+  hasPassword?: boolean;
+  googleLinked?: boolean;
 }
 
 /** Plan state for the account settings page. */
@@ -178,8 +181,11 @@ export function requestPasswordChange(): Promise<{ message: string }> {
 }
 
 /** Permanently deletes the account, its saved profiles and any subscription. */
-export function deleteAccount(password: string): Promise<{ success: boolean; message: string }> {
-  return request("DELETE", "/api/v1/auth/me", { password });
+export function deleteAccount(payload: {
+  password?: string;
+  confirmEmail?: string;
+}): Promise<{ success: boolean; message: string }> {
+  return request("DELETE", "/api/v1/auth/me", payload);
 }
 
 export function fetchSubscription(): Promise<SubscriptionSummary> {
