@@ -214,7 +214,9 @@ router.get("/representatives", async (req, res) => {
     )
     const objects = response.data?.members ?? [];
     const districts = {};
+    console.log(objects);
     for (const role of objects) {
+      if (role.terms.item[0].chamber != "House of Representatives") continue;
       const st = stateCodeFromName(role.state);;
       if (!st || !FIFTY_STATE_CODES.has(st) == null) continue;
       const dist = typeof role.district === "number" ? role.district : 0;
