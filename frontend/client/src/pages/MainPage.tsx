@@ -33,6 +33,7 @@ import {
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
 import LoadingBar from "./sections/LoadingBar";
+import AdsterraBanner from "@/components/ads/AdsterraBanner";
 
 export default function MainPage() {
   const [progress, setProgress] = useState(0);
@@ -812,16 +813,12 @@ export default function MainPage() {
                   className={[
                     "hidden lg:flex flex-col gap-4",
                     "absolute top-28 right-6 z-30",
-                    "w-[300px] max-h-[calc(100vh-160px)] overflow-y-auto",
+                    "w-[344px] max-h-[calc(100vh-160px)] overflow-y-auto",
                     "rounded-xl border border-white/15 bg-[#0c1022]/70 backdrop-blur-sm",
                     "p-3 shadow-2xl pointer-events-auto",
                   ].join(" ")}
                 >
-                  <BannerAd
-                    showLabel
-                    className="bg-white/5 rounded-md p-2"
-                    style={{ minHeight: 250 }}
-                  />
+                  <AdsterraBanner id="3f5991bd3f190175ff01d70b503cfb6e" width={320} height={50} />
                   <VideoAd
                     showLabel
                     className="bg-white/5 rounded-md p-2"
@@ -900,7 +897,7 @@ export default function MainPage() {
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
                 {!isPremium && (
                   <div className="px-4 pt-4 pb-8 space-y-4 border-t border-white/10 mt-4">
-                    <BannerAd showLabel className="bg-white/5 rounded-md p-2" />
+                    <AdsterraBanner id="3f5991bd3f190175ff01d70b503cfb6e" width={320} height={50} />
                     <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
                   </div>
                 )}
