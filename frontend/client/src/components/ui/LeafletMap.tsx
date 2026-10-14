@@ -75,6 +75,9 @@ import HouseMarkers from "./HouseMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
 
+// Flock cameras
+import FlockMarkers from "./FlockMarkers";
+
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
   [24.5, -125.0], // SW
@@ -382,6 +385,8 @@ export default function LeafletMap({
   houseDistrictPartyMode = "both",
   healthMetricId = null,
   showSplcHateMap = false,
+
+  showFlockData = false,
 }: {
   loading?: boolean;
   // Required: marker children call this unconditionally, and every code path
@@ -432,6 +437,8 @@ export default function LeafletMap({
   healthMetricId?: string | null;
   /** SPLC Hate Map-derived group counts by state GEOID (/data/splc/by-state-geoid.json) */
   showSplcHateMap?: boolean;
+
+  showFlockData?: boolean;
 }) {
   const politicalDistrictsActive =
     politicalLayerIds.includes("red-blue-district") ||
@@ -1712,6 +1719,9 @@ export default function LeafletMap({
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
+
+        {/* Flock Camera data */}
+        {showFlockData && <FlockMarkers setLoading={setLoading}></FlockMarkers>}
 
         <MissingPersons 
           missingPersonQ={missingPersonQ}
