@@ -38,38 +38,7 @@ function stateNameFromPostal(code) {
     UT: "Utah", VT: "Vermont", VA: "Virginia", WA: "Washington", WV: "West Virginia",
     WI: "Wisconsin", WY: "Wyoming",
   };
-
   return names[code] ?? code;
-}
-
-function stateCodeFromName(state) {
-  const names = {
-    AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas",
-    CA: "California", CO: "Colorado", CT: "Connecticut", DE: "Delaware",
-    FL: "Florida", GA: "Georgia", HI: "Hawaii", ID: "Idaho",
-    IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas",
-    KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
-    MA: "Massachusetts", MI: "Michigan", MN: "Minnesota",
-    MS: "Mississippi", MO: "Missouri", MT: "Montana",
-    NE: "Nebraska", NV: "Nevada", NH: "New Hampshire",
-    NJ: "New Jersey", NM: "New Mexico", NY: "New York",
-    NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
-    OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania",
-    RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota",
-    TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
-    VA: "Virginia", WA: "Washington", WV: "West Virginia",
-    WI: "Wisconsin", WY: "Wyoming"
-  };
-
-  const entry = Object.entries(names).find(
-    ([code, name]) => name.toLowerCase() === state.trim().toLowerCase()
-  );
-
-  if (!entry) {
-    return null;
-  }
-
-  return entry ? entry[0] : state;
 }
 
 async function fetchText(url, headers = {}) {
@@ -147,29 +116,16 @@ router.get("/test", (req, res) => {
 router.get("/senators", async (req, res) => {
   try {
     const response = await axios.get(
-      "https://api.congress.gov/v3/member",
-      { params: { format: "json", currentMember: true, limit: 250, api_key: process.env.REP_API_KEY } }
-    )
-    const objects = response.data?.members ?? [];
+      "https://www.govtrack.us/api/v2/role",
+      { params: { current: true, role_type: "senator", limit: 100 } }
+    );
 
-    const response2 = await axios.get(
-      "https://api.congress.gov/v3/member",
-      { params: { format: "json", currentMember: true, limit: 250, offset: 249, api_key: process.env.REP_API_KEY } }
-    )
-    objects.push(...response2.data?.members ?? []);
-
-    const response3 = await axios.get(
-      "https://api.congress.gov/v3/member",
-      { params: { format: "json", currentMember: true, limit: 250, offset: 499, api_key: process.env.REP_API_KEY } }
-    )
-    objects.push(...response3.data?.members ?? []);
-
+    const objects = response.data?.objects ?? [];
     const byState = new Map();
 
     for (const role of objects) {
-      const st = stateCodeFromName(role.state);
+      const st = role.state;
       if (!st) continue;
-      if (role.terms.item[role.terms.item.length - 1].chamber != "Senate") continue;
       if (!byState.has(st)) byState.set(st, []);
       byState.get(st).push(role);
     }
@@ -188,14 +144,14 @@ router.get("/senators", async (req, res) => {
         const person = role.person ?? {};
         const link = person.link ?? "";
         senators.push({
-          id: `sen-${`${state}-${i}`}`,
-          name: role.name ?? `${person.firstname ?? ""} ${person.lastname ?? ""}`.trim(),
+          id: `sen-${person.id ?? role.id ?? `${state}-${i}`}`,
+          name: person.name ?? `${person.firstname ?? ""} ${person.lastname ?? ""}`.trim(),
           state,
-          party: role.partyName ?? "",
+          party: role.party ?? "",
           description: role.description ?? "",
           rank: role.senator_rank_label ?? role.senator_rank ?? "",
           website: role.website ?? link,
-          photoUrl: role.depiction?.imageUrl ?? "",
+          photoUrl: photoUrlFromGovTrackLink(link),
           lat,
           lng,
         });
@@ -205,7 +161,7 @@ router.get("/senators", async (req, res) => {
     senators.sort((a, b) => a.state.localeCompare(b.state) || a.name.localeCompare(b.name));
 
     res.json({
-      source: "https://api.congress.gov/v3/member (current senators)",
+      source: "https://www.govtrack.us/api/v2/role (current senators)",
       fetchedAt: new Date().toISOString(),
       count: senators.length,
       senators,
@@ -222,43 +178,30 @@ router.get("/senators", async (req, res) => {
 router.get("/representatives", async (req, res) => {
   try {
     const response = await axios.get(
-      "https://api.congress.gov/v3/member",
-      { params: { format: "json", currentMember: true, limit: 250, api_key: process.env.REP_API_KEY } }
-    )
-    const objects = response.data?.members ?? [];
+      "https://www.govtrack.us/api/v2/role",
+      { params: { current: true, role_type: "representative", limit: 500 } }
+    );
 
-    const response2 = await axios.get(
-      "https://api.congress.gov/v3/member",
-      { params: { format: "json", currentMember: true, limit: 250, offset: 249, api_key: process.env.REP_API_KEY } }
-    )
-    objects.push(...response2.data?.members ?? []);
-
-
-    const response3 = await axios.get(
-      "https://api.congress.gov/v3/member",
-      { params: { format: "json", currentMember: true, limit: 250, offset: 499, api_key: process.env.REP_API_KEY } }
-    )
-    objects.push(...response3.data?.members ?? []);
-
+    const objects = response.data?.objects ?? [];
     const districts = {};
     for (const role of objects) {
-      if (role.terms.item[role.terms.item.length - 1].chamber != "House of Representatives") continue;
-      const st = stateCodeFromName(role.state);
-      if (!st || !FIFTY_STATE_CODES.has(st) == null) continue;
+      const st = role.state;
+      if (!st || !FIFTY_STATE_CODES.has(st)) continue;
       const dist = typeof role.district === "number" ? role.district : 0;
       const key = `${st}-${dist}`;
-      const link = role.url ?? "";
+      const person = role.person ?? {};
+      const link = person.link ?? "";
       districts[key] = {
-        party: role.partyName ?? "",
-        name: role.name ?? "",
+        party: role.party ?? "",
+        name: person.name ?? "",
         description: role.description ?? "",
         website: role.website || link,
-        photoUrl: role.depiction.imageUrl,
+        photoUrl: photoUrlFromGovTrackLink(link),
       }
     }
 
     res.json({
-      source: "https://api.congress.gov/v3/member (current representatives)",
+      source: "https://www.govtrack.us/api/v2/role (current representatives)",
       fetchedAt: new Date().toISOString(),
       count: Object.keys(districts).length,
       districts,

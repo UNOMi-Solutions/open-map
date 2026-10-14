@@ -2,7 +2,6 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
-import MarkerCompound from "./MarkerCompound";
 
 // marker icon to distinguish oil spills from default blue markers
 const OIL_SPILL_ICON = L.divIcon({
@@ -86,7 +85,7 @@ const OilSpillMarkers = ({ setLoading }: OilSpillMarkersProps) => {
     .map((incident, index) => ({ incident, index, coords: getCoords(incident) }))
     .filter((x): x is { incident: OilSpillIncident; index: number; coords: [number, number] } => x.coords !== null);
 
-  return (<MarkerCompound>
+  return <>
     {
       incidentsWithCoords.map(({ incident, index, coords: [lat, lng] }) => {
         const title = incident.name ?? incident.location ?? `Oil spill #${index + 1}`;
@@ -112,8 +111,7 @@ const OilSpillMarkers = ({ setLoading }: OilSpillMarkersProps) => {
         );
       })
     }
-  </MarkerCompound>
-  );
+  </>
 };
 
 export default OilSpillMarkers;

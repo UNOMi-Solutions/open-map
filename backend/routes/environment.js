@@ -91,12 +91,10 @@ router.get("/ghgEmissions", async (req, res) => {
     try {
       const stateCode = (req.query.stateCode || "").toString().trim().toUpperCase();
       const facilityNameQuery = (req.query.facilityName || "").toString().trim().toLowerCase();
-
-      /*
+  
       if (!stateCode) {
         return res.status(400).json({ error: "Please provide state code" });
       }
-        */
   
       // Download + cache if needed
       if (!ghgEmissionsCache) {
@@ -150,7 +148,9 @@ router.get("/ghgEmissions", async (req, res) => {
       };
   
       // Filter rows for this state
-      let facilities = ghgEmissionsCache;
+      let facilities = ghgEmissionsCache.filter((row) => {
+        return getRowStateCode(row) === stateCode;
+      });
   
       // Optional: further filter by facility name if query provided
       if (facilityNameQuery) {
@@ -219,56 +219,43 @@ const facilityTypeIDs = [
     43  // Industrial Solid Waste Incineration Units 
 ]
 
-const US_STATE_ABBREVIATIONS = [
-    "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
-    "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
-    "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
-    "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
-    "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
-];
-
 // Return information on the various waste sites 
 router.get('/wasteTreatmentDisposalSites', async(req, res) => {
 
-    try { 
-        const allFacilities = []; 
+    try {
+        const stateCode = req.query.stateCode   
 
-        /*
         if (!stateCode) {
             return res.status(400).json({ error: "Missing 'state code' query parameter"})
         }
-            */
 
-        for (const stateCode of US_STATE_ABBREVIATIONS) {
-            const promises = facilityTypeIDs.map(facilityId =>
-                axios.get("https://iwaste.epa.gov/api/facilities", {
-                    params: {
-                        facilityId: facilityId,
-                        stateCode: stateCode,
-                        format: "json"
-                    }
-                })
-            )
-
-            // Get all the responses from the api
-            const responses = await Promise.all(promises)
-
-            // set used instead of array for faster lookup
-            const seenIds = new Set()
-
-            // Store all the facilities in an array with no duplicates
-            responses.forEach(response => {
-                const data = response.data?.data ?? []
-                data.forEach(facility => {
-                    if (!seenIds.has(facility.id)) {
-                        seenIds.add(facility.id)
-                        allFacilities.push(facility)
-                    }
-                })
+        const promises = facilityTypeIDs.map(facilityId =>
+            axios.get("https://iwaste.epa.gov/api/facilities", {
+                params: {
+                    facilityId: facilityId,
+                    stateCode: stateCode,
+                    format: "json"
+                }
             })
-        };
+        )
 
-        console.log(allFacilities.length);
+        // Get all the responses from the api
+        const responses = await Promise.all(promises)
+
+        // set used instead of array for faster lookup
+        const seenIds = new Set()
+
+        // Store all the facilities in an array with no duplicates
+        const allFacilities = []
+        responses.forEach(response => {
+            const data = response.data?.data ?? []
+            data.forEach(facility => {
+                if (!seenIds.has(facility.id)) {
+                    seenIds.add(facility.id)
+                    allFacilities.push(facility)
+                }
+            })
+        })
 
         // Clean data and format the response
         const result = allFacilities
@@ -287,7 +274,7 @@ router.get('/wasteTreatmentDisposalSites', async(req, res) => {
                     facilityType: facilityType || null
                 }
             })
-        console.log(result);
+
         res.json(result)
 
     } catch (error) {

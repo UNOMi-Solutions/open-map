@@ -2,7 +2,6 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
-import MarkerCompound from "./MarkerCompound";
 
 // Green marker icon to distinguish GHG emissions facilities from other markers 
 const GHG_EMISSIONS_ICON = L.divIcon({
@@ -55,21 +54,19 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
   const [facilities, setFacilities] = useState<GhgEmissionFacility[]>([]);
 
   useEffect(() => {
-    /*
     if (!selectedStateCode) {
       setFacilities([]);
       return;
     }
-    */
 
     setFacilities([]);
     setLoading(true);
 
     let cancelled = false;
-    const path = `/api/v1/environment/ghgEmissions`;
+    const path = `/api/v1/environment/ghgEmissions?stateCode=${encodeURIComponent(selectedStateCode)}`;
 
     cachedApiGet<{ ghgEmissions?: GhgEmissionFacility[] }>(
-      `environment:ghgEmissions`,
+      `environment:ghgEmissions:${selectedStateCode}`,
       path,
       CACHE_TTL.ENVIRONMENT_STATE,
     )
@@ -92,14 +89,12 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedStateCode]);
 
   // Don't render anything if no state is selected
-  /*
   if (!selectedStateCode) {
     return null;
   }
-  */
 
   // While loading and we have no facilities yet, also render nothing to avoid stray markers
   if (facilities.length === 0) {
@@ -107,7 +102,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
   }
 
   return (
-    <MarkerCompound>
+    <>
       {facilities
         .filter(
           (facility) =>
@@ -172,7 +167,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
             </Marker>
           );
         })}
-    </MarkerCompound>
+    </>
   );
 };
 
