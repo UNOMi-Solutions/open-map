@@ -32,6 +32,18 @@ import {
   HEALTH_WIRED_LAYER_IDS,
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
+import {
+  INCIDENT_FILTER_PREFIXES,
+  INCIDENT_MENU_ID,
+  INCIDENT_TYPE_IDS,
+  INCIDENT_YEAR_PREFIX,
+  incidentYearSelection,
+  incidentYearSpec,
+  migrateIncidentLayers,
+  selectIncidentType,
+  stormCategoryFromLayers,
+  stripIncidentSelections,
+} from "@/lib/disaster-incidents";
 import LoadingBar from "./sections/LoadingBar";
 
 export default function MainPage() {
@@ -303,9 +315,64 @@ export default function MainPage() {
       }
       return;
     }
+    if (layerId === INCIDENT_MENU_ID) {
+      setSelectedLayers((prev) =>
+        checked
+          ? prev.includes(INCIDENT_MENU_ID)
+            ? prev
+            : [...prev, INCIDENT_MENU_ID]
+          : stripIncidentSelections(prev),
+      );
+      return;
+    }
+    if (INCIDENT_TYPE_IDS.has(layerId)) {
+      setSelectedLayers((prev) =>
+        checked
+          ? selectIncidentType(prev, layerId)
+          : prev.filter(
+              (id) =>
+                id !== layerId &&
+                !INCIDENT_FILTER_PREFIXES.some((prefix) => id.startsWith(prefix)),
+            ),
+      );
+      return;
+    }
+    const singleSelectPrefix = [
+      "eq-mag:",
+      "nri-hz:",
+      "vo-alert:",
+      "ts-year:",
+      "ls-year:",
+      "wf-acres:",
+      "dr-cat:",
+    ].find((p) => layerId.startsWith(p));
+    if (singleSelectPrefix) {
+      setSelectedLayers((prev) => [
+        ...prev.filter((id) => !id.startsWith(singleSelectPrefix)),
+        ...(checked ? [layerId] : []),
+      ]);
+      return;
+    }
     setSelectedLayers((prev) =>
       checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
     );
+  };
+
+  const handleIncidentYearChange = (min: number, max: number) => {
+    setSelectedLayers((prev) => {
+      const typeId = prev.find((id) => INCIDENT_TYPE_IDS.has(id));
+      const spec = typeId ? incidentYearSpec(typeId) : null;
+      const isDefault = spec != null && min === spec.defaultMin && max === spec.defaultMax;
+      return [
+        ...prev.filter(
+          (id) =>
+            !id.startsWith(INCIDENT_YEAR_PREFIX) &&
+            !id.startsWith("ts-year:") &&
+            !id.startsWith("ls-year:"),
+        ),
+        ...(isDefault ? [] : [`${INCIDENT_YEAR_PREFIX}${min}-${max}`]),
+      ];
+    });
   };
 
   const handlePoliticalLayerToggle = (layerId: string, checked: boolean) => {
@@ -372,7 +439,9 @@ export default function MainPage() {
   const applyConfig = (config: Record<string, any>) => {
     const c = config || {};
     setMapPins(Array.isArray(c.mapPins) ? c.mapPins : []);
-    setSelectedLayers(Array.isArray(c.selectedLayers) ? c.selectedLayers : []);
+    setSelectedLayers(
+      migrateIncidentLayers(Array.isArray(c.selectedLayers) ? c.selectedLayers : [])
+    );
     setChoroplethMetric(c.choroplethMetric ?? "pct_white");
     setShowChoropleth(!!c.showChoropleth);
     setSelectedAgeGroupId(c.selectedAgeGroupId ?? null);
@@ -742,10 +811,36 @@ export default function MainPage() {
 
                   showConsentAgeData={showConsentAgeData}
                   showOilSpills={selectedLayers.includes("oil-spills")}
-                  showNaturalDisasterIncidents={selectedLayers.includes("natural-disaster-incidents")}
-                  naturalDisasterIncidentTypes={selectedLayers
-                    .filter((id) => id.startsWith("nd-type:"))
-                    .map((id) => id.replace("nd-type:", ""))}
+                  showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
+                  nationalRiskIndexHazard={
+                    selectedLayers.find((l) => l.startsWith("nri-hz:"))?.slice("nri-hz:".length) ?? null
+                  }
+                  stormEventCategory={stormCategoryFromLayers(selectedLayers)}
+                  showTornadoes={selectedLayers.includes("ndi-tornado")}
+                  showDebrisFlow={selectedLayers.includes("ndi-debris-flow")}
+                  showLandslides={selectedLayers.includes("landslides")}
+                  incidentYearMin={incidentYearSelection(selectedLayers)?.min ?? null}
+                  incidentYearMax={incidentYearSelection(selectedLayers)?.max ?? null}
+                  showEarthquakes={selectedLayers.includes("earthquakes")}
+                  earthquakeMinMagnitude={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("eq-mag:"));
+                    return id ? Number(id.slice("eq-mag:".length)) : null;
+                  })()}
+                  showVolcanoes={selectedLayers.includes("volcanoes")}
+                  volcanoMinAlert={
+                    selectedLayers.find((l) => l.startsWith("vo-alert:"))?.slice("vo-alert:".length) ?? null
+                  }
+                  showTsunamis={selectedLayers.includes("tsunamis")}
+                  showWildfires={selectedLayers.includes("wildfires")}
+                  wildfireMinAcres={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("wf-acres:"));
+                    return id ? Number(id.slice("wf-acres:".length)) : null;
+                  })()}
+                  showDrought={selectedLayers.includes("drought")}
+                  droughtCategory={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("dr-cat:"));
+                    return id ? Number(id.slice("dr-cat:".length)) : null;
+                  })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
@@ -890,6 +985,7 @@ export default function MainPage() {
                   
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
+                  onIncidentYearChange={handleIncidentYearChange}
                   politicalLayerIds={politicalLayerIds}
                   onPoliticalLayerToggle={handlePoliticalLayerToggle}
                   houseDistrictPartyMode={houseDistrictPartyMode}

@@ -293,23 +293,59 @@ body {
   line-height: 18px;
   color: #555;
 }
-.heatmap-legend {
-  min-width: 180px;
+.gradient-legend {
+  min-width: 220px;
   color: #555;
 }
-.heatmap-legend-bar {
+.gradient-legend-bar {
   height: 12px;
   border-radius: 3px;
   border: 1px solid #ddd;
 }
-.heatmap-legend-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 4px;
+.point-legend {
+  color: #555;
   font-size: 12px;
 }
-.leaflet-heatmap-layer {
-  pointer-events: none;
+.point-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 20px;
+}
+.point-legend-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+}
+.point-legend-swatch i {
+  display: block;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0, 0, 0, 0.5);
+  opacity: 0.85;
+}
+.point-legend-swatch i.point-legend-line {
+  border-radius: 1px;
+  height: 4px;
+  width: 18px;
+  border: none;
+}
+.volcano-marker {
+  background: none;
+  border: none;
+}
+.legend-note {
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+.gradient-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 /* Custom Pulsing Marker Styles */
