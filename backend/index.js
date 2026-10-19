@@ -38,6 +38,7 @@ import stripeRoutes from "./routes/stripe.js";
 import stripeWebhook from "./routes/stripeWebhook.js";
 import profileRoutes from "./routes/profiles.js";
 import flockRoutes from "./routes/flock.js";
+import { cacheDataPointResponse, connectDataPointRedis } from "./utils/dataCache.js";
 
 // Connect to MongoDB
 connectDB();
@@ -153,15 +154,15 @@ app.post("/api/auth/login", loginLimiter, async (req, res) => {
 });
 
 // Enforce API Key on all data routes
-app.use("/api/v1/census", auth, censusRoutes);
-app.use("/api/v1/crime", auth, crimeRoutes);
-app.use("/api/v1/economics", auth, economicsRoutes);
-app.use("/api/v1/environment", auth, environmentRoutes);
-app.use("/api/v1/health", auth, healthRoutes);
-app.use("/api/v1/lawEnforcement", auth, lawEnforcementRoutes);
-app.use("/api/v1/politics", auth, politicsRoutes);
-app.use("/api/v1/social", auth, socialRoutes);
-app.use("/api/v1/flock", auth, flockRoutes);
+app.use("/api/v1/census", auth, cacheDataPointResponse, censusRoutes);
+app.use("/api/v1/crime", auth, cacheDataPointResponse, crimeRoutes);
+app.use("/api/v1/economics", auth, cacheDataPointResponse, economicsRoutes);
+app.use("/api/v1/environment", auth, cacheDataPointResponse, environmentRoutes);
+app.use("/api/v1/health", auth, cacheDataPointResponse, healthRoutes);
+app.use("/api/v1/lawEnforcement", auth, cacheDataPointResponse, lawEnforcementRoutes);
+app.use("/api/v1/politics", auth, cacheDataPointResponse, politicsRoutes);
+app.use("/api/v1/social", auth, cacheDataPointResponse, socialRoutes);
+app.use("/api/v1/flock", auth, cacheDataPointResponse, flockRoutes);
 
 // Stripe checkout routes (API-key protected, like the data routes).
 // The webhook is mounted separately above (before JSON parsing).
@@ -183,6 +184,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Secure OpenMap backend running on port ${PORT}`);
+  void connectDataPointRedis();
 
   // Build the slowest datasets in the background. Failures are non-fatal: the
   // routes rebuild on demand, and a crash here would take down the container.
