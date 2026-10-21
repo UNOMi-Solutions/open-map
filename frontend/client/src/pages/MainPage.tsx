@@ -758,6 +758,7 @@ export default function MainPage() {
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
+                  showFlockData={selectedLayers.includes("flock-cameras")}
                 />
               </div>
 
@@ -817,7 +818,6 @@ export default function MainPage() {
                     "p-3 shadow-2xl pointer-events-auto",
                   ].join(" ")}
                 >
-                  <AdsterraBanner id="3f5991bd3f190175ff01d70b503cfb6e" width={320} height={50} />
                   <VideoAd
                     showLabel
                     className="bg-white/5 rounded-md p-2"
@@ -896,7 +896,6 @@ export default function MainPage() {
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
                 {!isPremium && (
                   <div className="px-4 pt-4 pb-8 space-y-4 border-t border-white/10 mt-4">
-                    <AdsterraBanner id="3f5991bd3f190175ff01d70b503cfb6e" width={320} height={50} />
                     <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
                   </div>
                 )}

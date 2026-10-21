@@ -1,3 +1,17 @@
+import { useEffect, useRef } from "react";
+
+declare global {
+  interface Window {
+    atOptions?: {
+      key: string;
+      format: "iframe";
+      height: number;
+      width: number;
+      params: Record<string, never>;
+    };
+  }
+}
+
 type AdsterraBannerProps = {
   id: string;
   width?: number;
@@ -9,29 +23,33 @@ export default function AdsterraBanner({
   width = 320,
   height = 50,
 }: AdsterraBannerProps) {
-  const options = JSON.stringify({
-    key: id,
-    format: "iframe",
-    height,
-    width,
-    params: {},
-  });
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const srcDoc = `<!doctype html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <style>html, body { width: ${width}px; height: ${height}px; margin: 0; overflow: hidden; }</style>
-  </head>
-  <body>
-    <script>atOptions = ${options};</script>
-    <script src="https://bauval.org/22/${encodeURIComponent(id)}"></script>
-  </body>
-</html>`;
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    window.atOptions = {
+      key: id,
+      format: "iframe",
+      height,
+      width,
+      params: {},
+    };
+
+    const script = document.createElement("script");
+    script.src = `https://bauval.org/22/${encodeURIComponent(id)}`;
+    script.async = false;
+    container.appendChild(script);
+
+    return () => {
+      container.replaceChildren();
+    };
+  }, [height, id, width]);
 
   return (
     <div
+      ref={containerRef}
       className="adsterra-banner-container"
       style={{
         display: "block",
@@ -41,23 +59,6 @@ export default function AdsterraBanner({
         margin: 0,
         overflow: "hidden",
       }}
-    >
-      <iframe
-        title={`Adsterra banner ${id}`}
-        srcDoc={srcDoc}
-        width={width}
-        height={height}
-        referrerPolicy="strict-origin-when-cross-origin"
-        scrolling="no"
-        frameBorder="0"
-        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
-        style={{
-          display: "block",
-          width,
-          height,
-          border: 0,
-        }}
-      />
-    </div>
+    />
   );
 }
