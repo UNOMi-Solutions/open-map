@@ -217,6 +217,8 @@ export const NavigationMenuSection = ({
     { id: "latin-hispanic", label: "Latin/ Hispanic" },
     { id: "white", label: "White" },
     { id: "asian", label: "Asian" },
+    { id: "native-american", label: "Native American" },
+    { id: "mixed-race", label: "Mixed Race" },
     { id: "east-asian", label: "East Asian" },
     { id: "arab", label: "Arab" },
   ];
@@ -279,6 +281,8 @@ export const NavigationMenuSection = ({
     "latin-hispanic": "pct_hispanic",
     black: "pct_black",
     asian: "pct_asian",
+    "native-american": "pct_native_american",
+    "mixed-race": "pct_mixed",
     "east-asian": "pct_east_asian",
     arab: "pct_arab",
   };
@@ -288,6 +292,8 @@ export const NavigationMenuSection = ({
     pct_hispanic: "latin-hispanic",
     pct_black: "black",
     pct_asian: "asian",
+    pct_native_american: "native-american",
+    pct_mixed: "mixed-race",
     pct_east_asian: "east-asian",
     pct_arab: "arab",
     pct_male: "male",

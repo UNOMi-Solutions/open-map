@@ -25,6 +25,7 @@ import type { Topology } from "topojson-specification";
 import { feature as topojsonFeature } from "topojson-client";
 import { patchLeafletIcons } from "@/lib/leaflet-icons";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
+import { apiGet } from "@/lib/apiClient";
 import {
   getHealthChoroplethColors,
   getHealthLayerMeta,
@@ -175,6 +176,8 @@ export type ChoroplethMetricKey =
   | "pct_hispanic"
   | "pct_black"
   | "pct_asian"
+  | "pct_native_american"
+  | "pct_mixed"
   | "pct_east_asian"
   | "pct_arab"
   | "pct_male"
@@ -189,11 +192,38 @@ export const CHOROPLETH_METRICS: Record<
   pct_hispanic: { label: "Percent Hispanic", unit: "%" },
   pct_black: { label: "Percent Black", unit: "%" },
   pct_asian: { label: "Percent Asian", unit: "%" },
+  pct_native_american: { label: "Percent Native American", unit: "%" },
+  pct_mixed: { label: "Percent Mixed Race", unit: "%" },
   pct_east_asian: { label: "Percent East Asian", unit: "%" },
   pct_arab: { label: "Percent Arab", unit: "%" },
   pct_male: { label: "Percent Male", unit: "%" },
   pct_female: { label: "Percent Female", unit: "%" },
   median_age: { label: "Median Age", unit: "yrs" },
+};
+
+type CensusRacePercentages = {
+  white: number | null;
+  black: number | null;
+  hispanic: number | null;
+  asian: number | null;
+  nativeAmerican: number | null;
+  mixed: number | null;
+  eastAsian: number | null;
+  arab: number | null;
+};
+
+type CensusRaceResponse = {
+  source: string;
+  year: string;
+  geography: string;
+  count: number;
+  counties: Record<
+    string,
+    {
+      name: string;
+      percentages: CensusRacePercentages;
+    }
+  >;
 };
 
 /** Map choropleth race metric to data-file prefix for race+age requests */
@@ -202,6 +232,8 @@ const RACE_METRIC_TO_DATA_PREFIX: Record<string, string> = {
   pct_black: "black",
   pct_hispanic: "hispanic",
   pct_asian: "asian",
+  pct_native_american: "nativeAmerican",
+  pct_mixed: "mixed",
   pct_east_asian: "eastAsian",
   pct_arab: "arab",
 };
@@ -234,51 +266,6 @@ const US_NATIONAL_CHOROPLETH_TOTALS: Partial<
   pct_female: { pct: 50.8, count: 168_600_000 },
   median_age: { medianAge: 38.4 },
 };
-
-function hashToUnit(seed: string) {
-  let h = 2166136261;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0) / 4294967295;
-}
-
-function mockMetricValue(geoid: string, metric: ChoroplethMetricKey) {
-  const base = hashToUnit(`${metric}:${geoid}`);
-  switch (metric) {
-    case "pct_white":
-      return 35 + base * 60; // 35–95
-    case "pct_hispanic":
-      return 4 + base * 65; // 4–69
-    case "pct_black":
-      return 2 + base * 50; // 2–52
-    case "pct_asian":
-    case "pct_east_asian":
-    case "pct_arab":
-    case "pct_male":
-    case "pct_female":
-      return base * 100;
-    case "median_age":
-      return 24 + base * 26; // 24–50 yrs
-    default:
-      return base * 100;
-  }
-}
-
-function buildMockMetricByGeoId(
-  geo: FeatureCollection<Geometry, GeoJsonProperties> | null,
-  metric: ChoroplethMetricKey
-) {
-  const values: Record<string, number> = {};
-  if (!geo) return values;
-  for (const feature of geo.features) {
-    const geoid = String(feature.properties?.GEOID ?? "");
-    if (!geoid) continue;
-    values[geoid] = mockMetricValue(geoid, metric);
-  }
-  return values;
-}
 
 function isFeatureCollection(
   geo: GeoJSONType
@@ -474,6 +461,12 @@ export default function LeafletMap({
   const [pctAsianByGeoid, setPctAsianByGeoid] = useState<
     Record<string, number> | null
   >(null);
+  const [pctNativeAmericanByGeoid, setPctNativeAmericanByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [pctMixedByGeoid, setPctMixedByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
   const [pctEastAsianByGeoid, setPctEastAsianByGeoid] = useState<
     Record<string, number> | null
   >(null);
@@ -532,157 +525,62 @@ export default function LeafletMap({
     };
   }, []);
 
-  /** Load pctWhite data (GEOID -> pctWhite) */
+  /** Load current county race data from the Census backend. */
   useEffect(() => {
     let cancelled = false;
+
     (async () => {
       try {
-        const res = await fetch("/data/pct_White");
-        if (!res.ok) return;
-        const json = (await res.json()) as Record<
-          string,
-          { pctWhite?: number }
-        >;
+        const data = await apiGet<CensusRaceResponse>("/api/v1/census/race");
         if (cancelled) return;
-        const cleaned: Record<string, number> = {};
-        for (const [geoid, row] of Object.entries(json)) {
-          if (row && typeof row.pctWhite === "number") {
-            cleaned[String(geoid)] = row.pctWhite;
-          }
+
+        const white: Record<string, number> = {};
+        const black: Record<string, number> = {};
+        const hispanic: Record<string, number> = {};
+        const asian: Record<string, number> = {};
+        const nativeAmerican: Record<string, number> = {};
+        const mixed: Record<string, number> = {};
+        const eastAsian: Record<string, number> = {};
+        const arab: Record<string, number> = {};
+
+        for (const [geoid, county] of Object.entries(data.counties ?? {})) {
+          const pct = county.percentages;
+          if (typeof pct?.white === "number") white[geoid] = pct.white;
+          if (typeof pct?.black === "number") black[geoid] = pct.black;
+          if (typeof pct?.hispanic === "number") hispanic[geoid] = pct.hispanic;
+          if (typeof pct?.asian === "number") asian[geoid] = pct.asian;
+          if (typeof pct?.nativeAmerican === "number")
+            nativeAmerican[geoid] = pct.nativeAmerican;
+          if (typeof pct?.mixed === "number") mixed[geoid] = pct.mixed;
+          if (typeof pct?.eastAsian === "number") eastAsian[geoid] = pct.eastAsian;
+          if (typeof pct?.arab === "number") arab[geoid] = pct.arab;
         }
-        setPctWhiteByGeoid(cleaned);
+
+        setPctWhiteByGeoid(white);
+        setPctBlackByGeoid(black);
+        setPctHispanicByGeoid(hispanic);
+        setPctAsianByGeoid(asian);
+        setPctNativeAmericanByGeoid(nativeAmerican);
+        setPctMixedByGeoid(mixed);
+        setPctEastAsianByGeoid(eastAsian);
+        setPctArabByGeoid(arab);
       } catch (e) {
-        console.error("pctWhite data load failed:", e);
+        console.error("Census race data load failed:", e);
+        if (cancelled) return;
+        setPctWhiteByGeoid({});
+        setPctBlackByGeoid({});
+        setPctHispanicByGeoid({});
+        setPctAsianByGeoid({});
+        setPctNativeAmericanByGeoid({});
+        setPctMixedByGeoid({});
+        setPctEastAsianByGeoid({});
+        setPctArabByGeoid({});
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  /** Load pctBlack data (GEOID -> pctBlack) */
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/data/pct_Black");
-        if (!res.ok) return;
-        const json = (await res.json()) as Record<
-          string,
-          { pctBlack?: number }
-        >;
-        if (cancelled) return;
-        const cleaned: Record<string, number> = {};
-        for (const [geoid, row] of Object.entries(json)) {
-          if (row && typeof row.pctBlack === "number") {
-            cleaned[String(geoid)] = row.pctBlack;
-          }
-        }
-        setPctBlackByGeoid(cleaned);
-      } catch (e) {
-        console.error("pctBlack data load failed:", e);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  /** Load pctHispanic data (GEOID -> pctHispanic) */
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/data/pct_Hispanic");
-        if (!res.ok) return;
-        const json = (await res.json()) as Record<
-          string,
-          { pctHispanic?: number }
-        >;
-        if (cancelled) return;
-        const cleaned: Record<string, number> = {};
-        for (const [geoid, row] of Object.entries(json)) {
-          if (row && typeof row.pctHispanic === "number") {
-            cleaned[String(geoid)] = row.pctHispanic;
-          }
-        }
-        setPctHispanicByGeoid(cleaned);
-      } catch (e) {
-        console.error("pctHispanic data load failed:", e);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  /** Load pctAsian data */
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/data/pct_Asian");
-        if (!res.ok) return;
-        const json = (await res.json()) as Record<string, { pctAsian?: number }>;
-        if (cancelled) return;
-        const cleaned: Record<string, number> = {};
-        for (const [geoid, row] of Object.entries(json)) {
-          if (row && typeof row.pctAsian === "number") {
-            cleaned[String(geoid)] = row.pctAsian;
-          }
-        }
-        setPctAsianByGeoid(cleaned);
-      } catch (e) {
-        console.error("pctAsian data load failed:", e);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  /** Load pctEastAsian data */
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/data/pct_EastAsian");
-        if (!res.ok) return;
-        const json = (await res.json()) as Record<string, { pctEastAsian?: number }>;
-        if (cancelled) return;
-        const cleaned: Record<string, number> = {};
-        for (const [geoid, row] of Object.entries(json)) {
-          if (row && typeof row.pctEastAsian === "number") {
-            cleaned[String(geoid)] = row.pctEastAsian;
-          }
-        }
-        setPctEastAsianByGeoid(cleaned);
-      } catch (e) {
-        console.error("pctEastAsian data load failed:", e);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  /** Load pctArab data */
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/data/pct_Arab");
-        if (!res.ok) return;
-        const json = (await res.json()) as Record<string, { pctArab?: number }>;
-        if (cancelled) return;
-        const cleaned: Record<string, number> = {};
-        for (const [geoid, row] of Object.entries(json)) {
-          if (row && typeof row.pctArab === "number") {
-            cleaned[String(geoid)] = row.pctArab;
-          }
-        }
-        setPctArabByGeoid(cleaned);
-      } catch (e) {
-        console.error("pctArab data load failed:", e);
-      }
-    })();
-    return () => { cancelled = true; };
   }, []);
 
   /** Load pctMale data */
@@ -1024,10 +922,13 @@ export default function LeafletMap({
       return pctHispanicByGeoid;
     }
     if (choroplethMetric === "pct_asian" && pctAsianByGeoid) return pctAsianByGeoid;
+    if (choroplethMetric === "pct_native_american" && pctNativeAmericanByGeoid)
+      return pctNativeAmericanByGeoid;
+    if (choroplethMetric === "pct_mixed" && pctMixedByGeoid) return pctMixedByGeoid;
     if (choroplethMetric === "pct_east_asian" && pctEastAsianByGeoid) return pctEastAsianByGeoid;
     if (choroplethMetric === "pct_arab" && pctArabByGeoid) return pctArabByGeoid;
-    // TODO: Replace buildMockMetricByGeoId with real API data mapped by GEOID.
-    return buildMockMetricByGeoId(choroplethGeo, choroplethMetric);
+
+    return {};
   }, [
     choroplethGeo,
     choroplethMetric,
@@ -1035,6 +936,8 @@ export default function LeafletMap({
     pctBlackByGeoid,
     pctHispanicByGeoid,
     pctAsianByGeoid,
+    pctNativeAmericanByGeoid,
+    pctMixedByGeoid,
     pctEastAsianByGeoid,
     pctArabByGeoid,
     pctMaleByGeoid,
