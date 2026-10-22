@@ -44,9 +44,6 @@ import HomicideMarkers from "./HomicideMarkers";
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
 
-// Natural disaster incidents data
-import NaturalDisasterIncidentMarkers from "./NaturalDisasterIncidentMarkers";
-
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
@@ -66,6 +63,16 @@ import GhgEmissionsMarkers from "./GhgEmissionsMarkers";
 
 // Data centers
 import DataCenterMarkers from "./DataCenterMarkers";
+import EarthquakeMarkers from "./EarthquakeMarkers";
+import StormEventsLayer from "./StormEventsLayer";
+import TornadoPathsLayer from "./TornadoPathsLayer";
+import DebrisFlowMarkers from "./DebrisFlowMarkers";
+import LandslideMarkers from "./LandslideMarkers";
+import NationalRiskIndexLayer from "./NationalRiskIndexLayer";
+import WildfireMarkers from "./WildfireMarkers";
+import VolcanoMarkers from "./VolcanoMarkers";
+import TsunamiMarkers from "./TsunamiMarkers";
+import DroughtLayer from "./DroughtLayer";
 import SenatorMarkers from "./SenatorMarkers";
 import GovernorMarkers from "./GovernorMarkers";
 import GerrymanderingMarkers from "./GerrymanderingMarkers";
@@ -375,8 +382,23 @@ export default function LeafletMap({
   showAirQuality = false,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
-  showNaturalDisasterIncidents = false,
-  naturalDisasterIncidentTypes = [],
+  showEarthquakes = false,
+  earthquakeMinMagnitude = null,
+  stormEventCategory = null,
+  showTornadoes = false,
+  showDebrisFlow = false,
+  showLandslides = false,
+  incidentYearMin = null,
+  incidentYearMax = null,
+  showVolcanoes = false,
+  volcanoMinAlert = null,
+  showTsunamis = false,
+  showWildfires = false,
+  wildfireMinAcres = null,
+  showDrought = false,
+  droughtCategory = null,
+  showNationalRiskIndex = false,
+  nationalRiskIndexHazard = null,
   showDataCenters = false,
   selectedAgeGroupId = null,
   selectedRaceCensusId = "all",
@@ -421,8 +443,24 @@ export default function LeafletMap({
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
   showWasteTreatmentDisposal?: boolean;
-  showNaturalDisasterIncidents?: boolean;
-  naturalDisasterIncidentTypes?: string[];
+  showEarthquakes?: boolean;
+  earthquakeMinMagnitude?: number | null;
+  stormEventCategory?: string | null;
+  showTornadoes?: boolean;
+  showDebrisFlow?: boolean;
+  showLandslides?: boolean;
+  incidentYearMin?: number | null;
+  incidentYearMax?: number | null;
+  showVolcanoes?: boolean;
+  volcanoMinAlert?: string | null;
+  showTsunamis?: boolean;
+  showWildfires?: boolean;
+  wildfireMinAcres?: number | null;
+  showDrought?: boolean;
+  droughtCategory?: number | null;
+  showNationalRiskIndex?: boolean;
+  /** NRI hazard code (e.g. "TRND"); null shows the composite risk rating */
+  nationalRiskIndexHazard?: string | null;
   showDataCenters?: boolean;
   /** When set with a race metric, choropleth uses race+age data from /data/{race}_age_{id} */
   selectedAgeGroupId?: string | null;
@@ -1669,13 +1707,45 @@ export default function LeafletMap({
         {/* Oil spill incidents – shown when Oil Spills is selected in sidebar */}
         {showOilSpills && <OilSpillMarkers setLoading={setLoading} />}
 
-        {/* Natural disaster incidents – fetches only for the state selected */}
-        {showNaturalDisasterIncidents && (
-          <NaturalDisasterIncidentMarkers
-            selectedStateCode={clickedStateCode}
-            selectedIncidentTypes={naturalDisasterIncidentTypes}
+        {/* FEMA National Risk Index – county risk ratings, overall or for one hazard */}
+        {showNationalRiskIndex && (
+          <NationalRiskIndexLayer selectedHazard={nationalRiskIndexHazard} setLoading={setLoading} />
+        )}
+
+        {stormEventCategory && (
+          <StormEventsLayer
+            key={stormEventCategory}
+            title={stormEventCategory}
+            categories={[stormEventCategory]}
+            minYear={incidentYearMin}
+            maxYear={incidentYearMax}
             setLoading={setLoading}
           />
+        )}
+        {showTornadoes && (
+          <TornadoPathsLayer minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+        )}
+        {showDebrisFlow && (
+          <DebrisFlowMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+        )}
+        {showLandslides && (
+          <LandslideMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+        )}
+
+        {showEarthquakes && (
+          <EarthquakeMarkers minMagnitude={earthquakeMinMagnitude} setLoading={setLoading} />
+        )}
+        {showVolcanoes && (
+          <VolcanoMarkers minAlertLevel={volcanoMinAlert} setLoading={setLoading} />
+        )}
+        {showTsunamis && (
+          <TsunamiMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+        )}
+        {showWildfires && (
+          <WildfireMarkers minAcres={wildfireMinAcres} minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+        )}
+        {showDrought && (
+          <DroughtLayer selectedCategory={droughtCategory} setLoading={setLoading} />
         )}
 
         {/* Air quality – fetches only for the state selected */}
