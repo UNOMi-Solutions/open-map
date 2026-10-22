@@ -3,6 +3,12 @@ import { useMap } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 import { bindZoomScaledRadius, markerBaseRadius } from "@/lib/zoom-scaled-radius";
+import {
+  getTimelineDateRange,
+  isDateInTimelineRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 type Volcano = {
   id: string;
@@ -27,6 +33,8 @@ type VolcanoesResponse = {
 type VolcanoMarkersProps = {
   minAlertLevel?: string | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
 const ALERT_RANK: Record<string, number> = {
@@ -85,7 +93,12 @@ function popupHtml(v: Volcano): string {
     </div>`;
 }
 
-const VolcanoMarkers = ({ minAlertLevel = null, setLoading }: VolcanoMarkersProps) => {
+const VolcanoMarkers = ({
+  minAlertLevel = null,
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: VolcanoMarkersProps) => {
   const map = useMap();
   const [volcanoes, setVolcanoes] = useState<Volcano[]>([]);
 
@@ -112,16 +125,25 @@ const VolcanoMarkers = ({ minAlertLevel = null, setLoading }: VolcanoMarkersProp
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "volcanoes",
+      getTimelineDateRange(volcanoes.map((volcano) => parseTimelineDate(volcano.lastNoticeTime))),
+    );
+    return () => onDateRangeChange("volcanoes", null);
+  }, [volcanoes, onDateRangeChange]);
+
   const visible = useMemo(() => {
     const minRank = minAlertLevel ? (ALERT_RANK[minAlertLevel] ?? 0) : null;
     return volcanoes
       .filter((v) => {
+        if (!isDateInTimelineRange(parseTimelineDate(v.lastNoticeTime), timelineRange)) return false;
         if (minRank == null) return true;
         if (!v.alertLevel) return false;
         return (ALERT_RANK[v.alertLevel] ?? -1) >= minRank;
       })
       .sort((a, b) => (ALERT_RANK[a.alertLevel ?? ""] ?? -1) - (ALERT_RANK[b.alertLevel ?? ""] ?? -1));
-  }, [volcanoes, minAlertLevel]);
+  }, [volcanoes, minAlertLevel, timelineRange]);
 
   useEffect(() => {
     const group = L.layerGroup();

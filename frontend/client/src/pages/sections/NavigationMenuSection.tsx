@@ -8,7 +8,6 @@ import {
 import { ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import {
   CHOROPLETH_METRICS,
   ChoroplethMetricKey,
@@ -23,10 +22,6 @@ import {
   PATH_INCIDENT_LAYERS,
   POINT_INCIDENT_LAYERS,
   STORM_INCIDENT_LAYERS,
-  incidentYearSelection,
-  incidentYearSpec,
-  formatYearSpan,
-  type IncidentYearSpec,
 } from "@/lib/disaster-incidents";
 
 interface NavigationMenuSectionProps {
@@ -69,7 +64,6 @@ interface NavigationMenuSectionProps {
   onToggleConsentAgeData: () => void;
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
-  onIncidentYearChange?: (min: number, max: number) => void;
   selectedAgeGroupId: string | null;
   onSelectedAgeGroupChange: (ageGroupId: string | null) => void;
   selectedRaceCensusId: string;
@@ -82,61 +76,6 @@ interface NavigationMenuSectionProps {
   houseDistrictPartyMode: HouseDistrictPartyMode;
   onHouseDistrictPartyModeChange: (mode: HouseDistrictPartyMode) => void;
   onResetAllFilters: () => void;
-}
-
-function IncidentYearSlider({
-  spec,
-  value,
-  onChange,
-}: {
-  spec: IncidentYearSpec;
-  value: { min: number; max: number };
-  onChange: (min: number, max: number) => void;
-}) {
-  const [draft, setDraft] = React.useState<[number, number] | null>(null);
-  const shown = draft ?? [value.min, value.max];
-  const span = spec.max - spec.min;
-  const ticks =
-    span <= 6
-      ? Array.from({ length: span + 1 }, (_, index) => spec.min + index)
-      : [spec.min, spec.max];
-
-  return (
-    <div className={spec.prominent ? "ml-6 mt-2 mb-3 pr-3" : "ml-6 mt-2 mb-2 pr-3"}>
-      <div className="mb-1.5 flex items-baseline justify-between gap-2">
-        <span
-          className={`text-white/70 [font-family:'Futura PT'] ${spec.prominent ? "text-[12px]" : "text-[11px]"}`}
-        >
-          Years
-        </span>
-        <span
-          className={`text-white [font-family:'Futura PT'] ${spec.prominent ? "text-[13px]" : "text-[11px]"}`}
-        >
-          {formatYearSpan(shown[0], shown[1])}
-        </span>
-      </div>
-      <Slider
-        min={spec.min}
-        max={spec.max}
-        step={1}
-        minStepsBetweenThumbs={0}
-        size={spec.prominent ? "lg" : "default"}
-        tone="light"
-        value={shown}
-        onValueChange={(next) => setDraft([next[0] ?? spec.min, next[1] ?? spec.max])}
-        onValueCommit={(next) => {
-          setDraft(null);
-          onChange(next[0] ?? spec.min, next[1] ?? spec.max);
-        }}
-        aria-label="Years"
-      />
-      <div className="mt-1 flex justify-between text-[10px] text-white/45 [font-family:'Futura PT']">
-        {ticks.map((year) => (
-          <span key={year}>{year}</span>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export const NavigationMenuSection = ({ 
@@ -179,7 +118,6 @@ export const NavigationMenuSection = ({
   onToggleConsentAgeData,
   selectedLayers = [],
   onLayerToggle,
-  onIncidentYearChange,
   selectedAgeGroupId,
   onSelectedAgeGroupChange,
   selectedRaceCensusId,
@@ -337,19 +275,6 @@ export const NavigationMenuSection = ({
                         {type.label}
                       </label>
                     </div>
-                    {selectedLayers.includes(type.id) && (() => {
-                      const yearSpec = incidentYearSpec(type.id);
-                      if (!yearSpec) return null;
-                      const selected = incidentYearSelection(selectedLayers);
-                      return (
-                        <IncidentYearSlider
-                          key={type.id}
-                          spec={yearSpec}
-                          value={selected ?? { min: yearSpec.defaultMin, max: yearSpec.defaultMax }}
-                          onChange={(min, max) => onIncidentYearChange?.(min, max)}
-                        />
-                      );
-                    })()}
                     {renderSubFilters(type.id, subFilters)}
                   </div>
                 ))}

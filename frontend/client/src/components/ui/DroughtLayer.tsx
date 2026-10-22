@@ -9,6 +9,12 @@ import {
   percentLegendHtml,
   useCountyFeatures,
 } from "@/lib/county-choropleth";
+import {
+  getTimelineDateRange,
+  isDateInTimelineRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 type DroughtResponse = {
   mapDate?: string | null;
@@ -20,6 +26,8 @@ type DroughtLayerProps = {
   /** USDM category index 0–4 (D0–D4). Defaults to D1 (moderate or worse). */
   selectedCategory?: number | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
 const DEFAULT_CATEGORY = 1;
@@ -64,7 +72,12 @@ function popupHtml(label: string, values: number[] | undefined, categories: stri
     </div>`;
 }
 
-const DroughtLayer = ({ selectedCategory = null, setLoading }: DroughtLayerProps) => {
+const DroughtLayer = ({
+  selectedCategory = null,
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: DroughtLayerProps) => {
   const map = useMap();
   const countyFeatures = useCountyFeatures();
   const [data, setData] = useState<DroughtResponse | null>(null);
@@ -93,6 +106,14 @@ const DroughtLayer = ({ selectedCategory = null, setLoading }: DroughtLayerProps
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "drought",
+      getTimelineDateRange([parseTimelineDate(data?.mapDate)]),
+    );
+    return () => onDateRangeChange("drought", null);
+  }, [data, onDateRangeChange]);
+
   const valuesByFips = useMemo(() => {
     const mapByFips = new Map<string, number[]>();
     for (const [fips, values] of Object.entries(data?.counties ?? {})) {
@@ -105,7 +126,13 @@ const DroughtLayer = ({ selectedCategory = null, setLoading }: DroughtLayerProps
   const heading = categories[categoryIndex] ?? CATEGORY_LABELS[categoryIndex];
 
   useEffect(() => {
-    if (countyFeatures.length === 0 || !data) return;
+    if (
+      countyFeatures.length === 0 ||
+      !data ||
+      !isDateInTimelineRange(parseTimelineDate(data.mapDate), timelineRange)
+    ) {
+      return;
+    }
 
     const info = new L.Control({ position: "topright" });
     info.onAdd = function () {
@@ -172,7 +199,7 @@ const DroughtLayer = ({ selectedCategory = null, setLoading }: DroughtLayerProps
       map.removeControl(info);
       map.removeControl(legend);
     };
-  }, [map, countyFeatures, data, valuesByFips, categoryIndex, categories, heading]);
+  }, [map, countyFeatures, data, valuesByFips, categoryIndex, categories, heading, timelineRange]);
 
   return null;
 };

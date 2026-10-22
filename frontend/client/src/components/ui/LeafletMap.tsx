@@ -24,6 +24,7 @@ import type {
 import type { Topology } from "topojson-specification";
 import { feature as topojsonFeature } from "topojson-client";
 import { patchLeafletIcons } from "@/lib/leaflet-icons";
+import type { TimelineDateRange } from "@/lib/timeline";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
 import {
   getHealthChoroplethColors,
@@ -388,8 +389,6 @@ export default function LeafletMap({
   showTornadoes = false,
   showDebrisFlow = false,
   showLandslides = false,
-  incidentYearMin = null,
-  incidentYearMax = null,
   showVolcanoes = false,
   volcanoMinAlert = null,
   showTsunamis = false,
@@ -409,6 +408,9 @@ export default function LeafletMap({
   showSplcHateMap = false,
 
   showFlockData = false,
+  timelineRange = null,
+  onDateRangeChange,
+  timelineVisible = false,
 }: {
   loading?: boolean;
   // Required: marker children call this unconditionally, and every code path
@@ -449,8 +451,6 @@ export default function LeafletMap({
   showTornadoes?: boolean;
   showDebrisFlow?: boolean;
   showLandslides?: boolean;
-  incidentYearMin?: number | null;
-  incidentYearMax?: number | null;
   showVolcanoes?: boolean;
   volcanoMinAlert?: string | null;
   showTsunamis?: boolean;
@@ -477,6 +477,9 @@ export default function LeafletMap({
   showSplcHateMap?: boolean;
 
   showFlockData?: boolean;
+  timelineRange?: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
+  timelineVisible?: boolean;
 }) {
   const politicalDistrictsActive =
     politicalLayerIds.includes("red-blue-district") ||
@@ -1606,7 +1609,10 @@ export default function LeafletMap({
   };
   
   return (
-    <div ref={mapSectionRef} className="relative h-full w-full">
+    <div
+      ref={mapSectionRef}
+      className={`relative h-full w-full${timelineVisible ? " timeline-visible-map" : ""}`}
+    >
       <MapContainer
         ref={setMapInstanceRef}
         className="h-full w-full"
@@ -1705,7 +1711,13 @@ export default function LeafletMap({
         <HomicideMarkers murderCategory={murderCategory} murderAttribute={murderAttribute} showMurderData={showMurderData}></HomicideMarkers>
 
         {/* Oil spill incidents – shown when Oil Spills is selected in sidebar */}
-        {showOilSpills && <OilSpillMarkers setLoading={setLoading} />}
+        {showOilSpills && (
+          <OilSpillMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
 
         {/* FEMA National Risk Index – county risk ratings, overall or for one hazard */}
         {showNationalRiskIndex && (
@@ -1717,40 +1729,80 @@ export default function LeafletMap({
             key={stormEventCategory}
             title={stormEventCategory}
             categories={[stormEventCategory]}
-            minYear={incidentYearMin}
-            maxYear={incidentYearMax}
             setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
           />
         )}
         {showTornadoes && (
-          <TornadoPathsLayer minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <TornadoPathsLayer
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showDebrisFlow && (
-          <DebrisFlowMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <DebrisFlowMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showLandslides && (
-          <LandslideMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <LandslideMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
 
         {showEarthquakes && (
-          <EarthquakeMarkers minMagnitude={earthquakeMinMagnitude} setLoading={setLoading} />
+          <EarthquakeMarkers
+            minMagnitude={earthquakeMinMagnitude}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showVolcanoes && (
-          <VolcanoMarkers minAlertLevel={volcanoMinAlert} setLoading={setLoading} />
+          <VolcanoMarkers
+            minAlertLevel={volcanoMinAlert}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showTsunamis && (
-          <TsunamiMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <TsunamiMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showWildfires && (
-          <WildfireMarkers minAcres={wildfireMinAcres} minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <WildfireMarkers
+            minAcres={wildfireMinAcres}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showDrought && (
-          <DroughtLayer selectedCategory={droughtCategory} setLoading={setLoading} />
+          <DroughtLayer
+            selectedCategory={droughtCategory}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
 
         {/* Air quality – fetches only for the state selected */}
         {showAirQuality && (
-          <AirQualityMarkers setLoading={setLoading}/>
+          <AirQualityMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
 
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
@@ -1785,7 +1837,9 @@ export default function LeafletMap({
           PoliceKillingQ={PoliceKillingQ}
           PoliceKillingYear={PoliceKillingYear}
           showPoliceKillingData={showPoliceKillingData}
-          ></PoliceKillings>
+          timelineRange={timelineRange}
+          onDateRangeChange={onDateRangeChange}
+        />
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
@@ -1796,7 +1850,10 @@ export default function LeafletMap({
         <MissingPersons 
           missingPersonQ={missingPersonQ}
           missingPersonYear={missingPersonYear}
-          showMissingPersonsData={showMissingPersonsData}></MissingPersons>
+          showMissingPersonsData={showMissingPersonsData}
+          timelineRange={timelineRange}
+          onDateRangeChange={onDateRangeChange}
+        />
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
 

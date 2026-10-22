@@ -2,8 +2,15 @@ import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
-import { formatYearSpan, yearInRange } from "@/lib/disaster-incidents";
+import { formatYearSpan } from "@/lib/disaster-incidents";
 import { bindZoomScaledRadius, markerBaseRadius } from "@/lib/zoom-scaled-radius";
+import {
+  getTimelineDateRange,
+  getTimelineYearRange,
+  isDateInTimelineRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 type Landslide = {
   id: string;
@@ -24,12 +31,10 @@ type LandslidesResponse = {
 };
 
 type LandslideMarkersProps = {
-  minYear?: number | null;
-  maxYear?: number | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
-
-const DEFAULT_MIN_YEAR = 2000;
 
 const KIND_CLASSES = [
   { kind: "Landslide", label: "Landslide", color: "#c2410c", radius: 5 },
@@ -80,11 +85,18 @@ function popupHtml(s: Landslide): string {
     </div>`;
 }
 
-const LandslideMarkers = ({ minYear = null, maxYear = null, setLoading }: LandslideMarkersProps) => {
+function landslideDate(slide: Landslide): Date | null {
+  return parseTimelineDate(slide.date) ??
+    (slide.year != null ? new Date(Date.UTC(slide.year, 0, 1)) : null);
+}
+
+const LandslideMarkers = ({
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: LandslideMarkersProps) => {
   const map = useMap();
   const [slides, setSlides] = useState<Landslide[]>([]);
-  const sinceYear = minYear ?? DEFAULT_MIN_YEAR;
-  const untilYear = maxYear ?? new Date().getFullYear();
 
   useEffect(() => {
     let cancelled = false;
@@ -109,12 +121,22 @@ const LandslideMarkers = ({ minYear = null, maxYear = null, setLoading }: Landsl
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "landslides",
+      getTimelineDateRange(slides.map(landslideDate)),
+    );
+    return () => onDateRangeChange("landslides", null);
+  }, [slides, onDateRangeChange]);
+
+  const timelineYears = getTimelineYearRange(timelineRange);
+
   const visible = useMemo(
     () =>
       slides
-        .filter((s) => s.year == null || yearInRange(s.year, sinceYear, untilYear))
+        .filter((s) => isDateInTimelineRange(landslideDate(s), timelineRange))
         .sort((a, b) => a.fatalities - b.fatalities),
-    [slides, sinceYear, untilYear],
+    [slides, timelineRange],
   );
 
   useEffect(() => {
@@ -151,7 +173,7 @@ const LandslideMarkers = ({ minYear = null, maxYear = null, setLoading }: Landsl
         })
         .join("");
       div.innerHTML =
-        `<h4>Landslides, ${formatYearSpan(sinceYear, untilYear)}</h4>` +
+        `<h4>Landslides, ${timelineYears ? formatYearSpan(timelineYears.min, timelineYears.max) : "all years"}</h4>` +
         rows +
         `<div class="legend-note">${visible.length.toLocaleString()} shown · USGS</div>`;
       return div;
@@ -163,7 +185,7 @@ const LandslideMarkers = ({ minYear = null, maxYear = null, setLoading }: Landsl
       map.removeLayer(group);
       map.removeControl(legend);
     };
-  }, [map, visible, sinceYear, untilYear]);
+  }, [map, visible, timelineYears?.min, timelineYears?.max]);
 
   return null;
 };

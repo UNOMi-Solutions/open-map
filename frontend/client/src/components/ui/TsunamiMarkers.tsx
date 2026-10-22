@@ -2,8 +2,15 @@ import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
-import { formatYearSpan, yearInRange } from "@/lib/disaster-incidents";
+import { formatYearSpan } from "@/lib/disaster-incidents";
 import { bindZoomScaledRadius, markerBaseRadius } from "@/lib/zoom-scaled-radius";
+import {
+  getTimelineDateRange,
+  getTimelineYearRange,
+  isDateInTimelineRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 type TsunamiRunup = {
   id: number;
@@ -26,13 +33,10 @@ type TsunamisResponse = {
 };
 
 type TsunamiMarkersProps = {
-  minYear?: number | null;
-  maxYear?: number | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
-
-/** Catalog goes back to 1900; default to this century unless the sidebar asks for older runups. */
-const DEFAULT_MIN_YEAR = 2000;
 
 const HEIGHT_CLASSES = [
   { min: 0, label: "Observed / <0.5 m", color: "#9ecae1", radius: 4 },
@@ -63,11 +67,13 @@ function popupHtml(r: TsunamiRunup): string {
     </div>`;
 }
 
-const TsunamiMarkers = ({ minYear = null, maxYear = null, setLoading }: TsunamiMarkersProps) => {
+const TsunamiMarkers = ({
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: TsunamiMarkersProps) => {
   const map = useMap();
   const [runups, setRunups] = useState<TsunamiRunup[]>([]);
-  const sinceYear = minYear ?? DEFAULT_MIN_YEAR;
-  const untilYear = maxYear ?? new Date().getFullYear();
 
   useEffect(() => {
     let cancelled = false;
@@ -92,12 +98,22 @@ const TsunamiMarkers = ({ minYear = null, maxYear = null, setLoading }: TsunamiM
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "tsunamis",
+      getTimelineDateRange(runups.map((runup) => parseTimelineDate(runup.date))),
+    );
+    return () => onDateRangeChange("tsunamis", null);
+  }, [runups, onDateRangeChange]);
+
+  const timelineYears = getTimelineYearRange(timelineRange);
+
   const visible = useMemo(
     () =>
       runups
-        .filter((r) => yearInRange(r.year, sinceYear, untilYear))
+        .filter((r) => isDateInTimelineRange(parseTimelineDate(r.date), timelineRange))
         .sort((a, b) => (a.runupHeightM ?? 0) - (b.runupHeightM ?? 0)),
-    [runups, sinceYear, untilYear],
+    [runups, timelineRange],
   );
 
   useEffect(() => {
@@ -130,7 +146,7 @@ const TsunamiMarkers = ({ minYear = null, maxYear = null, setLoading }: TsunamiM
         </div>`;
       }).join("");
       div.innerHTML =
-        `<h4>Tsunami runups, ${formatYearSpan(sinceYear, untilYear)}</h4>` +
+        `<h4>Tsunami runups, ${timelineYears ? formatYearSpan(timelineYears.min, timelineYears.max) : "all years"}</h4>` +
         rows +
         `<div class="legend-note">${visible.length.toLocaleString()} shown · NOAA NCEI</div>`;
       return div;
@@ -142,7 +158,7 @@ const TsunamiMarkers = ({ minYear = null, maxYear = null, setLoading }: TsunamiM
       map.removeLayer(group);
       map.removeControl(legend);
     };
-  }, [map, visible, sinceYear, untilYear]);
+  }, [map, visible, timelineYears?.min, timelineYears?.max]);
 
   return null;
 };
