@@ -895,6 +895,7 @@ export default function MainPage() {
                   showFlockData={selectedLayers.includes("flock-cameras")}
                   timelineRange={timelineRange}
                   onDateRangeChange={handleDatasetDateRangeChange}
+                  timelineVisible={Boolean(availableDateRange && timelineRange)}
                 />
               </div>
 

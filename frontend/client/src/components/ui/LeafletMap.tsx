@@ -410,6 +410,7 @@ export default function LeafletMap({
   showFlockData = false,
   timelineRange = null,
   onDateRangeChange,
+  timelineVisible = false,
 }: {
   loading?: boolean;
   // Required: marker children call this unconditionally, and every code path
@@ -478,6 +479,7 @@ export default function LeafletMap({
   showFlockData?: boolean;
   timelineRange?: TimelineDateRange | null;
   onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
+  timelineVisible?: boolean;
 }) {
   const politicalDistrictsActive =
     politicalLayerIds.includes("red-blue-district") ||
@@ -1607,7 +1609,10 @@ export default function LeafletMap({
   };
   
   return (
-    <div ref={mapSectionRef} className="relative h-full w-full">
+    <div
+      ref={mapSectionRef}
+      className={`relative h-full w-full${timelineVisible ? " timeline-visible-map" : ""}`}
+    >
       <MapContainer
         ref={setMapInstanceRef}
         className="h-full w-full"

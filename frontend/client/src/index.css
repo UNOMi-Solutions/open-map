@@ -80,6 +80,11 @@ body {
   cursor: not-allowed;
 }
 
+.timeline-visible-map .leaflet-bottom.leaflet-right {
+  bottom: 155px;
+}
+
+
 /* Oil spill markers: teal-blue pin, no default marker background */
 .leaflet-marker-icon.oil-spill-marker {
   background: transparent !important;

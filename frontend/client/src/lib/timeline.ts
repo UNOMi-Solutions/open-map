@@ -3,7 +3,20 @@ export type TimelineDateRange = {
   end: number;
 };
 
+export type TimelineYearRange = {
+  min: number;
+  max: number;
+};
+
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+export function parseTimelineDate(
+  value: string | number | null | undefined,
+): Date | null {
+  if (value == null || value === "") return null;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? date : null;
+}
 
 export function getTimelineDateRange(
   dates: Array<Date | null>,
@@ -19,6 +32,16 @@ export function getTimelineDateRange(
   }
 
   return Number.isFinite(start) ? { start, end } : null;
+}
+
+export function getTimelineYearRange(
+  range: TimelineDateRange | null,
+): TimelineYearRange | null {
+  if (!range) return null;
+  return {
+    min: new Date(range.start).getUTCFullYear(),
+    max: new Date(range.end).getUTCFullYear(),
+  };
 }
 
 export function isDateInTimelineRange(
