@@ -24,6 +24,7 @@ import type {
 import type { Topology } from "topojson-specification";
 import { feature as topojsonFeature } from "topojson-client";
 import { patchLeafletIcons } from "@/lib/leaflet-icons";
+import type { TimelineDateRange } from "@/lib/timeline";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
 import {
   getHealthChoroplethColors,
@@ -387,6 +388,8 @@ export default function LeafletMap({
   showSplcHateMap = false,
 
   showFlockData = false,
+  timelineRange = null,
+  onDateRangeChange,
 }: {
   loading?: boolean;
   // Required: marker children call this unconditionally, and every code path
@@ -439,6 +442,8 @@ export default function LeafletMap({
   showSplcHateMap?: boolean;
 
   showFlockData?: boolean;
+  timelineRange?: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 }) {
   const politicalDistrictsActive =
     politicalLayerIds.includes("red-blue-district") ||
@@ -1667,7 +1672,13 @@ export default function LeafletMap({
         <HomicideMarkers murderCategory={murderCategory} murderAttribute={murderAttribute} showMurderData={showMurderData}></HomicideMarkers>
 
         {/* Oil spill incidents – shown when Oil Spills is selected in sidebar */}
-        {showOilSpills && <OilSpillMarkers setLoading={setLoading} />}
+        {showOilSpills && (
+          <OilSpillMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
 
         {/* Natural disaster incidents – fetches only for the state selected */}
         {showNaturalDisasterIncidents && (
@@ -1675,12 +1686,18 @@ export default function LeafletMap({
             selectedStateCode={clickedStateCode}
             selectedIncidentTypes={naturalDisasterIncidentTypes}
             setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
           />
         )}
 
         {/* Air quality – fetches only for the state selected */}
         {showAirQuality && (
-          <AirQualityMarkers setLoading={setLoading}/>
+          <AirQualityMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
 
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
@@ -1715,7 +1732,9 @@ export default function LeafletMap({
           PoliceKillingQ={PoliceKillingQ}
           PoliceKillingYear={PoliceKillingYear}
           showPoliceKillingData={showPoliceKillingData}
-          ></PoliceKillings>
+          timelineRange={timelineRange}
+          onDateRangeChange={onDateRangeChange}
+        />
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
@@ -1726,7 +1745,10 @@ export default function LeafletMap({
         <MissingPersons 
           missingPersonQ={missingPersonQ}
           missingPersonYear={missingPersonYear}
-          showMissingPersonsData={showMissingPersonsData}></MissingPersons>
+          showMissingPersonsData={showMissingPersonsData}
+          timelineRange={timelineRange}
+          onDateRangeChange={onDateRangeChange}
+        />
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
 

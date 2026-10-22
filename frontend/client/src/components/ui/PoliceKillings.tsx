@@ -6,6 +6,11 @@ import {
 
 import { CreateMarker, CreatePulsingIcon } from "./CreateMarker";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import {
+    getTimelineDateRange,
+    isDateInTimelineRange,
+    type TimelineDateRange,
+} from "@/lib/timeline";
 
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 const provider = new OpenStreetMapProvider();
@@ -21,18 +26,37 @@ interface PoliceKillingsProps {
     PoliceKillingQ: PoliceKillingQKey;
     PoliceKillingYear: number;
     showPoliceKillingData: boolean;
+    timelineRange: TimelineDateRange | null;
+    onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
+}
+
+interface Incident {
+    locationData: {
+        latitude: number;
+        longitude: number;
+    };
+    [key: string]: any;
 }
 
 const color = 220;
 
-const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingData }: PoliceKillingsProps) => {
-    interface Incident {
-        locationData: {
-            latitude: number;
-            longitude: number;
-        };
-        [key: string]: any;
-    }
+function getIncidentDate(incident: Incident): Date | null {
+    const rawDate = incident["Date of Incident (month/day/year)"];
+    if (rawDate == null || rawDate === "") return null;
+    const excelDate = Number(rawDate);
+    if (!Number.isFinite(excelDate)) return null;
+    const excelEpoch = Date.UTC(1899, 11, 30);
+    const date = new Date(excelEpoch + excelDate * 86400000);
+    return Number.isFinite(date.getTime()) ? date : null;
+}
+
+const PoliceKillings = ({
+    PoliceKillingQ,
+    PoliceKillingYear,
+    showPoliceKillingData,
+    timelineRange,
+    onDateRangeChange,
+}: PoliceKillingsProps) => {
     const [PDKillingData, setPDKillingData] = useState<Incident[]>([]);
     const [loadingPDKillingData, setLoadingPDKillingData] = useState<boolean>(true);
 
@@ -84,15 +108,29 @@ const PoliceKillings = ({ PoliceKillingQ, PoliceKillingYear, showPoliceKillingDa
         };
     }, []);
 
+    useEffect(() => {
+        onDateRangeChange(
+            "police-killings",
+            showPoliceKillingData
+                ? getTimelineDateRange(PDKillingData.map(getIncidentDate))
+                : null,
+        );
+        return () => onDateRangeChange("police-killings", null);
+    }, [PDKillingData, showPoliceKillingData, onDateRangeChange]);
+
     return (!showPoliceKillingData) ? null : <>
     
         {
             PDKillingData.map((incident: Incident, index: number) => {
                 const { locationData } = incident;
-                const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-                const incidentDate = new Date(excelEpoch.getTime() + incident['Date of Incident (month/day/year)'] * 86400000);
+                const incidentDate = getIncidentDate(incident);
                 
-                if(incidentDate > startDate && incidentDate < endDate) {
+                if(
+                    incidentDate &&
+                    incidentDate > startDate &&
+                    incidentDate < endDate &&
+                    isDateInTimelineRange(incidentDate, timelineRange)
+                ) {
                     return (
                         (locationData != null) ? <Marker icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)} key={index} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]}>
                             <Popup>

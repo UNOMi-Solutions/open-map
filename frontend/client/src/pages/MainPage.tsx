@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignUp from "./sections/SignUp";
@@ -34,6 +34,10 @@ import {
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
 import LoadingBar from "./sections/LoadingBar";
 import AdsterraBanner from "@/components/ads/AdsterraBanner";
+import {
+  formatTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 export default function MainPage() {
   const [progress, setProgress] = useState(0);
@@ -73,6 +77,65 @@ export default function MainPage() {
     { id: string; lat: number; lng: number; stateName?: string }[]
   >([]);
   const [selectedLayers, setSelectedLayers] = useState<string[]>([]);
+  const [datasetDateRanges, setDatasetDateRanges] = useState<
+    Record<string, TimelineDateRange>
+  >({});
+  const [timelineRange, setTimelineRange] = useState<TimelineDateRange | null>(null);
+  const previousAvailableDateRange = useRef<TimelineDateRange | null>(null);
+  const availableDateRange = useMemo(() => {
+    const ranges = Object.values(datasetDateRanges);
+    if (ranges.length === 0) return null;
+    return {
+      start: Math.min(...ranges.map((range) => range.start)),
+      end: Math.max(...ranges.map((range) => range.end)),
+    };
+  }, [datasetDateRanges]);
+
+  const handleDatasetDateRangeChange = useCallback(
+    (datasetId: string, range: TimelineDateRange | null) => {
+      setDatasetDateRanges((current) => {
+        const existing = current[datasetId];
+        if (!range) {
+          if (!existing) return current;
+          const next = { ...current };
+          delete next[datasetId];
+          return next;
+        }
+        if (existing?.start === range.start && existing.end === range.end) {
+          return current;
+        }
+        return { ...current, [datasetId]: range };
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const previous = previousAvailableDateRange.current;
+    previousAvailableDateRange.current = availableDateRange;
+
+    if (!availableDateRange) {
+      setTimelineRange(null);
+      return;
+    }
+    setTimelineRange((current) => {
+      if (
+        !current ||
+        !previous ||
+        (current.start === previous.start && current.end === previous.end)
+      ) {
+        return availableDateRange;
+      }
+      const clamp = (timestamp: number) =>
+        Math.min(availableDateRange.end, Math.max(availableDateRange.start, timestamp));
+      const start = clamp(current.start);
+      return {
+        start,
+        end: Math.max(start, clamp(current.end)),
+      };
+    });
+  }, [availableDateRange]);
+
   const SIDEBAR_WIDTH_OPEN = 430;
   // NEW: sidebar open/close
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -759,8 +822,98 @@ export default function MainPage() {
                   healthMetricId={healthMetricId}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
                   showFlockData={selectedLayers.includes("flock-cameras")}
+                  timelineRange={timelineRange}
+                  onDateRangeChange={handleDatasetDateRangeChange}
                 />
               </div>
+
+              {availableDateRange && timelineRange && (
+                <aside
+                  aria-label="Data timeline"
+                  className="fixed bottom-5 right-5 z-[3000] w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-[#0c1022]/95 p-4 text-white shadow-2xl backdrop-blur"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <h2 className="text-sm font-semibold">Timeline</h2>
+                    <button
+                      type="button"
+                      onClick={() => setTimelineRange(availableDateRange)}
+                      className="text-xs text-sky-300 hover:text-sky-200 disabled:opacity-50"
+                      disabled={
+                        timelineRange.start === availableDateRange.start &&
+                        timelineRange.end === availableDateRange.end
+                      }
+                    >
+                      Reset
+                    </button>
+                  </div>
+                  <div className="mb-1 flex justify-between gap-3 text-xs text-white/80">
+                    <span>
+                      From <strong>{formatTimelineDate(timelineRange.start)}</strong>
+                    </span>
+                    <span>
+                      Through <strong>{formatTimelineDate(timelineRange.end)}</strong>
+                    </span>
+                  </div>
+                  <div className="relative my-2 h-6">
+                    <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/20" />
+                    <div
+                      className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+                      style={{
+                        left: `${((timelineRange.start - availableDateRange.start) / (availableDateRange.end - availableDateRange.start || 1)) * 100}%`,
+                        right: `${100 - ((timelineRange.end - availableDateRange.start) / (availableDateRange.end - availableDateRange.start || 1)) * 100}%`,
+                      }}
+                    />
+                    <label className="sr-only" htmlFor="timeline-start">
+                      Earliest displayed date
+                    </label>
+                    <input
+                      id="timeline-start"
+                      aria-label="Earliest displayed date"
+                      type="range"
+                      min={availableDateRange.start}
+                      max={availableDateRange.end}
+                      step={24 * 60 * 60 * 1000}
+                      value={timelineRange.start}
+                      disabled={availableDateRange.start === availableDateRange.end}
+                      onChange={(event) => {
+                        const start = Number(event.target.value);
+                        setTimelineRange((current) =>
+                          current
+                            ? { ...current, start: Math.min(start, current.end) }
+                            : current,
+                        );
+                      }}
+                      className="timeline-range-input"
+                    />
+                    <label className="sr-only" htmlFor="timeline-end">
+                      Latest displayed date
+                    </label>
+                    <input
+                      id="timeline-end"
+                      aria-label="Latest displayed date"
+                      type="range"
+                      min={availableDateRange.start}
+                      max={availableDateRange.end}
+                      step={24 * 60 * 60 * 1000}
+                      value={timelineRange.end}
+                      disabled={availableDateRange.start === availableDateRange.end}
+                      onChange={(event) => {
+                        const end = Number(event.target.value);
+                        setTimelineRange((current) =>
+                          current
+                            ? { ...current, end: Math.max(end, current.start) }
+                            : current,
+                        );
+                      }}
+                      className="timeline-range-input"
+                    />
+                  </div>
+                  <div className="mt-1 flex justify-between text-[10px] text-white/50">
+                    <span>{formatTimelineDate(availableDateRange.start)}</span>
+                    <span>{formatTimelineDate(availableDateRange.end)}</span>
+                  </div>
+                </aside>
+              )}
 
               {/* Landing content overlay (full screen) */}
               {showLanding && (

@@ -5,6 +5,11 @@ import { feature } from "topojson-client";
 import { cachedApiGetBatch, CACHE_TTL } from "@/lib/apiCache";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from "geojson";
+import {
+  getTimelineDateRange,
+  isDateInTimelineRange,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 // 2-letter state codes for fetching; STATE_CODES maps them to FIPS prefix
 const STATE_ABBREVS = [
@@ -48,6 +53,8 @@ type NaturalDisasterIncidentMarkersProps = {
   selectedStateCode: string | null;
   selectedIncidentTypes?: string[];
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
 // Removes unecessary words from the county name that was returned from the api
@@ -120,6 +127,8 @@ const NaturalDisasterIncidentMarkers = ({
   selectedStateCode,
   selectedIncidentTypes = [],
   setLoading,
+  timelineRange,
+  onDateRangeChange,
 }: NaturalDisasterIncidentMarkersProps) => {
   const map = useMap(); // Leaflet map instance
 
@@ -189,16 +198,35 @@ const NaturalDisasterIncidentMarkers = ({
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "natural-disasters",
+      getTimelineDateRange(
+        incidentData.map((incident) =>
+          incident.incidentBeginDate ? new Date(incident.incidentBeginDate) : null,
+        ),
+      ),
+    );
+    return () => onDateRangeChange("natural-disasters", null);
+  }, [incidentData, onDateRangeChange]);
+
   const filteredIncidents = useMemo(
     () =>
-      selectedIncidentTypes.length > 0
-        ? incidentData.filter((incident) =>
-            selectedIncidentTypes.includes(
-              String(incident.incidentType ?? "").trim(),
-            ),
+      incidentData.filter((incident) => {
+        if (
+          !isDateInTimelineRange(
+            incident.incidentBeginDate ? new Date(incident.incidentBeginDate) : null,
+            timelineRange,
           )
-        : incidentData,
-    [incidentData, selectedIncidentTypes],
+        ) {
+          return false;
+        }
+        return (
+          selectedIncidentTypes.length === 0 ||
+          selectedIncidentTypes.includes(String(incident.incidentType ?? "").trim())
+        );
+      }),
+    [incidentData, selectedIncidentTypes, timelineRange],
   );
 
   // Group incidents by "stateFips-normalizedCounty" (county names repeat across states)
