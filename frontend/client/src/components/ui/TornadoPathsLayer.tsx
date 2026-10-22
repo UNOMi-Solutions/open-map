@@ -2,8 +2,15 @@ import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
-import { formatYearSpan, isoYear, yearInRange } from "@/lib/disaster-incidents";
+import { formatYearSpan } from "@/lib/disaster-incidents";
 import { bindZoomScaledRadius, bindZoomScaledWeight } from "@/lib/zoom-scaled-radius";
+import {
+  getTimelineDateRange,
+  getTimelineYearRange,
+  isDateInTimelineRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 type Tornado = {
   id: string;
@@ -29,9 +36,9 @@ type TornadoesResponse = {
 };
 
 type TornadoPathsLayerProps = {
-  minYear?: number | null;
-  maxYear?: number | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
 const EF_RANK: Record<string, number> = {
@@ -108,7 +115,11 @@ function popupHtml(t: Tornado): string {
     </div>`;
 }
 
-const TornadoPathsLayer = ({ minYear = null, maxYear = null, setLoading }: TornadoPathsLayerProps) => {
+const TornadoPathsLayer = ({
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: TornadoPathsLayerProps) => {
   const map = useMap();
   const [tornadoes, setTornadoes] = useState<Tornado[]>([]);
 
@@ -135,13 +146,23 @@ const TornadoPathsLayer = ({ minYear = null, maxYear = null, setLoading }: Torna
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "tornadoes",
+      getTimelineDateRange(tornadoes.map((tornado) => parseTimelineDate(tornado.date))),
+    );
+    return () => onDateRangeChange("tornadoes", null);
+  }, [tornadoes, onDateRangeChange]);
+
+  const timelineYears = getTimelineYearRange(timelineRange);
+
   // Weaker first so violent tracks draw on top
   const visible = useMemo(
     () =>
       tornadoes
-        .filter((t) => yearInRange(isoYear(t.date), minYear, maxYear))
+        .filter((t) => isDateInTimelineRange(parseTimelineDate(t.date), timelineRange))
         .sort((a, b) => (EF_RANK[a.ef] ?? 0) - (EF_RANK[b.ef] ?? 0)),
-    [tornadoes, minYear, maxYear],
+    [tornadoes, timelineRange],
   );
 
   useEffect(() => {
@@ -199,7 +220,7 @@ const TornadoPathsLayer = ({ minYear = null, maxYear = null, setLoading }: Torna
         </div>`,
       ).join("");
       div.innerHTML =
-        `<h4>Tornadoes, ${minYear != null && maxYear != null ? formatYearSpan(minYear, maxYear) : "since 2024"}</h4>` +
+        `<h4>Tornadoes, ${timelineYears ? formatYearSpan(timelineYears.min, timelineYears.max) : "since 2024"}</h4>` +
         rows +
         `<div class="legend-note">${visible.length.toLocaleString()} tracks · NOAA</div>`;
       return div;
@@ -212,7 +233,7 @@ const TornadoPathsLayer = ({ minYear = null, maxYear = null, setLoading }: Torna
       map.removeLayer(group);
       map.removeControl(legend);
     };
-  }, [map, visible, minYear, maxYear]);
+  }, [map, visible, timelineYears?.min, timelineYears?.max]);
 
   return null;
 };

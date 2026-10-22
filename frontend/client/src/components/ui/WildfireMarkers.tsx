@@ -2,8 +2,15 @@ import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
-import { formatYearSpan, timestampYear, yearInRange } from "@/lib/disaster-incidents";
+import { formatYearSpan } from "@/lib/disaster-incidents";
 import { bindZoomScaledRadius, markerBaseRadius } from "@/lib/zoom-scaled-radius";
+import {
+  getTimelineDateRange,
+  getTimelineYearRange,
+  isDateInTimelineRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 // Returned properties from wildfires api (NIFC WFIGS, 100+ acres since 2024)
 type Wildfire = {
@@ -28,9 +35,9 @@ type WildfiresResponse = {
 
 type WildfireMarkersProps = {
   minAcres?: number | null;
-  minYear?: number | null;
-  maxYear?: number | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
 const SIZE_CLASSES = [
@@ -73,7 +80,12 @@ function popupHtml(f: Wildfire): string {
     </div>`;
 }
 
-const WildfireMarkers = ({ minAcres = null, minYear = null, maxYear = null, setLoading }: WildfireMarkersProps) => {
+const WildfireMarkers = ({
+  minAcres = null,
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: WildfireMarkersProps) => {
   const map = useMap();
   const [fires, setFires] = useState<Wildfire[]>([]);
 
@@ -100,13 +112,27 @@ const WildfireMarkers = ({ minAcres = null, minYear = null, maxYear = null, setL
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "wildfires",
+      getTimelineDateRange(fires.map((fire) => parseTimelineDate(fire.discovered))),
+    );
+    return () => onDateRangeChange("wildfires", null);
+  }, [fires, onDateRangeChange]);
+
+  const timelineYears = getTimelineYearRange(timelineRange);
+
   // Smallest first so larger fires are drawn on top
   const visible = useMemo(
     () =>
       fires
-        .filter((f) => (minAcres == null || f.acres >= minAcres) && yearInRange(timestampYear(f.discovered), minYear, maxYear))
+        .filter(
+          (f) =>
+            (minAcres == null || f.acres >= minAcres) &&
+            isDateInTimelineRange(parseTimelineDate(f.discovered), timelineRange),
+        )
         .sort((a, b) => a.acres - b.acres),
-    [fires, minAcres, minYear, maxYear],
+    [fires, minAcres, timelineRange],
   );
 
   useEffect(() => {
@@ -143,7 +169,7 @@ const WildfireMarkers = ({ minAcres = null, minYear = null, maxYear = null, setL
         })
         .join("");
       div.innerHTML =
-        `<h4>Wildfires, ${minYear != null && maxYear != null ? formatYearSpan(minYear, maxYear) : "since 2024"}</h4>` +
+        `<h4>Wildfires, ${timelineYears ? formatYearSpan(timelineYears.min, timelineYears.max) : "since 2024"}</h4>` +
         rows +
         `<div class="legend-note">${visible.length.toLocaleString()} shown · NIFC</div>`;
       return div;
@@ -155,7 +181,7 @@ const WildfireMarkers = ({ minAcres = null, minYear = null, maxYear = null, setL
       map.removeLayer(group);
       map.removeControl(legend);
     };
-  }, [map, visible, minAcres, minYear, maxYear]);
+  }, [map, visible, minAcres, timelineYears?.min, timelineYears?.max]);
 
   return null;
 };

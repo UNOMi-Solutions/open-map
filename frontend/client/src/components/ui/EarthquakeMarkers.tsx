@@ -3,6 +3,12 @@ import { useMap } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 import { bindZoomScaledRadius, markerBaseRadius } from "@/lib/zoom-scaled-radius";
+import {
+  getTimelineDateRange,
+  isDateInTimelineRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 // Returned properties from earthquakes api (USGS, past 365 days, M2.5+)
 type Earthquake = {
@@ -25,6 +31,8 @@ type EarthquakesResponse = {
 type EarthquakeMarkersProps = {
   minMagnitude?: number | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
 // Gold → crimson by magnitude, so small events read as energy and large ones as danger
@@ -73,7 +81,12 @@ function popupHtml(q: Earthquake): string {
     </div>`;
 }
 
-const EarthquakeMarkers = ({ minMagnitude = null, setLoading }: EarthquakeMarkersProps) => {
+const EarthquakeMarkers = ({
+  minMagnitude = null,
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: EarthquakeMarkersProps) => {
   const map = useMap();
   const [earthquakes, setEarthquakes] = useState<Earthquake[]>([]);
 
@@ -100,13 +113,25 @@ const EarthquakeMarkers = ({ minMagnitude = null, setLoading }: EarthquakeMarker
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "earthquakes",
+      getTimelineDateRange(earthquakes.map((quake) => parseTimelineDate(quake.time))),
+    );
+    return () => onDateRangeChange("earthquakes", null);
+  }, [earthquakes, onDateRangeChange]);
+
   // Smallest first so larger quakes are drawn on top
   const visible = useMemo(
     () =>
       earthquakes
-        .filter((q) => minMagnitude == null || q.magnitude >= minMagnitude)
+        .filter(
+          (q) =>
+            (minMagnitude == null || q.magnitude >= minMagnitude) &&
+            isDateInTimelineRange(parseTimelineDate(q.time), timelineRange),
+        )
         .sort((a, b) => a.magnitude - b.magnitude),
-    [earthquakes, minMagnitude],
+    [earthquakes, minMagnitude, timelineRange],
   );
 
   useEffect(() => {

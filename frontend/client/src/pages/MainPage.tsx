@@ -36,9 +36,6 @@ import {
   INCIDENT_FILTER_PREFIXES,
   INCIDENT_MENU_ID,
   INCIDENT_TYPE_IDS,
-  INCIDENT_YEAR_PREFIX,
-  incidentYearSelection,
-  incidentYearSpec,
   migrateIncidentLayers,
   selectIncidentType,
   stormCategoryFromLayers,
@@ -405,8 +402,6 @@ export default function MainPage() {
       "eq-mag:",
       "nri-hz:",
       "vo-alert:",
-      "ts-year:",
-      "ls-year:",
       "wf-acres:",
       "dr-cat:",
     ].find((p) => layerId.startsWith(p));
@@ -420,23 +415,6 @@ export default function MainPage() {
     setSelectedLayers((prev) =>
       checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
     );
-  };
-
-  const handleIncidentYearChange = (min: number, max: number) => {
-    setSelectedLayers((prev) => {
-      const typeId = prev.find((id) => INCIDENT_TYPE_IDS.has(id));
-      const spec = typeId ? incidentYearSpec(typeId) : null;
-      const isDefault = spec != null && min === spec.defaultMin && max === spec.defaultMax;
-      return [
-        ...prev.filter(
-          (id) =>
-            !id.startsWith(INCIDENT_YEAR_PREFIX) &&
-            !id.startsWith("ts-year:") &&
-            !id.startsWith("ls-year:"),
-        ),
-        ...(isDefault ? [] : [`${INCIDENT_YEAR_PREFIX}${min}-${max}`]),
-      ];
-    });
   };
 
   const handlePoliticalLayerToggle = (layerId: string, checked: boolean) => {
@@ -883,8 +861,6 @@ export default function MainPage() {
                   showTornadoes={selectedLayers.includes("ndi-tornado")}
                   showDebrisFlow={selectedLayers.includes("ndi-debris-flow")}
                   showLandslides={selectedLayers.includes("landslides")}
-                  incidentYearMin={incidentYearSelection(selectedLayers)?.min ?? null}
-                  incidentYearMax={incidentYearSelection(selectedLayers)?.max ?? null}
                   showEarthquakes={selectedLayers.includes("earthquakes")}
                   earthquakeMinMagnitude={(() => {
                     const id = selectedLayers.find((l) => l.startsWith("eq-mag:"));
@@ -1135,7 +1111,6 @@ export default function MainPage() {
                   
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
-                  onIncidentYearChange={handleIncidentYearChange}
                   politicalLayerIds={politicalLayerIds}
                   onPoliticalLayerToggle={handlePoliticalLayerToggle}
                   houseDistrictPartyMode={houseDistrictPartyMode}

@@ -2,8 +2,15 @@ import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
-import { formatYearSpan, isoYear, yearInRange } from "@/lib/disaster-incidents";
+import { formatYearSpan } from "@/lib/disaster-incidents";
 import { bindZoomScaledRadius, markerBaseRadius } from "@/lib/zoom-scaled-radius";
+import {
+  getTimelineDateRange,
+  getTimelineYearRange,
+  isDateInTimelineRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 type DebrisFlow = {
   id: string;
@@ -23,9 +30,9 @@ type DebrisFlowsResponse = {
 };
 
 type DebrisFlowMarkersProps = {
-  minYear?: number | null;
-  maxYear?: number | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
 const DAMAGE_CLASSES = [
@@ -73,7 +80,11 @@ function popupHtml(f: DebrisFlow): string {
     </div>`;
 }
 
-const DebrisFlowMarkers = ({ minYear = null, maxYear = null, setLoading }: DebrisFlowMarkersProps) => {
+const DebrisFlowMarkers = ({
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: DebrisFlowMarkersProps) => {
   const map = useMap();
   const [flows, setFlows] = useState<DebrisFlow[]>([]);
 
@@ -100,12 +111,22 @@ const DebrisFlowMarkers = ({ minYear = null, maxYear = null, setLoading }: Debri
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "debris-flows",
+      getTimelineDateRange(flows.map((flow) => parseTimelineDate(flow.date))),
+    );
+    return () => onDateRangeChange("debris-flows", null);
+  }, [flows, onDateRangeChange]);
+
+  const timelineYears = getTimelineYearRange(timelineRange);
+
   const visible = useMemo(
     () =>
       flows
-        .filter((f) => yearInRange(isoYear(f.date), minYear, maxYear))
+        .filter((f) => isDateInTimelineRange(parseTimelineDate(f.date), timelineRange))
         .sort((a, b) => a.damage - b.damage),
-    [flows, minYear, maxYear],
+    [flows, timelineRange],
   );
 
   useEffect(() => {
@@ -138,7 +159,7 @@ const DebrisFlowMarkers = ({ minYear = null, maxYear = null, setLoading }: Debri
         </div>`;
       }).join("");
       div.innerHTML =
-        `<h4>Debris flows, ${minYear != null && maxYear != null ? formatYearSpan(minYear, maxYear) : "since 2024"}</h4>` +
+        `<h4>Debris flows, ${timelineYears ? formatYearSpan(timelineYears.min, timelineYears.max) : "since 2024"}</h4>` +
         rows +
         `<div class="legend-note">${visible.length.toLocaleString()} shown · NOAA</div>`;
       return div;
@@ -150,7 +171,7 @@ const DebrisFlowMarkers = ({ minYear = null, maxYear = null, setLoading }: Debri
       map.removeLayer(group);
       map.removeControl(legend);
     };
-  }, [map, visible, minYear, maxYear]);
+  }, [map, visible, timelineYears?.min, timelineYears?.max]);
 
   return null;
 };

@@ -389,8 +389,6 @@ export default function LeafletMap({
   showTornadoes = false,
   showDebrisFlow = false,
   showLandslides = false,
-  incidentYearMin = null,
-  incidentYearMax = null,
   showVolcanoes = false,
   volcanoMinAlert = null,
   showTsunamis = false,
@@ -452,8 +450,6 @@ export default function LeafletMap({
   showTornadoes?: boolean;
   showDebrisFlow?: boolean;
   showLandslides?: boolean;
-  incidentYearMin?: number | null;
-  incidentYearMax?: number | null;
   showVolcanoes?: boolean;
   volcanoMinAlert?: string | null;
   showTsunamis?: boolean;
@@ -1728,37 +1724,71 @@ export default function LeafletMap({
             key={stormEventCategory}
             title={stormEventCategory}
             categories={[stormEventCategory]}
-            minYear={incidentYearMin}
-            maxYear={incidentYearMax}
             setLoading={setLoading}
             timelineRange={timelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
         {showTornadoes && (
-          <TornadoPathsLayer minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <TornadoPathsLayer
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showDebrisFlow && (
-          <DebrisFlowMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <DebrisFlowMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showLandslides && (
-          <LandslideMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <LandslideMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
 
         {showEarthquakes && (
-          <EarthquakeMarkers minMagnitude={earthquakeMinMagnitude} setLoading={setLoading} />
+          <EarthquakeMarkers
+            minMagnitude={earthquakeMinMagnitude}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showVolcanoes && (
-          <VolcanoMarkers minAlertLevel={volcanoMinAlert} setLoading={setLoading} />
+          <VolcanoMarkers
+            minAlertLevel={volcanoMinAlert}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showTsunamis && (
-          <TsunamiMarkers minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <TsunamiMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showWildfires && (
-          <WildfireMarkers minAcres={wildfireMinAcres} minYear={incidentYearMin} maxYear={incidentYearMax} setLoading={setLoading} />
+          <WildfireMarkers
+            minAcres={wildfireMinAcres}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
         {showDrought && (
-          <DroughtLayer selectedCategory={droughtCategory} setLoading={setLoading} />
+          <DroughtLayer
+            selectedCategory={droughtCategory}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
 
         {/* Air quality – fetches only for the state selected */}

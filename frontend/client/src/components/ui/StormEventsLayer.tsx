@@ -13,6 +13,12 @@ import {
   type CountPalette,
 } from "@/lib/county-choropleth";
 import { formatYearSpan } from "@/lib/disaster-incidents";
+import {
+  getTimelineDateRange,
+  getTimelineYearRange,
+  parseTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 // Per county FIPS: category -> year -> [event count, deaths, injuries, damage $]
 type YearBucket = [number, number, number, number];
@@ -52,9 +58,9 @@ type StormEventsLayerProps = {
   /** NOAA categories this layer covers; counts are summed across them */
   categories: string[];
   selectedCategory?: string | null;
-  minYear?: number | null;
-  maxYear?: number | null;
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
 function formatMonth(isoDate: string | null | undefined): string {
@@ -156,9 +162,9 @@ const StormEventsLayer = ({
   title,
   categories,
   selectedCategory = null,
-  minYear = null,
-  maxYear = null,
   setLoading,
+  timelineRange,
+  onDateRangeChange,
 }: StormEventsLayerProps) => {
   const map = useMap();
   const countyFeatures = useCountyFeatures();
@@ -186,6 +192,22 @@ const StormEventsLayer = ({
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const endDate = data?.dateRange?.end ?? (data?.dateRange?.start ? new Date().toISOString().slice(0, 10) : null);
+    onDateRangeChange(
+      "storm-events",
+      getTimelineDateRange([
+        parseTimelineDate(data?.dateRange?.start),
+        parseTimelineDate(endDate),
+      ]),
+    );
+    return () => onDateRangeChange("storm-events", null);
+  }, [data, onDateRangeChange]);
+
+  const timelineYears = getTimelineYearRange(timelineRange);
+  const minYear = timelineYears?.min ?? null;
+  const maxYear = timelineYears?.max ?? null;
 
   const shownCategories = useMemo(
     () => (selectedCategory ? [selectedCategory] : categories),
