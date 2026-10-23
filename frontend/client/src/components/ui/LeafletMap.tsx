@@ -48,6 +48,12 @@ import OilSpillMarkers from "./OilSpillMarkers";
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
+// Noise pollution data
+import NoisePollutionLayer from "./NoisePollutionLayer";
+
+// Rural access to intercity transportation (BTS)
+import RuralAccessChoropleth from "./RuralAccessChoropleth";
+
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
@@ -381,6 +387,10 @@ export default function LeafletMap({
   /*toggle environmental information */
   showOilSpills = false,  
   showAirQuality = false,
+  showNoisePollution = false,
+  showRuralAccess = false,
+  ruralAccessYear = 2021,
+  onRuralAccessYearChange,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showEarthquakes = false,
@@ -444,6 +454,11 @@ export default function LeafletMap({
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
+  showNoisePollution?: boolean;
+  showRuralAccess?: boolean;  
+  ruralAccessYear?: number;
+  onRuralAccessYearChange?: (year: number) => void;
+  
   showWasteTreatmentDisposal?: boolean;
   showEarthquakes?: boolean;
   earthquakeMinMagnitude?: number | null;
@@ -1805,6 +1820,18 @@ export default function LeafletMap({
           />
         )}
 
+        {/* Noise pollution - loads image tile map for selected area */}
+        {showNoisePollution && <NoisePollutionLayer/>}
+
+        {/* Rural access to intercity transportation – county choropleth */}
+        {showRuralAccess && (
+          <RuralAccessChoropleth
+            year={ruralAccessYear}
+            onYearChange={onRuralAccessYearChange}
+            setLoading={setLoading}
+          />
+        )}        
+        
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />

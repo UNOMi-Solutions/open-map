@@ -141,6 +141,36 @@ export const NavigationMenuSection = ({
     { id: "air-quality", label: "Air Quality" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
+    
+    // { id: "toxic-spills", label: "Toxic Spills" },
+    // { id: "toxic-area", label: "Toxic Area" },
+  ];
+
+  // Category data for Transportation section
+  const transportationItems = [
+    { id: "rural-access", label: "Rural Access to Intercity Transportation" },
+  ];
+
+  // Sub-filters for Natural Disaster Incidents (matches backend incident types)
+  const naturalDisasterIncidentTypes = [
+    { id: "nd-type:Flood", label: "Flood" },
+    { id: "nd-type:Fire", label: "Fire" },
+    { id: "nd-type:Hurricane", label: "Hurricane" },
+    { id: "nd-type:Tornado", label: "Tornado" },
+    { id: "nd-type:Severe Storm", label: "Severe Storm" },
+    { id: "nd-type:Winter Storm", label: "Winter Storm" },
+    { id: "nd-type:Earthquake", label: "Earthquake" },
+    { id: "nd-type:Tropical Storm", label: "Tropical Storm" },
+    { id: "nd-type:Coastal Storm", label: "Coastal Storm" },
+    { id: "nd-type:Snowstorm", label: "Snowstorm" },
+    { id: "nd-type:Severe Ice Storm", label: "Severe Ice Storm" },
+    { id: "nd-type:Mud/Landslide", label: "Mud/Landslide" },
+    { id: "nd-type:Dam/Levee Break", label: "Dam/Levee Break" },
+    { id: "nd-type:Straight-Line Winds", label: "Straight-Line Winds" },
+    { id: "nd-type:Tropical Depression", label: "Tropical Depression" },
+    { id: "nd-type:Biological", label: "Biological" },
+    { id: "nd-type:Other", label: "Other" },
   ];
 
   const incidentTypeItems: LayerOption[] = [
@@ -543,7 +573,36 @@ export const NavigationMenuSection = ({
             {renderLayerList(environmentItems, environmentSubFilters)}
           </AccordionContent>
         </AccordionItem>
-
+        <AccordionItem value="transportation" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Transportation
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            <div className="ml-4">
+              {transportationItems.map((item) => (
+                <div key={item.id} className="flex items-center mt-1.5">
+                  <Checkbox
+                    id={item.id}
+                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                    checked={selectedLayers.includes(item.id)}
+                    onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
+                  />
+                  <label
+                    htmlFor={item.id}
+                    className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                  >
+                    {item.label}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
         <AccordionItem value="crime" className="border-0">
           <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
             <div className="flex items-center">

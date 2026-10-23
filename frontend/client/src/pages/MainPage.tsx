@@ -181,6 +181,9 @@ export default function MainPage() {
   // Props for consent age data
   const [showConsentAgeData, setShowConsentAgeData] = useState(false);
 
+  // props for rural access
+  const [ruralAccessYear, setRuralAccessYear] = useState(2021);
+
   const [politicalLayerIds, setPoliticalLayerIds] = useState<string[]>([]);
   const [houseDistrictPartyMode, setHouseDistrictPartyMode] =
     useState<HouseDistrictPartyMode>("both");
@@ -882,6 +885,11 @@ export default function MainPage() {
                     return id ? Number(id.slice("dr-cat:".length)) : null;
                   })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showNoisePollution={selectedLayers.includes("noise-pollution")}
+                  showRuralAccess={selectedLayers.includes("rural-access") }
+                  ruralAccessYear={ruralAccessYear}
+                  onRuralAccessYearChange={setRuralAccessYear}
+                  
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
                   showDataCenters={selectedLayers.includes("data-centers")}
