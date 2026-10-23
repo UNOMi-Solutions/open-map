@@ -12,6 +12,78 @@ body {
   background-color: #06012A;
 }
 
+.timeline-range-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.timeline-range-input:focus {
+  z-index: 2;
+  outline: none;
+}
+
+.timeline-range-input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.3);
+}
+
+.timeline-range-input:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.3);
+}
+
+.timeline-range-input::-webkit-slider-runnable-track {
+  height: 1.5rem;
+  background: transparent;
+}
+
+.timeline-range-input::-moz-range-track {
+  height: 1.5rem;
+  background: transparent;
+}
+
+.timeline-range-input::-webkit-slider-thumb {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.25rem;
+  appearance: none;
+  border: 2px solid white;
+  border-radius: 9999px;
+  background: #38bdf8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.timeline-range-input::-moz-range-thumb {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid white;
+  border-radius: 9999px;
+  background: #38bdf8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.timeline-range-input:active::-webkit-slider-thumb,
+.timeline-range-input:active::-moz-range-thumb {
+  cursor: grabbing;
+}
+
+.timeline-range-input:disabled::-webkit-slider-thumb,
+.timeline-range-input:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+}
+
+.timeline-visible-map .leaflet-bottom.leaflet-right {
+  bottom: 155px;
+}
+
 
 /* Oil spill markers: teal-blue pin, no default marker background */
 .leaflet-marker-icon.oil-spill-marker {
@@ -292,6 +364,60 @@ body {
 .choropleth-legend {
   line-height: 18px;
   color: #555;
+}
+.gradient-legend {
+  min-width: 220px;
+  color: #555;
+}
+.gradient-legend-bar {
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+}
+.point-legend {
+  color: #555;
+  font-size: 12px;
+}
+.point-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 20px;
+}
+.point-legend-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+}
+.point-legend-swatch i {
+  display: block;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0, 0, 0, 0.5);
+  opacity: 0.85;
+}
+.point-legend-swatch i.point-legend-line {
+  border-radius: 1px;
+  height: 4px;
+  width: 18px;
+  border: none;
+}
+.volcano-marker {
+  background: none;
+  border: none;
+}
+.legend-note {
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+.gradient-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 /* Custom Pulsing Marker Styles */
