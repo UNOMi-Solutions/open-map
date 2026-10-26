@@ -43,6 +43,7 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
+import OilDrillingMarkers from "./OilDrillingMarkers";
 
 // Natural disaster incidents data
 import NaturalDisasterIncidentMarkers from "./NaturalDisasterIncidentMarkers";
@@ -371,7 +372,8 @@ export default function LeafletMap({
   showConsentAgeData = false,
 
   /*toggle environmental information */
-  showOilSpills = false,  
+  showOilSpills = false,
+  showOilDrillingLocations = false,
   showAirQuality = false,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
@@ -418,6 +420,7 @@ export default function LeafletMap({
 
   showConsentAgeData?: boolean;
   showOilSpills?: boolean;
+  showOilDrillingLocations?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
   showWasteTreatmentDisposal?: boolean;
@@ -1668,7 +1671,9 @@ export default function LeafletMap({
 
         {/* Oil spill incidents – shown when Oil Spills is selected in sidebar */}
         {showOilSpills && <OilSpillMarkers setLoading={setLoading} />}
-
+        {showOilDrillingLocations && (
+        <OilDrillingMarkers setLoading={setLoading} />
+        )}
         {/* Natural disaster incidents – fetches only for the state selected */}
         {showNaturalDisasterIncidents && (
           <NaturalDisasterIncidentMarkers

@@ -742,6 +742,7 @@ export default function MainPage() {
 
                   showConsentAgeData={showConsentAgeData}
                   showOilSpills={selectedLayers.includes("oil-spills")}
+                  showOilDrillingLocations={selectedLayers.includes("oil-drilling-locations")}
                   showNaturalDisasterIncidents={selectedLayers.includes("natural-disaster-incidents")}
                   naturalDisasterIncidentTypes={selectedLayers
                     .filter((id) => id.startsWith("nd-type:"))

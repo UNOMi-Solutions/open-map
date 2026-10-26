@@ -126,6 +126,7 @@ export const NavigationMenuSection = ({
   // Category data for Environment section
   const environmentItems = [
     { id: "oil-spills", label: "Oil Spills" },
+    { id: "oil-drilling-locations", label: "Oil Drilling Locations" },
     { id: "data-centers", label: "Data Centers" },
     { id: "natural-disaster-incidents", label: "Natural Disaster Incidents" },
     { id: "air-quality", label: "Air Quality" },

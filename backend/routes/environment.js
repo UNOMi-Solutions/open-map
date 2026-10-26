@@ -747,4 +747,72 @@ router.get("/dataCenters", async (req, res) => {
         res.status(500).json({ error: err.message || "Failed to load data center data" });
     }
 })
+let oilDrillingLocationsCache = null;
+let oilDrillingLocationsCacheAt = 0;
+const OIL_DRILLING_LOCATIONS_CACHE_MS = 24 * 60 * 60 * 1000;
+
+router.get("/oilDrillingLocations", async (req, res) => {
+    try {
+        if (
+            !oilDrillingLocationsCache ||
+            Date.now() - oilDrillingLocationsCacheAt > OIL_DRILLING_LOCATIONS_CACHE_MS
+        ) {
+            const url = "https://gis.boem.gov/server/rest/services/BOEM_BSEE/MMC_Layers/MapServer/1/query";
+            const pageSize = 10000;
+            const features = [];
+            let offset = 0;
+
+            while (true) {
+                const response = await axios.get(url, {
+                    params: {
+                        where: "1=1",
+                        outFields: "OBJECTID,API_NUMBER,OPERATOR,WELL_NAME,SPUD_DATE,TYPE_CODE_DESC,STATUS_DESCRIPTION,DEPTH",
+                        returnGeometry: true,
+                        outSR: 4326,
+                        resultOffset: offset,
+                        resultRecordCount: pageSize,
+                        f: "geojson",
+                    },
+                    timeout: 60000,
+                });
+
+                const data = response.data;
+
+                if (data.error) {
+                    throw new Error(data.error.message || "BOEM query failed");
+                }
+
+                if (!Array.isArray(data.features)) {
+                    throw new Error("BOEM returned an unexpected response");
+                }
+
+                features.push(...data.features);
+
+                const hasMore =
+                    data.exceededTransferLimit === true ||
+                    data.properties?.exceededTransferLimit === true;
+
+                if (
+                    data.features.length === 0 ||
+                    (!hasMore && data.features.length < pageSize)
+                ) {
+                    break;
+                }
+
+                offset += data.features.length;
+            }
+
+            oilDrillingLocationsCache = {
+                type: "FeatureCollection",
+                features,
+            };
+            oilDrillingLocationsCacheAt = Date.now();
+        }
+
+        res.json(oilDrillingLocationsCache);
+    } catch (error) {
+        console.error("Oil drilling locations route error:", error);
+        res.status(502).json({ error: "Failed to fetch BOEM well locations" });
+    }
+});
 export default router;
