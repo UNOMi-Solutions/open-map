@@ -413,6 +413,7 @@ export const NavigationMenuSection = ({
 
   const politicalTopics = [
     { id: "senators", label: "Senators" },
+    { id: "billionaires", label: "Billionaires" },
     // { id: "mayors", label: "Mayors" },
     { id: "house", label: "House of Representatives" },
     // { id: "supreme-court", label: "Supreme Court" },
@@ -426,6 +427,7 @@ export const NavigationMenuSection = ({
 
   const wiredPoliticalMapIds = new Set([
     "senators",
+    "billionaires",
     "governors",
     "president",
     "vice-president",
