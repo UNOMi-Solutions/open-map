@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { Marker, Popup } from "react-leaflet";
+import { LayerGroup, Marker, Popup } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { CACHE_TTL, cachedApiGet } from "@/lib/apiCache";
 
@@ -245,7 +245,7 @@ export default function BillionaireMarkers({ setLoading }: BillionaireMarkersPro
   }, [setLoading]);
 
   return (
-    <>
+    <LayerGroup>
       {profiles.map((profile) => {
         const latitude = profile.residence?._geo?.latitude;
         const longitude = profile.residence?._geo?.longitude;
@@ -267,6 +267,6 @@ export default function BillionaireMarkers({ setLoading }: BillionaireMarkersPro
           />
         );
       })}
-    </>
+    </LayerGroup>
   );
 }
