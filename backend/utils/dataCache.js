@@ -21,12 +21,9 @@ export function getCached(key, ttlMs, fetchFn) {
     return data;
   })();
 
-  inFlight.set(
-    key,
-    promise.finally(() => inFlight.delete(key))
-  );
-
-  return promise;
+  const sharedPromise = promise.finally(() => inFlight.delete(key));
+  inFlight.set(key, sharedPromise);
+  return sharedPromise;
 }
 
 /**
