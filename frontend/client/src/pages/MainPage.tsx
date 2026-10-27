@@ -58,6 +58,9 @@ export default function MainPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedInvasiveYear, setSelectedInvasiveYear] = useState<string>("all");
+  const [selectedGroundwaterYear, setSelectedGroundwaterYear] =
+    useState<string>("all");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
   // Display name from the account settings page; empty until the user sets one.
@@ -885,6 +888,16 @@ export default function MainPage() {
                     return id ? Number(id.slice("dr-cat:".length)) : null;
                   })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showGroundwaterLevels={selectedLayers.includes("groundwater-levels")}
+                  selectedGroundwaterYear={selectedGroundwaterYear}
+                  showInvasiveSpecies={selectedLayers.includes("invasive-species")}
+                  showInvasivePlants={selectedLayers.includes("invasive-plants")}
+                  showInvasiveInsects={selectedLayers.includes("invasive-insects")}
+                  showInvasiveMammals={selectedLayers.includes("invasive-mammals")}
+                  showInvasiveReptiles={selectedLayers.includes("invasive-reptiles")}
+                  showInvasiveBirds={selectedLayers.includes("invasive-birds")}
+                  showInvasiveAmphibians={selectedLayers.includes("invasive-amphibians")}
+                  selectedInvasiveYear={selectedInvasiveYear}
                   showNoisePollution={selectedLayers.includes("noise-pollution")}
                   showRuralAccess={selectedLayers.includes("rural-access") }
                   ruralAccessYear={ruralAccessYear}
@@ -1120,6 +1133,10 @@ export default function MainPage() {
                   
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
+                  selectedInvasiveYear={selectedInvasiveYear}
+                  onSelectedInvasiveYearChange={setSelectedInvasiveYear}
+                  selectedGroundwaterYear={selectedGroundwaterYear}
+                  onSelectedGroundwaterYearChange={setSelectedGroundwaterYear}
                   politicalLayerIds={politicalLayerIds}
                   onPoliticalLayerToggle={handlePoliticalLayerToggle}
                   houseDistrictPartyMode={houseDistrictPartyMode}

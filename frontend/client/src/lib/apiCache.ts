@@ -23,6 +23,10 @@ export const CACHE_TTL = {
   LIVE_HAZARDS: 60 * 60 * 1000,
   /** Air quality — refresh more often. */
   AIR_QUALITY: 2 * 60 * 60 * 1000,
+  /** Groundwater measurements — refresh a few times per day. */
+  GROUNDWATER: 12 * 60 * 60 * 1000,
+  /** Invasive species occurrence data. */
+  INVASIVE_SPECIES: 24 * 60 * 60 * 1000,
   /** Politics - refreshes infrequently */
   POLITICS: 24 * 60 * 60 * 1000,
   /** NOISE POLLUTION - infrequently on a multi-year cycle */

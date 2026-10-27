@@ -48,6 +48,11 @@ import OilSpillMarkers from "./OilSpillMarkers";
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
+//Groundwater levels data
+import GroundwaterMarkers from "./GroundwaterMarkers";
+
+//Invasive Species data
+import InvasiveSpeciesMarkers from "./InvasiveSpeciesMarkers";
 // Noise pollution data
 import NoisePollutionLayer from "./NoisePollutionLayer";
 
@@ -56,6 +61,24 @@ import RuralAccessChoropleth from "./RuralAccessChoropleth";
 
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
+
+//Invasive Plants data
+import InvasivePlantMarkers from "./InvasivePlantMarkers";
+
+//Invasive Insects data
+import InvasiveInsectMarkers from "./InvasiveInsectMarkers";
+
+//Invasive Mammal data
+import InvasiveMammalMarkers from "./InvasiveMammalMarkers";
+
+//Invasive Reptile data
+import InvasiveReptileMarkers from "./InvasiveReptileMarkers";
+
+//Invasive Bird data
+import InvasiveBirdMarkers from "./InvasiveBirdMarkers";
+
+//Invasive Amphibians data
+import InvasiveAmphibianMarkers from "./InvasiveAmphibianMarkers";
 
 // Police Killing Data
 import PoliceKillings, { PoliceKillingQKey } from "./PoliceKillings";
@@ -387,6 +410,16 @@ export default function LeafletMap({
   /*toggle environmental information */
   showOilSpills = false,  
   showAirQuality = false,
+  showGroundwaterLevels = false,
+  selectedGroundwaterYear = "all",
+  showInvasiveSpecies = false,
+  showInvasivePlants = false,
+  showInvasiveInsects = false,
+  showInvasiveMammals = false,
+  showInvasiveReptiles = false,
+  showInvasiveBirds = false,
+  showInvasiveAmphibians = false,
+  selectedInvasiveYear = "all",
   showNoisePollution = false,
   showRuralAccess = false,
   ruralAccessYear = 2021,
@@ -453,6 +486,16 @@ export default function LeafletMap({
   showConsentAgeData?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
+  showGroundwaterLevels?: boolean;
+  selectedGroundwaterYear: string;
+  showInvasiveSpecies?: boolean;
+  showInvasivePlants?: boolean;
+  showInvasiveInsects?: boolean;
+  showInvasiveMammals?: boolean;
+  showInvasiveReptiles?: boolean;
+  showInvasiveBirds?: boolean;
+  showInvasiveAmphibians?: boolean;
+  selectedInvasiveYear?: string;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
   showRuralAccess?: boolean;  
@@ -1835,6 +1878,61 @@ export default function LeafletMap({
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
+        )}
+
+        {/* Groundwater levels */}
+        {showGroundwaterLevels && (
+          <GroundwaterMarkers
+            setLoading={setLoading}
+            selectedYear={selectedGroundwaterYear}
+          />
+        )}
+
+        {/* Invasive species */}
+        {showInvasiveSpecies && (
+          <InvasiveSpeciesMarkers setLoading={setLoading} selectedYear={selectedInvasiveYear}/>
+        )}
+
+        {showInvasivePlants && (
+          <InvasivePlantMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveInsects && (
+          <InvasiveInsectMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveMammals && (
+          <InvasiveMammalMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveReptiles && (
+          <InvasiveReptileMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveBirds && (
+          <InvasiveBirdMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveAmphibians && (
+          <InvasiveAmphibianMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
         )}
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}
