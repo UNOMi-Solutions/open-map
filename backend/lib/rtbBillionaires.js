@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getCached, mapWithConcurrency } from "../utils/dataCache.js";
 
-const RTB_BASE_URL = "https://cdn.statically.io/gh/komed3/rtb-api/main/api";
+const RTB_BASE_URL = "https://cdn.statically.io/gh/komed3/rtb-api/main/api/v1";
 
 const CACHE_KEY = "rtb:billionaires:US:profiles";
 const CACHE_MS = 24 * 60 * 60 * 1000;
@@ -71,9 +71,8 @@ async function getJson(client, url) {
 export async function fetchUsBillionaireProfiles(
   client = axios
 ) {
-  // V2 COUNTRY FILTER
   const filterUrl =
-    `${RTB_BASE_URL}/filter/country/US.json`;
+    `${RTB_BASE_URL}/filter/country/us`;
 
   const filterData = await getJson(client, filterUrl);
 
@@ -111,10 +110,9 @@ export async function fetchUsBillionaireProfiles(
     eligiblePeople,
     PROFILE_CONCURRENCY,
     async ({ uri }) => {
-      // V2 PROFILE ENDPOINT
       const profileUrl =
         `${RTB_BASE_URL}/profile/` +
-        `${encodeURIComponent(uri)}/profile.json`;
+        `${uri}/info`;
 
       try {
         const profile = await getJson(
