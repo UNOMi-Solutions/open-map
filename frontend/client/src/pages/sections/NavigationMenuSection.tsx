@@ -57,6 +57,10 @@ interface NavigationMenuSectionProps {
   onToggleConsentAgeData: () => void;
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
+  selectedGroundwaterYear: string;
+  onSelectedGroundwaterYearChange: (year: string) => void;
+  selectedInvasiveYear: string;
+  onSelectedInvasiveYearChange: (year: string) => void;
   selectedAgeGroupId: string | null;
   onSelectedAgeGroupChange: (ageGroupId: string | null) => void;
   selectedRaceCensusId: string;
@@ -111,6 +115,10 @@ export const NavigationMenuSection = ({
   onToggleConsentAgeData,
   selectedLayers = [],
   onLayerToggle,
+  selectedGroundwaterYear,
+  onSelectedGroundwaterYearChange,
+  selectedInvasiveYear,
+  onSelectedInvasiveYearChange,
   selectedAgeGroupId,
   onSelectedAgeGroupChange,
   selectedRaceCensusId,
@@ -131,7 +139,6 @@ export const NavigationMenuSection = ({
     { id: "air-quality", label: "Air Quality" },
     { id: "pollen-risk", label: "Pollen Risk"},
     { id: "groundwater-levels", label: "Groundwater Levels" },
-    { id: "invasive-species", label: "Invasive Aquatic Species" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
     // { id: "toxic-spills", label: "Toxic Spills" },
@@ -412,6 +419,35 @@ export const NavigationMenuSection = ({
                       {item.label}
                     </label>
                   </div>
+
+                  {item.id === "groundwater-levels" &&
+                    selectedLayers.includes("groundwater-levels") && (
+                      <div className="ml-8 mt-2 mb-2">
+                        <label className="text-white text-[12px] font-normal [font-family:'Futura PT'] mr-2">
+                          Year:
+                        </label>
+
+                        <select
+                          value={selectedGroundwaterYear}
+                          onChange={(e) =>
+                            onSelectedGroundwaterYearChange(e.target.value)
+                          }
+                          className="bg-white text-black text-[12px] rounded px-2 py-1"
+                        >
+                          <option value="all">All Years</option>
+
+                          {Array.from(
+                            { length: new Date().getFullYear() - 1970 + 1 },
+                            (_, i) => new Date().getFullYear() - i
+                          ).map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )} 
+
                   {/* Sub-filters for Natural Disaster Incidents – show only when layer is enabled */}
                   {item.id === "natural-disaster-incidents" && selectedLayers.includes("natural-disaster-incidents") && (
                     <div className="ml-6 mt-2 mb-2">
@@ -440,6 +476,177 @@ export const NavigationMenuSection = ({
                   )}
                 </div>
               ))}
+
+                    
+                    {/* new Invasive Species block here */}
+                    <div className="mt-3">
+                      <div className="flex items-center mt-1.5">
+                        <Checkbox
+                          id="invasive-species-group"
+                          className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                          checked={selectedLayers.includes("invasive-species-group")}
+                          onCheckedChange={(checked) =>
+                            onLayerToggle?.("invasive-species-group", checked === true)
+                          }
+                        />
+
+                        <label
+                          htmlFor="invasive-species-group"
+                          className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                        >
+                          Invasive Species
+                        </label>
+                      </div>
+                      {selectedLayers.includes("invasive-species-group") && (
+                        <div className="ml-4 mt-1.5">
+
+                          <div className="ml-8 mt-2 mb-2">
+                            <label className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                              Year:
+                            </label>
+
+                            <select
+                              value={selectedInvasiveYear}
+                              onChange={(e) =>
+                                onSelectedInvasiveYearChange(e.target.value)
+                              }
+                              className="bg-white text-black text-[11px] rounded px-2 py-1"
+                            >
+                              <option value="all">All Years</option>
+
+                              {Array.from(
+                                { length: new Date().getFullYear() - 1970 + 1 },
+                                (_, i) => new Date().getFullYear() - i
+                              ).map((year) => (
+                                <option key={year} value={year}>
+                                  {year}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                        <div className="flex items-center">
+                          <Checkbox
+                            id="invasive-species"
+                            className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                            checked={selectedLayers.includes("invasive-species")}
+                            onCheckedChange={(checked) =>
+                              onLayerToggle?.("invasive-species", checked === true)
+                            }
+                          />
+                          <label
+                            htmlFor="invasive-species"
+                            className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
+                          >
+                            Aquatic
+                          </label>
+                        </div>
+
+                        <div className="flex items-center mt-1.5">
+                          <Checkbox
+                            id="invasive-plants"
+                            className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                            checked={selectedLayers.includes("invasive-plants")}
+                            onCheckedChange={(checked) =>
+                              onLayerToggle?.("invasive-plants", checked === true)
+                            }
+                          />
+                          <label
+                            htmlFor="invasive-plants"
+                            className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
+                          >
+                            Plants
+                          </label>
+                        </div>
+
+                          <div className="flex items-center mt-1.5">
+                            <Checkbox
+                              id="invasive-insects"
+                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                              checked={selectedLayers.includes("invasive-insects")}
+                              onCheckedChange={(checked) =>
+                                onLayerToggle?.("invasive-insects", checked === true)
+                              }
+                            />
+                            <label
+                              htmlFor="invasive-insects"
+                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
+                            >
+                              Insects
+                            </label>
+                          </div>
+
+                          <div className="flex items-center mt-1.5">
+                            <Checkbox
+                              id="invasive-reptiles"
+                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                              checked={selectedLayers.includes("invasive-reptiles")}
+                              onCheckedChange={(checked) =>
+                                onLayerToggle?.("invasive-reptiles", checked === true)
+                              }
+                            />
+                            <label
+                              htmlFor="invasive-reptiles"
+                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
+                            >
+                              Reptiles
+                            </label>
+                          </div>
+
+                          <div className="flex items-center mt-1.5">
+                            <Checkbox
+                              id="invasive-birds"
+                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                              checked={selectedLayers.includes("invasive-birds")}
+                              onCheckedChange={(checked) =>
+                                onLayerToggle?.("invasive-birds", checked === true)
+                              }
+                            />
+                            <label
+                              htmlFor="invasive-birds"
+                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
+                            >
+                              Birds
+                            </label>
+                          </div>
+
+                          <div className="flex items-center mt-1.5">
+                            <Checkbox
+                              id="invasive-amphibians"
+                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                              checked={selectedLayers.includes("invasive-amphibians")}
+                              onCheckedChange={(checked) =>
+                                onLayerToggle?.("invasive-amphibians", checked === true)
+                              }
+                            />
+                            <label
+                              htmlFor="invasive-amphibians"
+                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
+                            >
+                              Amphibians
+                            </label>
+                          </div>
+
+                          <div className="flex items-center mt-1.5">
+                            <Checkbox
+                              id="invasive-mammals"
+                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                              checked={selectedLayers.includes("invasive-mammals")}
+                              onCheckedChange={(checked) =>
+                                onLayerToggle?.("invasive-mammals", checked === true)
+                              }
+                            />
+                            <label
+                              htmlFor="invasive-mammals"
+                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
+                            >
+                              Mammals
+                            </label>
+                          </div>
+
+                      </div>
+                      )}
+                    </div>
             </div>
           </AccordionContent>
         </AccordionItem>

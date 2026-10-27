@@ -59,6 +59,24 @@ import InvasiveSpeciesMarkers from "./InvasiveSpeciesMarkers";
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
+//Invasive Plants data
+import InvasivePlantMarkers from "./InvasivePlantMarkers";
+
+//Invasive Insects data
+import InvasiveInsectMarkers from "./InvasiveInsectMarkers";
+
+//Invasive Mammal data
+import InvasiveMammalMarkers from "./InvasiveMammalMarkers";
+
+//Invasive Reptile data
+import InvasiveReptileMarkers from "./InvasiveReptileMarkers";
+
+//Invasive Bird data
+import InvasiveBirdMarkers from "./InvasiveBirdMarkers";
+
+//Invasive Amphibians data
+import InvasiveAmphibianMarkers from "./InvasiveAmphibianMarkers";
+
 // Police Killing Data
 import PoliceKillings, { PoliceKillingQKey } from "./PoliceKillings";
 
@@ -377,7 +395,15 @@ export default function LeafletMap({
   showOilSpills = false,  
   showAirQuality = false,
   showGroundwaterLevels = false,
+  selectedGroundwaterYear = "all",
   showInvasiveSpecies = false,
+  showInvasivePlants = false,
+  showInvasiveInsects = false,
+  showInvasiveMammals = false,
+  showInvasiveReptiles = false,
+  showInvasiveBirds = false,
+  showInvasiveAmphibians = false,
+  selectedInvasiveYear = "all",
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showNaturalDisasterIncidents = false,
@@ -423,7 +449,15 @@ export default function LeafletMap({
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGroundwaterLevels?: boolean;
+  selectedGroundwaterYear: string;
   showInvasiveSpecies?: boolean;
+  showInvasivePlants?: boolean;
+  showInvasiveInsects?: boolean;
+  showInvasiveMammals?: boolean;
+  showInvasiveReptiles?: boolean;
+  showInvasiveBirds?: boolean;
+  showInvasiveAmphibians?: boolean;
+  selectedInvasiveYear?: string;
   showGHGEmissions?: boolean;
   showWasteTreatmentDisposal?: boolean;
   showNaturalDisasterIncidents?: boolean;
@@ -1693,12 +1727,57 @@ export default function LeafletMap({
 
         {/* Groundwater levels */}
         {showGroundwaterLevels && (
-          <GroundwaterMarkers setLoading={setLoading} />
+          <GroundwaterMarkers
+            setLoading={setLoading}
+            selectedYear={selectedGroundwaterYear}
+          />
         )}
 
         {/* Invasive species */}
         {showInvasiveSpecies && (
-          <InvasiveSpeciesMarkers setLoading={setLoading} />
+          <InvasiveSpeciesMarkers setLoading={setLoading} selectedYear={selectedInvasiveYear}/>
+        )}
+
+        {showInvasivePlants && (
+          <InvasivePlantMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveInsects && (
+          <InvasiveInsectMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveMammals && (
+          <InvasiveMammalMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveReptiles && (
+          <InvasiveReptileMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveBirds && (
+          <InvasiveBirdMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveAmphibians && (
+          <InvasiveAmphibianMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
         )}
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}
