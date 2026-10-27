@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import MarkerCompound from "./MarkerCompound";
 
 /** Green marker icon for waste treatment/disposal sites */
 const WASTE_TREATMENT_ICON = L.divIcon({
@@ -130,19 +131,14 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteT
   const [siteData, setSiteData] = useState<ParsedFacility[]>([]);
 
   useEffect(() => {
-    if (!selectedStateCode) {
-      setSiteData([]);
-      setLoading(false);
-      return;
-    }
     setSiteData([]);
     setLoading(true);
 
     let cancelled = false;
-    const path = `/api/v1/environment/wasteTreatmentDisposalSites?stateCode=${encodeURIComponent(selectedStateCode)}`;
+    const path = `/api/v1/environment/wasteTreatmentDisposalSites`;
 
     cachedApiGet<unknown>(
-      `environment:wasteTreatment:${selectedStateCode}`,
+      `environment:wasteTreatment`,
       path,
       CACHE_TTL.ENVIRONMENT_STATE,
     )
@@ -204,10 +200,10 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteT
     return () => {
       cancelled = true;
     };
-  }, [selectedStateCode]);
+  }, []);
 
   return (
-    <>
+    <MarkerCompound>
       {siteData.map((site) => (
         <Marker key={site.id} position={[site.lat, site.lon]} icon={WASTE_TREATMENT_ICON}>
           {(
@@ -225,7 +221,7 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteT
           )}
         </Marker>
       ))}
-    </>
+    </MarkerCompound>
   );
 };
 

@@ -19,6 +19,8 @@ export const CACHE_TTL = {
   ENVIRONMENT_GLOBAL: 24 * 60 * 60 * 1000,
   /** Per-state environment datasets. */
   ENVIRONMENT_STATE: 12 * 60 * 60 * 1000,
+  /** Earthquakes, wildfires, volcano alerts — sources publish updates within minutes to hours. */
+  LIVE_HAZARDS: 60 * 60 * 1000,
   /** Air quality — refresh more often. */
   AIR_QUALITY: 2 * 60 * 60 * 1000,
   /** Groundwater measurements — refresh a few times per day. */
@@ -27,6 +29,11 @@ export const CACHE_TTL = {
   INVASIVE_SPECIES: 24 * 60 * 60 * 1000,
   /** Politics - refreshes infrequently */
   POLITICS: 24 * 60 * 60 * 1000,
+  /** NOISE POLLUTION - infrequently on a multi-year cycle */
+  NOISE_TRANSPORTATION: 7 * 24 * 60 * 60 * 1000,
+  /** BTS rural access to intercity transportation — multi-year release cycle. */
+  RURAL_ACCESS: 30 * 24 * 60 * 60 * 1000,
+  TEST: 24 * 60
 } as const;
 
 function storageKey(key: string): string {

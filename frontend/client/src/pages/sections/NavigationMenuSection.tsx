@@ -16,6 +16,13 @@ import {
 
 import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
+import {
+  INCIDENT_MENU_ID,
+  INCIDENT_TYPE_IDS,
+  PATH_INCIDENT_LAYERS,
+  POINT_INCIDENT_LAYERS,
+  STORM_INCIDENT_LAYERS,
+} from "@/lib/disaster-incidents";
 
 interface NavigationMenuSectionProps {
   searchQuery: string;
@@ -131,18 +138,28 @@ export const NavigationMenuSection = ({
   onHouseDistrictPartyModeChange,
   onResetAllFilters,
 }: NavigationMenuSectionProps): JSX.Element => {
-  // Category data for Environment section
-  const environmentItems = [
+  type LayerOption = { id: string; label: string };
+  type SubFilter = { heading: string; options: LayerOption[] };
+
+  const environmentItems: LayerOption[] = [
     { id: "oil-spills", label: "Oil Spills" },
     { id: "data-centers", label: "Data Centers" },
-    { id: "natural-disaster-incidents", label: "Natural Disaster Incidents" },
+    { id: "national-risk-index", label: "Disaster Risk (FEMA NRI)" },
+    { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },
     { id: "air-quality", label: "Air Quality" },
     { id: "pollen-risk", label: "Pollen Risk"},
     { id: "groundwater-levels", label: "Groundwater Levels" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
+    
     // { id: "toxic-spills", label: "Toxic Spills" },
     // { id: "toxic-area", label: "Toxic Area" },
+  ];
+
+  // Category data for Transportation section
+  const transportationItems = [
+    { id: "rural-access", label: "Rural Access to Intercity Transportation" },
   ];
 
   // Sub-filters for Natural Disaster Incidents (matches backend incident types)
@@ -165,6 +182,167 @@ export const NavigationMenuSection = ({
     { id: "nd-type:Biological", label: "Biological" },
     { id: "nd-type:Other", label: "Other" },
   ];
+
+  const incidentTypeItems: LayerOption[] = [
+    ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+  ];
+
+  const incidentMenuOpen =
+    selectedLayers.includes(INCIDENT_MENU_ID) ||
+    selectedLayers.some((id) => INCIDENT_TYPE_IDS.has(id));
+
+  const nationalRiskIndexHazards: LayerOption[] = [
+    { id: "nri-hz:AVLN", label: "Avalanche" },
+    { id: "nri-hz:CFLD", label: "Coastal Flooding" },
+    { id: "nri-hz:CWAV", label: "Cold Wave" },
+    { id: "nri-hz:DRGT", label: "Drought" },
+    { id: "nri-hz:ERQK", label: "Earthquake" },
+    { id: "nri-hz:HAIL", label: "Hail" },
+    { id: "nri-hz:HWAV", label: "Heat Wave" },
+    { id: "nri-hz:HRCN", label: "Hurricane" },
+    { id: "nri-hz:ISTM", label: "Ice Storm" },
+    { id: "nri-hz:IFLD", label: "Inland Flooding" },
+    { id: "nri-hz:LNDS", label: "Landslide" },
+    { id: "nri-hz:LTNG", label: "Lightning" },
+    { id: "nri-hz:SWND", label: "Strong Wind" },
+    { id: "nri-hz:TRND", label: "Tornado" },
+    { id: "nri-hz:TSUN", label: "Tsunami" },
+    { id: "nri-hz:VLCN", label: "Volcanic Activity" },
+    { id: "nri-hz:WFIR", label: "Wildfire" },
+    { id: "nri-hz:WNTW", label: "Winter Weather" },
+  ];
+
+  const earthquakeMagnitudeFilters: LayerOption[] = [
+    { id: "eq-mag:3", label: "M3+" },
+    { id: "eq-mag:4", label: "M4+" },
+    { id: "eq-mag:5", label: "M5+" },
+  ];
+
+  const volcanoAlertFilters: LayerOption[] = [
+    { id: "vo-alert:ADVISORY", label: "Advisory+" },
+    { id: "vo-alert:WATCH", label: "Watch+" },
+    { id: "vo-alert:WARNING", label: "Warning" },
+  ];
+
+  const wildfireAcreFilters: LayerOption[] = [
+    { id: "wf-acres:1000", label: "1K+ acres" },
+    { id: "wf-acres:10000", label: "10K+ acres" },
+    { id: "wf-acres:100000", label: "100K+ acres" },
+  ];
+
+  const droughtCategoryFilters: LayerOption[] = [
+    { id: "dr-cat:0", label: "D0 Abnormally Dry+" },
+    { id: "dr-cat:1", label: "D1 Moderate+" },
+    { id: "dr-cat:2", label: "D2 Severe+" },
+    { id: "dr-cat:3", label: "D3 Extreme+" },
+    { id: "dr-cat:4", label: "D4 Exceptional" },
+  ];
+
+  const environmentSubFilters: Record<string, SubFilter> = {
+    "national-risk-index": { heading: "Filter by hazard:", options: nationalRiskIndexHazards },
+    earthquakes: { heading: "Minimum magnitude:", options: earthquakeMagnitudeFilters },
+    volcanoes: { heading: "Minimum alert:", options: volcanoAlertFilters },
+    wildfires: { heading: "Minimum size:", options: wildfireAcreFilters },
+    drought: { heading: "Drought category:", options: droughtCategoryFilters },
+  };
+
+  const renderSubFilters = (itemId: string, subFilters: Record<string, SubFilter>) =>
+    subFilters[itemId] && selectedLayers.includes(itemId) ? (
+      <div className="ml-6 mt-2 mb-2">
+        <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+          {subFilters[itemId].heading}
+        </span>
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
+          {subFilters[itemId].options.map((sub) => (
+            <div key={sub.id} className="flex items-center mt-0.5">
+              <Checkbox
+                id={sub.id}
+                className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                checked={selectedLayers.includes(sub.id)}
+                onCheckedChange={(checked) => onLayerToggle?.(sub.id, checked === true)}
+              />
+              <label
+                htmlFor={sub.id}
+                className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+              >
+                {sub.label}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null;
+
+  const renderLayerList = (items: LayerOption[], subFilters: Record<string, SubFilter>) => (
+    <div className="ml-4">
+      {items.map((item) =>
+        item.id === INCIDENT_MENU_ID ? (
+          <div key={item.id}>
+            <div className="flex items-center mt-1.5">
+              <Checkbox
+                id={item.id}
+                className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                checked={incidentMenuOpen}
+                onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
+              />
+              <label
+                htmlFor={item.id}
+                className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+              >
+                {item.label}
+              </label>
+            </div>
+            {incidentMenuOpen && (
+              <div className="ml-6 mt-2 mb-2">
+                <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                  Choose a type to show on the map:
+                </span>
+                {incidentTypeItems.map((type) => (
+                  <div key={type.id}>
+                    <div className="flex items-center mt-1">
+                      <Checkbox
+                        id={type.id}
+                        className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                        checked={selectedLayers.includes(type.id)}
+                        onCheckedChange={(checked) => onLayerToggle?.(type.id, checked === true)}
+                      />
+                      <label
+                        htmlFor={type.id}
+                        className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+                      >
+                        {type.label}
+                      </label>
+                    </div>
+                    {renderSubFilters(type.id, subFilters)}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div key={item.id}>
+            <div className="flex items-center mt-1.5">
+              <Checkbox
+                id={item.id}
+                className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                checked={selectedLayers.includes(item.id)}
+                onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
+              />
+              <label
+                htmlFor={item.id}
+                className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+              >
+                {item.label}
+              </label>
+            </div>
+            {renderSubFilters(item.id, subFilters)}
+          </div>
+        ),
+      )}
+    </div>
+  );
 
   // Health category items (checkbox state via selectedLayers; map layers not wired yet)
   const healthItems = [
@@ -402,6 +580,19 @@ export const NavigationMenuSection = ({
             </div>
           </AccordionTrigger>
           <AccordionContent className="pt-0 pb-0">
+            {renderLayerList(environmentItems, environmentSubFilters)}
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="transportation" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Transportation
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
             <div className="ml-4">
               {environmentItems.map((item) => (
                 <div key={item.id}>
@@ -474,6 +665,20 @@ export const NavigationMenuSection = ({
                       </div>
                     </div>
                   )}
+              {transportationItems.map((item) => (
+                <div key={item.id} className="flex items-center mt-1.5">
+                  <Checkbox
+                    id={item.id}
+                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                    checked={selectedLayers.includes(item.id)}
+                    onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
+                  />
+                  <label
+                    htmlFor={item.id}
+                    className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                  >
+                    {item.label}
+                  </label>
                 </div>
               ))}
 
@@ -650,7 +855,6 @@ export const NavigationMenuSection = ({
             </div>
           </AccordionContent>
         </AccordionItem>
-
         <AccordionItem value="crime" className="border-0">
           <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
             <div className="flex items-center">
@@ -934,6 +1138,17 @@ export const NavigationMenuSection = ({
                 </> : null
                 
               }
+            <div className="mt-2 flex items-center left">
+              <Checkbox
+                className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                checked={selectedLayers.includes("flock-cameras")}
+                onCheckedChange={(checked) => onLayerToggle?.("flock-cameras", checked === true)}
+              />
+
+              <span className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
+                Flock Cameras
+              </span>
+            </div>
             </div>
           </AccordionContent>
         </AccordionItem>

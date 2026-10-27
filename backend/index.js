@@ -37,6 +37,8 @@ import socialRoutes from "./routes/social.js";
 import stripeRoutes from "./routes/stripe.js";
 import stripeWebhook from "./routes/stripeWebhook.js";
 import profileRoutes from "./routes/profiles.js";
+import transportationRoutes from "./routes/transportation.js"; 
+import flockRoutes from "./routes/flock.js";
 
 // Connect to MongoDB
 connectDB();
@@ -160,6 +162,8 @@ app.use("/api/v1/health", auth, healthRoutes);
 app.use("/api/v1/lawEnforcement", auth, lawEnforcementRoutes);
 app.use("/api/v1/politics", auth, politicsRoutes);
 app.use("/api/v1/social", auth, socialRoutes);
+app.use("/api/v1/transportation", auth, transportationRoutes); // optional key for more frequent requests
+app.use("/api/v1/flock", auth, flockRoutes);
 
 // Stripe checkout routes (API-key protected, like the data routes).
 // The webhook is mounted separately above (before JSON parsing).
