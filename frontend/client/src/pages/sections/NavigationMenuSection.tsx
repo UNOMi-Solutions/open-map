@@ -828,7 +828,7 @@ export const NavigationMenuSection = ({
                   checked={showPoliceKillingData}
                   onCheckedChange={() =>
                     onTogglePoliceKillingData()
-                  }                  
+                  }
                   className="h-4 w-4 border border-white/70 bg-white/10 text-white"
                 />
 
@@ -861,7 +861,7 @@ export const NavigationMenuSection = ({
                       }
                     ).reverse()}
                   </select>
-              
+
                   <select
                     className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
                     onChange={(e) =>
@@ -884,7 +884,6 @@ export const NavigationMenuSection = ({
                       </option>
                   </select>
                 </> : null
-                
               }
             <div className="mt-2 flex items-center left">
               <Checkbox
@@ -897,6 +896,44 @@ export const NavigationMenuSection = ({
                 Flock Cameras
               </span>
             </div>
+            </div>
+
+            <div className="ml-4">
+              <div className="mt-2 flex items-center">
+                <Checkbox
+                  id="alpr-cameras"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={selectedLayers.includes("alpr-cameras")}
+                  onCheckedChange={(checked) => onLayerToggle?.("alpr-cameras", checked === true)}
+                />
+                <label
+                  htmlFor="alpr-cameras"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]"
+                >
+                  ALPR Cameras
+                </label>
+              </div>
+              {selectedLayers.includes("alpr-cameras") && (
+                <p className="ml-[31px] mt-1 text-[11px] text-white/60 leading-snug [font-family:'Futura PT']">
+                  OpenStreetMap. Visible at any zoom.
+                </p>
+              )}
+              {selectedLayers.includes("alpr-cameras") && (
+                <div className="ml-6 mt-2 mb-1 flex items-center">
+                  <Checkbox
+                    id="alpr-flock-only"
+                    className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                    checked={selectedLayers.includes("alpr-flock-only")}
+                    onCheckedChange={(checked) => onLayerToggle?.("alpr-flock-only", checked === true)}
+                  />
+                  <label
+                    htmlFor="alpr-flock-only"
+                    className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+                  >
+                    Flock Safety only
+                  </label>
+                </div>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>

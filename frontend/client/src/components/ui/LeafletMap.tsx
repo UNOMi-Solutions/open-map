@@ -88,6 +88,7 @@ import CongressionalDistrictsLayer from "./CongressionalDistrictsLayer";
 import HouseMarkers from "./HouseMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
+import AlprCameraMarkers from "./AlprCameraMarkers";
 
 // Flock cameras
 import FlockMarkers from "./FlockMarkers";
@@ -383,6 +384,8 @@ export default function LeafletMap({
   missingPersonYear = 2026,
 
   showConsentAgeData = false,
+  showAlprCameras = false,
+  alprFlockOnly = false,
 
   /*toggle environmental information */
   showOilSpills = false,  
@@ -451,6 +454,9 @@ export default function LeafletMap({
   missingPersonYear?: any;
 
   showConsentAgeData?: boolean;
+  /** OpenStreetMap ALPR cameras, including Flock Safety */
+  showAlprCameras?: boolean;
+  alprFlockOnly?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
@@ -1867,6 +1873,10 @@ export default function LeafletMap({
           timelineRange={timelineRange}
           onDateRangeChange={onDateRangeChange}
         />
+
+        {showAlprCameras && (
+          <AlprCameraMarkers flockOnly={alprFlockOnly} setLoading={setLoading} />
+        )}
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
