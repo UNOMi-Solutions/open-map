@@ -810,6 +810,8 @@ export default function MainPage() {
                   missingPersonYear={missingPersonYear}
 
                   showConsentAgeData={showConsentAgeData}
+                  showAlprCameras={selectedLayers.includes("alpr-cameras")}
+                  alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
                   showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
                   nationalRiskIndexHazard={

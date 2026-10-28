@@ -81,6 +81,7 @@ import CongressionalDistrictsLayer from "./CongressionalDistrictsLayer";
 import HouseMarkers from "./HouseMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
+import AlprCameraMarkers from "./AlprCameraMarkers";
 
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
@@ -373,6 +374,8 @@ export default function LeafletMap({
   missingPersonYear = 2026,
 
   showConsentAgeData = false,
+  showAlprCameras = false,
+  alprFlockOnly = false,
 
   /*toggle environmental information */
   showOilSpills = false,  
@@ -434,6 +437,9 @@ export default function LeafletMap({
   missingPersonYear?: any;
 
   showConsentAgeData?: boolean;
+  /** OpenStreetMap ALPR cameras, including Flock Safety */
+  showAlprCameras?: boolean;
+  alprFlockOnly?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
@@ -1779,6 +1785,10 @@ export default function LeafletMap({
           PoliceKillingYear={PoliceKillingYear}
           showPoliceKillingData={showPoliceKillingData}
           ></PoliceKillings>
+
+        {showAlprCameras && (
+          <AlprCameraMarkers flockOnly={alprFlockOnly} setLoading={setLoading} />
+        )}
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
