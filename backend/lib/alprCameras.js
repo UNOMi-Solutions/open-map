@@ -1,10 +1,12 @@
 // License-plate readers from OpenStreetMap, via the public Overpass API.
 // Cameras are tagged surveillance:type=ALPR (ANPR is the British name for the same thing).
-// A single nationwide query times out, so the country is loaded one area at a time, cached
-// on disk, and drawn at every zoom. Wide views get clusters; close views get each camera.
+// A nationwide query times out, so the country is loaded one area at a time and cached.
+// A saved copy is drawn immediately. With nothing saved, the first map view is downloaded
+// before the rest of the country, instead of always starting in Georgia.
 import axios from "axios";
 import fs from "fs/promises";
 import path from "path";
+import zlib from "zlib";
 import { fileURLToPath } from "url";
 
 const USER_AGENT = "OpenMap/1.0";
@@ -15,10 +17,18 @@ const OVERPASS_ENDPOINTS = [
 ];
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REGION_TTL_MS = 24 * 60 * 60 * 1000;
+const PARTIAL_TTL_MS = 30 * 60 * 1000;
+// The public Overpass instances allow two queries at a time.
+const LANES = 2;
+const REGION_PAUSE_MS = 400;
+const VIEW_WAIT_MS = 8000;
 
-const CACHE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "cache", "alpr");
+const LIB_DIR = path.dirname(fileURLToPath(import.meta.url));
+const CACHE_DIR = path.join(LIB_DIR, "..", "cache", "alpr");
 const REGION_DIR = path.join(CACHE_DIR, "regions");
 const DATASET_FILE = path.join(CACHE_DIR, "dataset.json");
+const SEED_FILE = path.join(LIB_DIR, "..", "data", "alpr-seed.json");
+const SEED_GZ = path.join(LIB_DIR, "..", "data", "alpr-seed.json.gz");
 
 function box(name, south, west, north, east) {
   return { name, south, west, north, east };
@@ -84,15 +94,101 @@ const REGIONS = [
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+let byId = new Map();
 let cameras = [];
-let complete = false;
+let grid = new Map();
+let servingComplete = false;
+let needsRefresh = false;
 let partial = false;
 let buildPromise = null;
 let retryAfter = 0;
+let queueReady = false;
+let active = 0;
+let refreshFailed = false;
+let hotBounds = null;
+let hotKey = "";
 const progress = { done: 0, total: REGIONS.length, error: null };
+const finished = new Set();
+const jobs = new Set();
+const listeners = new Set();
+let queue = [];
+let memoryPromise = null;
+let viewWaiters = 0;
+let hurryResolvers = [];
 
 function fresh(cachedAt, ttl) {
   return cachedAt && Date.now() - cachedAt < ttl;
+}
+
+function intersects(region, bounds) {
+  return region.south <= bounds.north && region.north >= bounds.south
+    && region.west <= bounds.east && region.east >= bounds.west;
+}
+
+function contains(region, camera) {
+  return camera.lat >= region.south && camera.lat <= region.north
+    && camera.lon >= region.west && camera.lon <= region.east;
+}
+
+function notify() {
+  for (const fn of [...listeners]) fn();
+}
+
+function waitFor(predicate, ms) {
+  if (predicate()) return Promise.resolve();
+  return new Promise((resolve) => {
+    let done = false;
+    const timer = setTimeout(() => finish(), ms);
+    function check() {
+      if (predicate()) finish();
+    }
+    function finish() {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      listeners.delete(check);
+      resolve();
+    }
+    listeners.add(check);
+  });
+}
+
+function waitForQueue(ms) {
+  if (queue.length > 0) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    let done = false;
+    const timer = setTimeout(() => finish(false), ms);
+    function check() {
+      if (queue.length > 0) finish(true);
+      else if (active === 0) finish(false);
+    }
+    function finish(value) {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      listeners.delete(check);
+      resolve(value);
+    }
+    listeners.add(check);
+  });
+}
+
+function pause(ms) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(finish, ms);
+    function finish() {
+      clearTimeout(timer);
+      hurryResolvers = hurryResolvers.filter((fn) => fn !== finish);
+      resolve();
+    }
+    hurryResolvers.push(finish);
+  });
+}
+
+function requestHurry() {
+  const pending = hurryResolvers;
+  hurryResolvers = [];
+  for (const fn of pending) fn();
 }
 
 async function readJson(file) {
@@ -120,15 +216,28 @@ function buildQuery(region) {
 out center;`;
 }
 
-async function overpass(query) {
+function isAbort(err) {
+  return err?.code === "ERR_CANCELED" || err?.name === "AbortError" || err?.name === "CanceledError";
+}
+
+function abortError() {
+  const err = new Error("aborted");
+  err.code = "ERR_CANCELED";
+  err.name = "AbortError";
+  return err;
+}
+
+async function overpass(query, signal) {
   let lastError = null;
   for (const endpoint of OVERPASS_ENDPOINTS) {
+    if (signal?.aborted) throw abortError();
     try {
       const { data, status } = await axios.post(
         endpoint,
         new URLSearchParams({ data: query }).toString(),
         {
           timeout: 75000,
+          signal,
           responseType: "text",
           maxContentLength: 40 * 1024 * 1024,
           headers: {
@@ -145,6 +254,7 @@ async function overpass(query) {
         `Overpass ${new URL(endpoint).host} HTTP ${status}: ${body.replace(/\s+/g, " ").slice(0, 160)}`
       );
     } catch (err) {
+      if (isAbort(err) || signal?.aborted) throw abortError();
       lastError = err;
     }
   }
@@ -214,103 +324,335 @@ function splitRegion(region) {
   ];
 }
 
-async function fetchRegion(region, depth) {
+async function fetchRegion(region, depth, signal) {
   try {
-    return parseOverpassCsv(await overpass(buildQuery(region)));
+    return parseOverpassCsv(await overpass(buildQuery(region), signal));
   } catch (err) {
+    if (isAbort(err) || signal?.aborted) throw abortError();
     if (depth >= 2 || !shouldSplit(err)) throw err;
     console.warn(`[alpr] ${region.name} split (${String(err.message).slice(0, 120)})`);
     const camerasOut = [];
     for (const half of splitRegion(region)) {
-      await sleep(500);
-      camerasOut.push(...(await fetchRegion(half, depth + 1)));
+      if (signal?.aborted) throw abortError();
+      await sleep(400);
+      if (signal?.aborted) throw abortError();
+      camerasOut.push(...(await fetchRegion(half, depth + 1, signal)));
     }
     return camerasOut;
   }
 }
 
-async function readRegion(name) {
+async function readRegionFile(name) {
   const saved = await readJson(path.join(REGION_DIR, `${name}.json`));
-  if (!saved || !Array.isArray(saved.cameras) || !fresh(saved.cachedAt, REGION_TTL_MS)) return null;
-  return saved.cameras;
+  if (!saved || !Array.isArray(saved.cameras)) return null;
+  return { cameras: saved.cameras, fresh: fresh(saved.cachedAt, REGION_TTL_MS) };
 }
 
-function publish(list) {
-  cameras = list;
+function publishFromMap() {
+  cameras = [...byId.values()];
+  const next = new Map();
+  for (const camera of cameras) {
+    const key = `${Math.floor(camera.lat)}:${Math.floor(camera.lon)}`;
+    let bucket = next.get(key);
+    if (!bucket) {
+      bucket = [];
+      next.set(key, bucket);
+    }
+    bucket.push(camera);
+  }
+  grid = next;
 }
 
-async function buildDataset() {
+function applyList(list) {
+  byId = new Map();
+  for (const camera of list) {
+    if (!camera || !Number.isFinite(camera.lat) || !Number.isFinite(camera.lon)) continue;
+    byId.set(camera.id, camera);
+  }
+  publishFromMap();
+}
+
+function mergeRegion(region, list, publishNow = true) {
+  for (const [id, camera] of byId) {
+    if (contains(region, camera)) byId.delete(id);
+  }
+  for (const camera of list) byId.set(camera.id, camera);
+  if (publishNow) publishFromMap();
+}
+
+async function persistDataset() {
   try {
-    const saved = await readJson(DATASET_FILE);
-    if (saved?.complete && Array.isArray(saved.cameras) && fresh(saved.cachedAt, saved.partial ? 30 * 60 * 1000 : CACHE_TTL_MS)) {
-      publish(saved.cameras);
-      complete = true;
-      partial = Boolean(saved.partial);
-      progress.done = REGIONS.length;
-      progress.error = null;
-      console.log(`[alpr] using cached set (${saved.cameras.length} cameras)`);
-      return;
-    }
-
-    const byId = new Map();
-    partial = false;
-    console.log(`[alpr] loading ALPR cameras across the US (${REGIONS.length} areas)`);
-
-    for (const region of REGIONS) {
-      try {
-        let list = await readRegion(region.name);
-        if (!list) {
-          list = await fetchRegion(region, 0);
-          await writeJson(path.join(REGION_DIR, `${region.name}.json`), {
-            cachedAt: Date.now(),
-            cameras: list,
-          });
-          await sleep(700);
-        }
-        for (const camera of list) byId.set(camera.id, camera);
-        console.log(`[alpr] ${region.name}: ${list.length} cameras`);
-      } catch (err) {
-        partial = true;
-        console.warn(`[alpr] ${region.name} skipped: ${String(err?.message || err).slice(0, 180)}`);
-      }
-      progress.done += 1;
-      if (byId.size > 0) publish([...byId.values()]);
-    }
-
-    if (byId.size === 0) {
-      progress.error = "OpenStreetMap is not responding right now";
-      retryAfter = Date.now() + 60 * 1000;
-      console.error("[alpr] no cameras loaded");
-      return;
-    }
-
-    complete = true;
-    progress.error = null;
-    publish([...byId.values()]);
     await writeJson(DATASET_FILE, {
       cachedAt: Date.now(),
       complete: true,
       partial,
       cameras,
     });
+  } catch (err) {
+    console.warn(`[alpr] could not save cache: ${err?.message || err}`);
+  }
+}
+
+function applySnapshot(saved, label) {
+  applyList(saved.cameras);
+  partial = Boolean(saved.partial);
+  const ttl = saved.partial ? PARTIAL_TTL_MS : CACHE_TTL_MS;
+  const isFresh = fresh(saved.cachedAt, ttl);
+  const isComplete = Boolean(saved.complete);
+  servingComplete = isComplete && cameras.length > 0;
+  needsRefresh = !(isFresh && isComplete);
+  progress.done = servingComplete ? REGIONS.length : finished.size;
+  progress.total = REGIONS.length;
+  progress.error = null;
+  const note = needsRefresh ? ", refreshing in the background" : "";
+  console.log(`[alpr] serving ${label} set (${cameras.length} cameras${note})`);
+  return { fresh: isFresh, complete: isComplete };
+}
+
+async function readBundledSeed() {
+  const json = await readJson(SEED_FILE);
+  if (Array.isArray(json?.cameras) && json.cameras.length > 0) return json;
+  try {
+    const gz = await fs.readFile(SEED_GZ);
+    const parsed = JSON.parse(zlib.gunzipSync(gz).toString("utf8"));
+    if (Array.isArray(parsed?.cameras) && parsed.cameras.length > 0) return parsed;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+async function hydrate() {
+  progress.total = REGIONS.length;
+  const cached = await readJson(DATASET_FILE);
+  const snapshot = Array.isArray(cached?.cameras) && cached.cameras.length > 0
+    ? { saved: cached, label: "saved" }
+    : null;
+  const bundled = snapshot ? null : await readBundledSeed();
+  const chosen = snapshot ?? (bundled ? { saved: bundled, label: "bundled" } : null);
+  if (chosen) {
+    const usable = applySnapshot(chosen.saved, chosen.label);
+    if (usable.fresh && usable.complete) return;
+  }
+
+  const hadSnapshot = byId.size > 0;
+  for (const region of REGIONS) {
+    const saved = await readRegionFile(region.name);
+    if (!saved) continue;
+    if (saved.fresh) {
+      mergeRegion(region, saved.cameras, false);
+      finished.add(region.name);
+    } else if (!hadSnapshot) {
+      mergeRegion(region, saved.cameras, false);
+    }
+  }
+  if (byId.size > 0) publishFromMap();
+
+  if (finished.size === REGIONS.length && byId.size > 0) {
+    servingComplete = true;
+    needsRefresh = false;
+    partial = false;
+    progress.done = REGIONS.length;
+    progress.error = null;
+    console.log(`[alpr] assembled ${cameras.length} cameras from area cache`);
+    await persistDataset();
+    return;
+  }
+
+  needsRefresh = finished.size < REGIONS.length || !servingComplete || needsRefresh;
+  progress.done = servingComplete ? REGIONS.length : finished.size;
+}
+
+function ensureMemory() {
+  if (!memoryPromise) {
+    memoryPromise = hydrate().catch((err) => {
+      memoryPromise = null;
+      throw err;
+    });
+  }
+  return memoryPromise;
+}
+
+function ensureQueue() {
+  if (queueReady) return;
+  queue = REGIONS.filter((region) => !finished.has(region.name));
+  queueReady = true;
+}
+
+function prioritize(bounds) {
+  hotBounds = bounds;
+  if (!queue.length && jobs.size === 0) return;
+  const front = [];
+  const back = [];
+  for (const region of queue) {
+    (intersects(region, bounds) ? front : back).push(region);
+  }
+  queue = front.concat(back);
+  const key = front.map((region) => region.name).join(",");
+  if (key === hotKey) return;
+  hotKey = key;
+  if (!key) return;
+  for (const job of jobs) {
+    if (!intersects(job.region, bounds)) job.controller.abort();
+  }
+  requestHurry();
+}
+
+function viewSettled(bounds) {
+  const regions = REGIONS.filter((region) => intersects(region, bounds));
+  if (!regions.length) return true;
+  return regions.every((region) => finished.has(region.name));
+}
+
+async function maybePause() {
+  const next = queue[0];
+  if (!next) return;
+  if (hotBounds && intersects(next, hotBounds)) return;
+  await pause(REGION_PAUSE_MS);
+}
+
+async function processRegion(region) {
+  const controller = new AbortController();
+  const job = { region, controller };
+  jobs.add(job);
+  let pauseAfter = false;
+  try {
+    const saved = await readRegionFile(region.name);
+    let list;
+    if (saved?.fresh) {
+      list = saved.cameras;
+    } else {
+      list = await fetchRegion(region, 0, controller.signal);
+      await writeJson(path.join(REGION_DIR, `${region.name}.json`), {
+        cachedAt: Date.now(),
+        cameras: list,
+      });
+      pauseAfter = true;
+    }
+    mergeRegion(region, list);
+    finished.add(region.name);
+    progress.done = finished.size;
+    progress.error = null;
+    console.log(`[alpr] ${region.name}: ${list.length} cameras${saved?.fresh ? " (cached)" : ""}`);
+  } catch (err) {
+    if (isAbort(err) || controller.signal.aborted) {
+      queue.push(region);
+      return;
+    }
+    refreshFailed = true;
+    partial = true;
+    finished.add(region.name);
+    progress.done = finished.size;
+    console.warn(`[alpr] ${region.name} skipped: ${String(err?.message || err).slice(0, 180)}`);
+  } finally {
+    jobs.delete(job);
+  }
+  if (pauseAfter && finished.has(region.name)) await maybePause();
+}
+
+async function lane() {
+  for (;;) {
+    const region = queue.shift();
+    if (!region) {
+      if (active === 0) return;
+      const arrived = await waitForQueue(1500);
+      if (!arrived && active === 0 && queue.length === 0) return;
+      continue;
+    }
+    active += 1;
+    try {
+      await processRegion(region);
+    } finally {
+      active -= 1;
+      notify();
+    }
+  }
+}
+
+async function worker() {
+  refreshFailed = false;
+  try {
+    do {
+      const lanes = [];
+      for (let i = 0; i < LANES; i++) lanes.push(lane());
+      await Promise.all(lanes);
+    } while (queue.length > 0);
+
+    if (byId.size === 0) {
+      progress.error = "OpenStreetMap is not responding right now";
+      retryAfter = Date.now() + 60 * 1000;
+      finished.clear();
+      queueReady = false;
+      queue = [];
+      hotKey = "";
+      console.error("[alpr] no cameras loaded");
+      return;
+    }
+
+    partial = refreshFailed;
+    servingComplete = true;
+    needsRefresh = false;
+    progress.error = null;
+    progress.done = REGIONS.length;
     console.log(`[alpr] ready: ${cameras.length} cameras${partial ? " (some areas missing)" : ""}`);
+    await persistDataset();
   } catch (err) {
     progress.error = "OpenStreetMap is not responding right now";
     retryAfter = Date.now() + 60 * 1000;
+    if (cameras.length === 0) {
+      finished.clear();
+      queueReady = false;
+      queue = [];
+    }
     console.error("[alpr] build failed:", err?.message || err);
+  } finally {
+    notify();
   }
 }
 
 function startBuild() {
-  if (complete && cameras.length > 0) return;
-  if (buildPromise) return;
-  if (Date.now() < retryAfter && cameras.length === 0) return;
-  progress.done = 0;
+  if (buildPromise) return buildPromise;
+  if (servingComplete && !needsRefresh) return null;
+  if (Date.now() < retryAfter && cameras.length === 0) return null;
+  ensureQueue();
+  if (queue.length === 0) {
+    if (byId.size > 0) {
+      servingComplete = true;
+      needsRefresh = false;
+      partial = false;
+      progress.done = REGIONS.length;
+      progress.error = null;
+      void persistDataset();
+    }
+    return null;
+  }
   progress.total = REGIONS.length;
-  progress.error = null;
-  buildPromise = buildDataset().finally(() => {
+  progress.done = finished.size;
+  console.log(`[alpr] loading ${queue.length} areas`);
+  buildPromise = worker().finally(() => {
     buildPromise = null;
   });
+  return buildPromise;
+}
+
+/** Loads a saved copy into memory, then refreshes it in the background when it is stale. */
+export async function warmAlprCache() {
+  await ensureMemory();
+  // Nothing saved yet: wait for the first map view so that area is fetched first.
+  if (servingComplete && needsRefresh) startBuild();
+}
+
+/** Fetches any missing areas and resolves when the set in memory is ready to draw. */
+export async function refreshAlprCache() {
+  await ensureMemory();
+  if (!(servingComplete && !needsRefresh && cameras.length > 0)) {
+    const pending = startBuild();
+    if (pending) await pending;
+  }
+  if (cameras.length === 0) {
+    throw new Error(progress.error || "ALPR refresh did not finish");
+  }
+  return cameras.length;
 }
 
 function groupCameras(list, cell) {
@@ -367,37 +709,68 @@ export function clusterCameras(list, zoom) {
   return features;
 }
 
-export async function camerasForView(bounds) {
-  startBuild();
-  if (buildPromise && cameras.length === 0) {
-    await Promise.race([buildPromise, sleep(1200)]);
-  }
-
+function collect(bounds) {
+  if (cameras.length === 0) return [];
+  const lat0 = Math.floor(bounds.south);
+  const lat1 = Math.floor(bounds.north);
+  const lon0 = Math.floor(bounds.west);
+  const lon1 = Math.floor(bounds.east);
   const matched = [];
-  let flockInView = 0;
-  for (const camera of cameras) {
-    if (camera.lat < bounds.south || camera.lat > bounds.north) continue;
-    if (camera.lon < bounds.west || camera.lon > bounds.east) continue;
-    if (bounds.flockOnly && !camera.flock) continue;
-    matched.push(camera);
-    if (camera.flock) flockInView += 1;
+  for (let lat = lat0; lat <= lat1; lat++) {
+    for (let lon = lon0; lon <= lon1; lon++) {
+      const bucket = grid.get(`${lat}:${lon}`);
+      if (!bucket) continue;
+      for (const camera of bucket) {
+        if (camera.lat < bounds.south || camera.lat > bounds.north) continue;
+        if (camera.lon < bounds.west || camera.lon > bounds.east) continue;
+        if (bounds.flockOnly && !camera.flock) continue;
+        matched.push(camera);
+      }
+    }
   }
+  return matched;
+}
 
-  const status = complete
-    ? "ready"
-    : progress.error && cameras.length === 0
-      ? "error"
-      : "loading";
+function responseStatus(bounds) {
+  if (cameras.length === 0 && progress.error && !buildPromise) return "error";
+  if (servingComplete || viewSettled(bounds)) return "ready";
+  return "loading";
+}
 
+function buildResponse(bounds) {
+  const matched = collect(bounds);
+  let flockInView = 0;
+  for (const camera of matched) if (camera.flock) flockInView += 1;
+  const status = responseStatus(bounds);
   return {
     status,
     source: "OpenStreetMap",
     partial,
     error: status === "error" ? progress.error : null,
-    regionsDone: progress.done,
-    regionsTotal: progress.total,
+    regionsDone: servingComplete ? REGIONS.length : finished.size,
+    regionsTotal: REGIONS.length,
     totalInView: matched.length,
     flockInView,
     features: clusterCameras(matched, bounds.zoom),
   };
+}
+
+export async function camerasForView(bounds) {
+  await ensureMemory();
+  if (!servingComplete) {
+    ensureQueue();
+    prioritize(bounds);
+    startBuild();
+    if (buildPromise && !viewSettled(bounds) && collect(bounds).length === 0 && viewWaiters === 0) {
+      viewWaiters += 1;
+      try {
+        await waitFor(() => viewSettled(bounds) || !buildPromise, VIEW_WAIT_MS);
+      } finally {
+        viewWaiters -= 1;
+      }
+    }
+  } else if (needsRefresh) {
+    startBuild();
+  }
+  return buildResponse(bounds);
 }

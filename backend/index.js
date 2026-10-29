@@ -39,6 +39,7 @@ import stripeWebhook from "./routes/stripeWebhook.js";
 import profileRoutes from "./routes/profiles.js";
 import transportationRoutes from "./routes/transportation.js";
 import flockRoutes from "./routes/flock.js";
+import { warmAlprCache } from "./lib/alprCameras.js";
 
 // Connect to MongoDB
 connectDB();
@@ -188,7 +189,7 @@ app.listen(PORT, () => {
 
   // Build the slowest datasets in the background. Failures are non-fatal: the
   // routes rebuild on demand, and a crash here would take down the container.
-  Promise.allSettled([warmCrimeCache(), warmLawEnforcementCache()]).then((results) => {
+  Promise.allSettled([warmCrimeCache(), warmLawEnforcementCache(), warmAlprCache()]).then((results) => {
     for (const result of results) {
       if (result.status === "rejected") {
         console.warn("[startup] cache warm-up failed:", result.reason?.message);

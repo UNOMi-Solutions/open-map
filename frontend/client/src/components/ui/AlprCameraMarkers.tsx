@@ -124,7 +124,7 @@ function legendNote(data: AlprResponse | null, clustered: boolean): string {
   return bits.join(" · ");
 }
 
-const AlprCameraMarkers = ({ flockOnly = false }: AlprCameraMarkersProps) => {
+const AlprCameraMarkers = ({ flockOnly = false, setLoading }: AlprCameraMarkersProps) => {
   const map = useMap();
   const [data, setData] = useState<AlprResponse | null>(null);
 
@@ -132,6 +132,7 @@ const AlprCameraMarkers = ({ flockOnly = false }: AlprCameraMarkersProps) => {
     let cancelled = false;
     let timer = 0;
     let requestId = 0;
+    setLoading(true);
 
     const schedule = (ms: number) => {
       window.clearTimeout(timer);
@@ -166,7 +167,8 @@ const AlprCameraMarkers = ({ flockOnly = false }: AlprCameraMarkersProps) => {
           }
           return next;
         });
-        if (next.status === "loading") schedule(3500);
+        if (next.status !== "loading" || (next.features?.length ?? 0) > 0) setLoading(false);
+        if (next.status === "loading") schedule(1000);
         else if (next.status === "error") schedule(15000);
       } catch (error) {
         console.error("[AlprCameraMarkers] Fetch error:", error);
@@ -176,6 +178,7 @@ const AlprCameraMarkers = ({ flockOnly = false }: AlprCameraMarkersProps) => {
           error: "Unable to load ALPR cameras",
           features: [],
         });
+        setLoading(false);
         schedule(15000);
       }
     };
@@ -187,8 +190,9 @@ const AlprCameraMarkers = ({ flockOnly = false }: AlprCameraMarkersProps) => {
       cancelled = true;
       window.clearTimeout(timer);
       map.off("moveend", onMove);
+      setLoading(false);
     };
-  }, [map, flockOnly]);
+  }, [map, flockOnly, setLoading]);
 
   useEffect(() => {
     const features = data?.features ?? [];
