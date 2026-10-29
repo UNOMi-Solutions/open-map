@@ -3,12 +3,6 @@ import { camerasForView } from "../lib/alprCameras.js";
 
 const router = Router();
 
-// Test Command
-router.get("/test", (req, res) => {
-  const testResponse = { response: "Success: Viewing Flock Data" };
-  res.json(testResponse);
-});
-
 function parseBounds(query) {
   let south = Number(query.south);
   let north = Number(query.north);

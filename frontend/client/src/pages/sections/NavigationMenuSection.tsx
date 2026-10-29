@@ -442,7 +442,6 @@ export const NavigationMenuSection = ({
   // Collapsed categories
   const collapsedCategories = [
     // { id: "crime", label: "Crime" },
-    { id: "police", label: "Police" },
     { id: "health", label: "Health" },
     { id: "economics", label: "Economics" },
     { id: "social", label: "Social" },
@@ -808,19 +807,7 @@ export const NavigationMenuSection = ({
               }    
 
             </div>
-          </AccordionContent>
-        </AccordionItem>
 
-        <AccordionItem value="police" className="border-0">
-          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
-            <div className="flex items-center">
-              <ChevronRight className="accordion-arrow" />
-              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
-                Police
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="pt-0 pb-0">
             <div className="ml-4">
               <div className="mt-2 flex items-center left">
                 <Checkbox
@@ -843,10 +830,9 @@ export const NavigationMenuSection = ({
                   </label>
                   <select
                     className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
+                    value={PoliceKillingYear}
                     onChange={(e) => {
-                      onPoliceKillingYearChange(
-                        e.target.value as unknown as number
-                      )
+                      onPoliceKillingYearChange(parseInt(e.target.value, 10))
                     }}
                   >
                     {Array.from(
@@ -864,6 +850,7 @@ export const NavigationMenuSection = ({
 
                   <select
                     className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
+                    value={PoliceKillingQ}
                     onChange={(e) =>
                       onPoliceKillingQChange(
                         e.target.value as PoliceKillingQKey
@@ -885,17 +872,6 @@ export const NavigationMenuSection = ({
                   </select>
                 </> : null
               }
-            <div className="mt-2 flex items-center left">
-              <Checkbox
-                className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                checked={selectedLayers.includes("flock-cameras")}
-                onCheckedChange={(checked) => onLayerToggle?.("flock-cameras", checked === true)}
-              />
-
-              <span className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
-                Flock Cameras
-              </span>
-            </div>
             </div>
 
             <div className="ml-4">

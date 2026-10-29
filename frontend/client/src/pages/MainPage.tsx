@@ -426,7 +426,7 @@ export default function MainPage() {
     );
   };
 
-  /** Clear sidebar map filters (layers, choropleth, crime/police/social/political). Does not remove dropped pins or pin-drop mode. */
+  /** Clear sidebar map filters (layers, choropleth, crime/social/political). Does not remove dropped pins or pin-drop mode. */
   const handleResetAllFilters = () => {
     setSelectedLayers([]);
     setChoroplethMetric("pct_white");
@@ -902,7 +902,6 @@ export default function MainPage() {
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
-                  showFlockData={selectedLayers.includes("flock-cameras")}
                   timelineRange={timelineRange}
                   onDateRangeChange={handleDatasetDateRangeChange}
                   timelineVisible={Boolean(availableDateRange && timelineRange)}
