@@ -1116,6 +1116,7 @@ export default function MainPage() {
                   naturalDisasterIncidentTypes={selectedLayers
                     .filter((id) => id.startsWith("nd-type:"))
                     .map((id) => id.replace("nd-type:", ""))}
+                  showHeartDiseaseMortality={selectedLayers.includes("heart-disease")}
                   showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
                   nationalRiskIndexHazard={
                     selectedLayers.find((l) => l.startsWith("nri-hz:"))?.slice("nri-hz:".length) ?? null
