@@ -1,11 +1,17 @@
 import axios from "axios";
 import { Router } from "express";
 import { requireEnv } from "../lib/requireEnv.js";
+import { getSNP500Companies } from "../lib/s&p500.js";
 
 const router = Router();
 
 router.get("/test", (req, res) => {
   res.json({ response: "Success: Viewing Economic Data" });
+});
+
+router.get("/sp500", async (req, res) => {
+  const companies = await getSNP500Companies();
+  res.json({ count: companies.length, companies });
 });
 
 /**
