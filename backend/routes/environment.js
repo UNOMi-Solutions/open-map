@@ -29,7 +29,9 @@ let ghgEmissionsCache = null;
 
 // Cache for oil spills data
 let oilSpillsCache = null;
-
+let heartDiseaseMortalityCache = null;
+let heartDiseaseMortalityCacheAt = 0;
+const HEART_DISEASE_MORTALITY_CACHE_MS = 24 * 60 * 60 * 1000;
 
 // Test Command
 router.get('/test', (req, res) => {
@@ -865,5 +867,42 @@ router.get("/noiseTransportation", async (req, res) => {
   }
 });
 
+router.get("/heartDiseaseMortality", async (_req, res) => {
+    try {
+        if (
+            !heartDiseaseMortalityCache ||
+            Date.now() - heartDiseaseMortalityCacheAt > HEART_DISEASE_MORTALITY_CACHE_MS
+        ) {
+            const response = await axios.get(
+                "https://data.cdc.gov/resource/55yu-xksw.json",
+                {
+                    params: {
+                        "$select": "year,locationabbr,locationdesc,data_value,data_value_unit,data_value_type,locationid,y_lat,x_lon,georeference",
+                        "$where": "geographiclevel='County' AND stratification1='Overall' AND stratification2='Overall' AND data_value IS NOT NULL",
+                        "$limit": 50000,
+                    },
+                }
+            );
 
+            if (!Array.isArray(response.data)) {
+                throw new Error("Unexpected CDC API response");
+            }
+
+            heartDiseaseMortalityCache = response.data.filter((row) => {
+                const coordinates = row.georeference?.coordinates;
+                return (
+                    Number.isFinite(Number(row.data_value)) &&
+                    Array.isArray(coordinates) &&
+                    coordinates.length === 2
+                );
+            });
+            heartDiseaseMortalityCacheAt = Date.now();
+        }
+
+        res.json(heartDiseaseMortalityCache);
+    } catch (error) {
+        console.error("[environment/heartDiseaseMortality]", error.message);
+        res.status(502).json({ error: "Failed to fetch heart disease mortality data" });
+    }
+});
 export default router;

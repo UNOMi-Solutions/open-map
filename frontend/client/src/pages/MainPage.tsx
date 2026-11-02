@@ -856,6 +856,7 @@ export default function MainPage() {
 
                   showConsentAgeData={showConsentAgeData}
                   showOilSpills={selectedLayers.includes("oil-spills")}
+                  showHeartDiseaseMortality={selectedLayers.includes("heart-disease")}
                   showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
                   nationalRiskIndexHazard={
                     selectedLayers.find((l) => l.startsWith("nri-hz:"))?.slice("nri-hz:".length) ?? null

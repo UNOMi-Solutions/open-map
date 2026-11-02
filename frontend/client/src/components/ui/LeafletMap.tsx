@@ -44,7 +44,7 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
-
+import HeartDiseaseMortalityMarkers from "./HeartDiseaseMortalityMarkers";
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
@@ -385,7 +385,8 @@ export default function LeafletMap({
   showConsentAgeData = false,
 
   /*toggle environmental information */
-  showOilSpills = false,  
+  showOilSpills = false,
+  showHeartDiseaseMortality = false,
   showAirQuality = false,
   showNoisePollution = false,
   showRuralAccess = false,
@@ -452,6 +453,7 @@ export default function LeafletMap({
 
   showConsentAgeData?: boolean;
   showOilSpills?: boolean;
+  showHeartDiseaseMortality?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
@@ -1733,6 +1735,9 @@ export default function LeafletMap({
             onDateRangeChange={onDateRangeChange}
           />
         )}
+        {showHeartDiseaseMortality && (
+          <HeartDiseaseMortalityMarkers setLoading={setLoading} />
+       )}
 
         {/* FEMA National Risk Index – county risk ratings, overall or for one hazard */}
         {showNationalRiskIndex && (
