@@ -1,23 +1,18 @@
 import axios from "axios";
 
-const SNP_API_URL = "https://cdn.statically.io/gh/datasets/s-and-p-500-companies@main/data/constituents.csv";
+const SNP_API_URL =
+    "https://www.wikitable2json.com/api/List_of_S%26P_500_companies?table=0";
 
-const SEC_COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts";
+const CITY_TO_ZIP_URL =
+    "https://api.zippopotam.us";
 
 const REQUEST_TIMEOUT_MS = 30000;
 
-// Keep SEC requests reasonably limited.
-const SEC_CONCURRENCY = 5;
-
-const SEC_HEADERS = {
-    "User-Agent": "Open Map API noreply@getopenmap.com",
-    "Accept-Encoding": "gzip, deflate",
-};
-
+// Limit concurrent company enrichment operations.
+const ENRICHMENT_CONCURRENCY = 5;
 
 /**
- * Returns S&P 500 companies with their latest reported
- * stockholders' equity from SEC EDGAR.
+ * Returns S&P 500 companies with headquarters geolocation.
  */
 export async function getSNP500Companies(client = axios) {
     try {
@@ -25,25 +20,32 @@ export async function getSNP500Companies(client = axios) {
             timeout: REQUEST_TIMEOUT_MS,
         });
 
+        console.log(`Fetched S&P 500 companies from ${SNP_API_URL}`);
+
         if (response.status !== 200) {
             throw new Error(
                 `Request to ${SNP_API_URL} returned HTTP ${response.status}`
             );
         }
 
-        const companies = parseCSV(response.data);
+        const companies = parseWikiTable(response.data);
 
         const enrichedCompanies = await mapWithConcurrency(
             companies,
-            SEC_CONCURRENCY,
+            ENRICHMENT_CONCURRENCY,
             async (company) => {
-                const cik = company.CIK ?? null;
+                const headquartersLocation =
+                    getHeadquartersLocation(company);
 
-                const netWorth = await getNetWorth(client, cik);
+                const geolocation = await cityToGeolocation(
+                    client,
+                    headquartersLocation
+                );
 
                 return {
                     ...company,
-                    NetWorth: netWorth,
+                    StockholdersEquity: null,
+                    Geolocation: geolocation,
                 };
             }
         );
@@ -60,119 +62,180 @@ export async function getSNP500Companies(client = axios) {
 
 
 /**
- * Returns the latest reported stockholders' equity for a company
- * from the SEC EDGAR Company Facts API.
+ * Extracts the headquarters city/state from the S&P dataset.
  */
-async function getNetWorth(client, cik) {
-    if (!cik) {
+function getHeadquartersLocation(company) {
+    const city = company.City ?? company.city;
+    const state = company.State ?? company.state;
+
+    if (city && state) {
+        return {
+            city: cleanLocationValue(city),
+            state: cleanLocationValue(state),
+        };
+    }
+
+    const headquarters =
+        company["Headquarters Location"];
+
+    const firstLocation =
+        headquarters?.split(";")[0]?.trim();
+    const separator =
+        firstLocation?.lastIndexOf(",") ?? -1;
+
+    if (separator <= 0) {
         return null;
     }
 
-    try {
-        // SEC CIKs must be zero-padded to 10 digits.
-        const paddedCIK = String(cik)
-            .replace(/\D/g, "")
-            .padStart(10, "0");
+    return {
+        city: cleanLocationValue(firstLocation
+            .slice(0, separator)
+            .trim()),
 
-        if (paddedCIK.length !== 10) {
-            console.warn(`Invalid CIK: ${cik}`);
-            return null;
-        }
+        state: cleanLocationValue(firstLocation
+            .slice(separator + 1)
+            .trim()),
+    };
+}
 
-        const url = `${SEC_COMPANY_FACTS_URL}/CIK${paddedCIK}.json`;
+function cleanLocationValue(value) {
+    return String(value ?? "")
+        .replace(/\[\d+\]/g, "")
+        .trim();
+}
 
-        const response = await client.get(url, {
-            timeout: REQUEST_TIMEOUT_MS,
-            headers: SEC_HEADERS,
-        });
 
-        if (response.status !== 200) {
-            throw new Error(
-                `Request to ${url} returned HTTP ${response.status}`
-            );
-        }
+const US_STATE_ABBREVIATIONS = {
+    Alabama: "AL",
+    Alaska: "AK",
+    Arizona: "AZ",
+    Arkansas: "AR",
+    California: "CA",
+    Colorado: "CO",
+    Connecticut: "CT",
+    Delaware: "DE",
+    "District of Columbia": "DC",
+    Florida: "FL",
+    Georgia: "GA",
+    Hawaii: "HI",
+    Idaho: "ID",
+    Illinois: "IL",
+    Indiana: "IN",
+    Iowa: "IA",
+    Kansas: "KS",
+    Kentucky: "KY",
+    Louisiana: "LA",
+    Maine: "ME",
+    Maryland: "MD",
+    Massachusetts: "MA",
+    Michigan: "MI",
+    Minnesota: "MN",
+    Mississippi: "MS",
+    Missouri: "MO",
+    Montana: "MT",
+    Nebraska: "NE",
+    Nevada: "NV",
+    "New Hampshire": "NH",
+    "New Jersey": "NJ",
+    "New Mexico": "NM",
+    "New York": "NY",
+    "North Carolina": "NC",
+    "North Dakota": "ND",
+    Ohio: "OH",
+    Oklahoma: "OK",
+    Oregon: "OR",
+    Pennsylvania: "PA",
+    "Rhode Island": "RI",
+    "South Carolina": "SC",
+    "South Dakota": "SD",
+    Tennessee: "TN",
+    Texas: "TX",
+    Utah: "UT",
+    Vermont: "VT",
+    Virginia: "VA",
+    Washington: "WA",
+    "West Virginia": "WV",
+    Wisconsin: "WI",
+    Wyoming: "WY",
+};
 
-        const facts = response.data?.facts?.["us-gaap"];
 
-        if (!facts) {
-            console.warn(`No US-GAAP facts found for CIK ${cik}`);
-            return null;
-        }
+function getStateAbbreviation(state) {
+    const normalizedState = cleanLocationValue(state)
+        .replace(/\./g, "")
+        .trim();
 
-        /*
-         * Companies can report equity using different XBRL concepts.
-         * Try the common concepts in preferred order.
-         */
-        const equityData =
-            facts.StockholdersEquity?.units?.USD ??
-            facts.StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest
-                ?.units?.USD ??
-            facts.PartnersCapital?.units?.USD ??
-            null;
-
-        if (!Array.isArray(equityData) || equityData.length === 0) {
-            console.warn(`No equity data found for CIK ${cik}`);
-            return null;
-        }
-
-        /*
-         * SEC data can contain duplicate facts from multiple filings.
-         *
-         * Prefer facts that:
-         * - have a numeric value
-         * - have an end date
-         * - come from standard SEC periodic reports
-         */
-        const validEntries = equityData.filter((entry) => {
-            return (
-                typeof entry.val === "number" &&
-                entry.end &&
-                ["10-K", "10-Q", "20-F", "40-F"].includes(entry.form)
-            );
-        });
-
-        if (validEntries.length === 0) {
-            return null;
-        }
-
-        /*
-         * Sort primarily by reporting-period end date.
-         *
-         * If multiple filings contain the same period, prefer the
-         * most recently filed version.
-         */
-        validEntries.sort((a, b) => {
-            const endDifference =
-                new Date(b.end).getTime() -
-                new Date(a.end).getTime();
-
-            if (endDifference !== 0) {
-                return endDifference;
-            }
-
-            return (
-                new Date(b.filed ?? 0).getTime() -
-                new Date(a.filed ?? 0).getTime()
-            );
-        });
-
-        return validEntries[0].val;
-    } catch (error) {
-        console.error(
-            `Error fetching net worth for CIK ${cik}: ${error.message}`
-        );
-
-        return null;
+    if (["DC", "District of Columbia"].includes(normalizedState)) {
+        return "DC";
     }
+
+    if (/^[A-Za-z]{2}$/.test(normalizedState)) {
+        return normalizedState.toUpperCase();
+    }
+
+    return US_STATE_ABBREVIATIONS[normalizedState] ?? null;
+}
+
+
+function getCityCandidates(city) {
+    const candidates = [city];
+    const saintCity = city.replace(/\bSt\.?\s/gi, "Saint ");
+    const fortCity = city.replace(/\bFt\.?\s/gi, "Fort ");
+    const withoutMunicipality = city.replace(
+        /\s+(township|town|borough|village|city)$/i,
+        ""
+    );
+
+    candidates.push(saintCity, fortCity, withoutMunicipality);
+
+    if (/^Upper\s+/i.test(withoutMunicipality)) {
+        candidates.push(withoutMunicipality.replace(/^Upper\s+/i, ""));
+    }
+
+    return [...new Set(candidates.map((candidate) => candidate.trim()).filter(Boolean))];
 }
 
 
 /**
- * Runs async operations with limited concurrency.
- *
- * This prevents sending hundreds of SEC requests simultaneously.
+ * Normalizes city/state names for comparison.
  */
-async function mapWithConcurrency(items, concurrency, callback) {
+function normalizeLocation(value) {
+    return String(value ?? "")
+        .toLowerCase()
+        .replace(/\bst\./g, "saint")
+        .replace(/\bst\b/g, "saint")
+        .replace(/\bft\./g, "fort")
+        .replace(/\bft\b/g, "fort")
+        .replace(/[^a-z0-9]/g, "");
+}
+
+
+function citiesMatch(headquartersCity, placeCity) {
+    const headquarters =
+        normalizeLocation(headquartersCity);
+
+    const place =
+        normalizeLocation(placeCity);
+
+    return (
+        headquarters === place ||
+        headquarters.replace(/city$/, "") === place ||
+        place.replace(/city$/, "") === headquarters
+    );
+}
+
+
+/**
+ * Runs asynchronous operations with limited concurrency.
+ *
+ * This prevents hundreds of geolocation requests from being
+ * sent simultaneously.
+ */
+async function mapWithConcurrency(
+    items,
+    concurrency,
+    callback
+) {
     const results = new Array(items.length);
 
     let nextIndex = 0;
@@ -185,7 +248,8 @@ async function mapWithConcurrency(items, concurrency, callback) {
                 return;
             }
 
-            results[index] = await callback(items[index], index);
+            results[index] =
+                await callback(items[index], index);
         }
     }
 
@@ -206,107 +270,118 @@ async function mapWithConcurrency(items, concurrency, callback) {
 
 
 /**
- * Parses CSV data while supporting:
- *
- * - quoted values
- * - commas inside quoted values
- * - escaped double quotes
- * - CRLF/LF line endings
+ * Converts wikitable2json's table/row arrays into company records.
  */
-function parseCSV(text) {
-    if (!text) {
-        return [];
+function parseWikiTable(tables) {
+    const table = tables?.[0];
+
+    if (!Array.isArray(table) || table.length < 2) {
+        throw new Error("Unexpected response from wikitable2json");
     }
 
-    const rows = [];
+    const [headers, ...rows] = table;
 
-    let row = [];
-    let field = "";
-    let inQuotes = false;
+    if (
+        !Array.isArray(headers) ||
+        !headers.includes("Symbol") ||
+        !headers.includes("CIK")
+    ) {
+        throw new Error("S&P 500 table is missing required columns");
+    }
 
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const nextChar = text[i + 1];
+    return rows
+        .filter((row) => Array.isArray(row))
+        .map((values) => {
+            const company = {};
 
-        if (char === '"') {
-            if (inQuotes && nextChar === '"') {
-                // Escaped quote: ""
-                field += '"';
-                i++;
-            } else {
-                inQuotes = !inQuotes;
+            headers.forEach((header, index) => {
+                const value = values[index]?.trim();
+                company[header] = value || null;
+            });
+
+            return company;
+        });
+}
+
+
+/**
+ * Resolves a US headquarters city to its ZIP code and coordinates.
+ */
+async function cityToGeolocation(client, headquartersLocation) {
+    const state = getStateAbbreviation(
+        headquartersLocation?.state
+    );
+
+    if (!headquartersLocation?.city || !state) {
+        return null;
+    }
+
+    for (const city of getCityCandidates(headquartersLocation.city)) {
+        const url = [
+            CITY_TO_ZIP_URL,
+            "us",
+            encodeURIComponent(state.toLowerCase()),
+            encodeURIComponent(city.toLowerCase()),
+        ].join("/");
+
+        let response;
+
+        try {
+            response = await client.get(url, {
+                timeout: REQUEST_TIMEOUT_MS,
+            });
+        } catch (error) {
+            if (error.response?.status === 404) {
+                continue;
             }
 
+            console.error(
+                `Error fetching geolocation for headquarters city ${headquartersLocation.city}, ${headquartersLocation.state}: ${error.message}`
+            );
+            return null;
+        }
+
+        if (response.status === 404) {
             continue;
         }
 
-        if (char === "," && !inQuotes) {
-            row.push(field.trim());
-            field = "";
+        if (response.status !== 200) {
+            console.error(
+                `Request to ${url} returned HTTP ${response.status}`
+            );
+            return null;
+        }
+
+        const places = response.data?.places ?? [];
+        const place = places.find((candidate) => {
+            return citiesMatch(city, candidate["place name"] ?? "");
+        }) ?? places[0];
+
+        if (!place) {
             continue;
         }
+
+        const latitude = Number(place.latitude);
+        const longitude = Number(place.longitude);
 
         if (
-            (char === "\n" || char === "\r") &&
-            !inQuotes
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude)
         ) {
-            // Handle CRLF as a single newline.
-            if (char === "\r" && nextChar === "\n") {
-                i++;
-            }
-
-            row.push(field.trim());
-
-            if (
-                row.some((value) => value.length > 0)
-            ) {
-                rows.push(row);
-            }
-
-            row = [];
-            field = "";
             continue;
         }
 
-        field += char;
+        return {
+            latitude,
+            longitude,
+            zipCode: place["post code"] ?? null,
+            city: place["place name"] ?? null,
+            state:
+                place["state abbreviation"] ??
+                place.state ??
+                null,
+        };
     }
 
-    // Handle final row if the file doesn't end in a newline.
-    if (field.length > 0 || row.length > 0) {
-        row.push(field.trim());
-
-        if (row.some((value) => value.length > 0)) {
-            rows.push(row);
-        }
-    }
-
-    if (rows.length === 0) {
-        return [];
-    }
-
-    // Remove UTF-8 BOM if present.
-    const headers = rows[0].map((header, index) => {
-        const cleaned = header.trim();
-
-        if (index === 0) {
-            return cleaned.replace(/^\uFEFF/, "");
-        }
-
-        return cleaned;
-    });
-
-    return rows.slice(1).map((values) => {
-        const company = {};
-
-        headers.forEach((header, index) => {
-            const value = values[index]?.trim();
-
-            company[header] =
-                value && value.length > 0
-                    ? value
-                    : null;
-        });
-
-        return company;
-    });
+    return null;
 }
