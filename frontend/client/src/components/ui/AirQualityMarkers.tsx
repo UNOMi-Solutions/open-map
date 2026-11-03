@@ -2,6 +2,11 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import {
+  getTimelineDateRange,
+  isDateInTimelineRange,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
 /* Orange marker icon to distinguish air quality from other markers */
 const AIR_QUALITY_ICON = L.divIcon({
@@ -77,9 +82,15 @@ function normalizeStation(obs: Record<string, unknown>, fallbackLat: number, fal
 
 type AirQualityMarkersProps = {
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 }
 
-const AirQualityMarkers = ({setLoading} : AirQualityMarkersProps) => {
+const AirQualityMarkers = ({
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+} : AirQualityMarkersProps) => {
   const [stations, setStations] = useState<AirQualityStation[]>([]);
 
   useEffect(() => {
@@ -129,9 +140,28 @@ const AirQualityMarkers = ({setLoading} : AirQualityMarkersProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "air-quality",
+      getTimelineDateRange(
+        stations.map((station) =>
+          station.dateObserved ? new Date(station.dateObserved) : null,
+        ),
+      ),
+    );
+    return () => onDateRangeChange("air-quality", null);
+  }, [stations, onDateRangeChange]);
+
   return (
     <>
-      {stations.map((station, index) => (
+      {stations
+        .filter((station) =>
+          isDateInTimelineRange(
+            station.dateObserved ? new Date(station.dateObserved) : null,
+            timelineRange,
+          ),
+        )
+        .map((station, index) => (
         <Marker
           key={`aq-${station.lat}-${station.lon}-${index}`}
           position={[station.lat, station.lon]}

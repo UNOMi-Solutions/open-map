@@ -4,11 +4,18 @@ import { Marker, Popup } from "react-leaflet";
 
 import { CreateMarker, CreatePulsingIcon } from "./CreateMarker";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import {
+    getTimelineDateRange,
+    isDateInTimelineRange,
+    type TimelineDateRange,
+} from "@/lib/timeline";
 
 interface MissingPersonsProps {
     showMissingPersonsData: boolean;
     missingPersonQ?: string;
     missingPersonYear?: any;
+    timelineRange: TimelineDateRange | null;
+    onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 }
 
 const color = 100;
@@ -21,7 +28,22 @@ interface MissingPerson {
     [key: string]: any;
 }
 
-const MissingPersons = ({ showMissingPersonsData, missingPersonQ, missingPersonYear } : MissingPersonsProps) => {
+function getMissingPersonDate(person: Record<string, unknown>): Date | null {
+    const dateValue = Object.entries(person).find(
+        ([key]) => key.replace(/^\uFEFF/, "").replace(/^"(.*)"$/, "$1") === "DLC",
+    )?.[1];
+    if (typeof dateValue !== "string" && typeof dateValue !== "number") return null;
+    const date = new Date(dateValue);
+    return Number.isFinite(date.getTime()) ? date : null;
+}
+
+const MissingPersons = ({
+    showMissingPersonsData,
+    missingPersonQ,
+    missingPersonYear,
+    timelineRange,
+    onDateRangeChange,
+} : MissingPersonsProps) => {
     const [missingPersonsData, setMissingPersonsData] = useState<MissingPerson[]>([]);
     const [loadingMissingPersonsData, setLoadingMissingPersonsData] = useState<Boolean>(true);
 
@@ -73,6 +95,18 @@ const MissingPersons = ({ showMissingPersonsData, missingPersonQ, missingPersonY
         };
     }, []);
 
+    useEffect(() => {
+        onDateRangeChange(
+            "missing-persons",
+            showMissingPersonsData
+                ? getTimelineDateRange(
+                    missingPersonsData.map(getMissingPersonDate),
+                )
+                : null,
+        );
+        return () => onDateRangeChange("missing-persons", null);
+    }, [missingPersonsData, showMissingPersonsData, onDateRangeChange]);
+
     return <>
         {
             showMissingPersonsData &&
@@ -84,10 +118,10 @@ const MissingPersons = ({ showMissingPersonsData, missingPersonQ, missingPersonY
                         value
                     ])
                 );
-                const { locationData, DLC, "Case Number": caseNumber, "Legal First Name": legalFirstName, "Legal Last Name": legalLastName } = cleanedObj;
-                const missingPersonDate = new Date(DLC);
+                const { locationData, "Case Number": caseNumber, "Legal First Name": legalFirstName, "Legal Last Name": legalLastName } = cleanedObj;
+                const missingPersonDate = getMissingPersonDate(cleanedObj);
 
-                return (locationData != null && missingPersonDate >= startDate && missingPersonDate <= endDate) ? <Marker icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]} key={index}>
+                return (locationData != null && missingPersonDate && missingPersonDate >= startDate && missingPersonDate <= endDate && isDateInTimelineRange(missingPersonDate, timelineRange)) ? <Marker icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]} key={index}>
                     <Popup>
                         <h1>Case Number: { caseNumber }</h1>
                         <h1>{ legalFirstName } { legalLastName }</h1>
