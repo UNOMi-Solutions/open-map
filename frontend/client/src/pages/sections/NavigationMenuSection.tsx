@@ -427,6 +427,7 @@ export const NavigationMenuSection = ({
   const wiredPoliticalMapIds = new Set([
     "senators",
     "billionaires",
+    "sp500",
     "governors",
     "president",
     "vice-president",
@@ -1008,6 +1009,22 @@ export const NavigationMenuSection = ({
                   className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
                 >
                   Billionaires
+                </label>
+              </div>
+              <div className="flex items-center mt-1.5">
+                <Checkbox
+                  id="economics-sp500"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={politicalLayerIds.includes("sp500")}
+                  onCheckedChange={(checked) =>
+                    onPoliticalLayerToggle("sp500", checked === true)
+                  }
+                />
+                <label
+                  htmlFor="economics-sp500"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                >
+                  S&amp;P 500 Companies
                 </label>
               </div>
             </div>
