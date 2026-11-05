@@ -26,7 +26,6 @@ import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { X, UserPlusIcon, SettingsIcon } from "lucide-react";
 import { BannerAd, VideoAd } from "@/components/ads";
 
-import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
 import {
   HEALTH_ALL_LAYER_IDS,
   HEALTH_WIRED_LAYER_IDS,
@@ -161,8 +160,6 @@ export default function MainPage() {
 
   // Props for Displaying Police Killing Data
   const [showPoliceKillingData, setShowPoliceKillingData] = useState(false);
-  const [PoliceKillingQ, setPoliceKillingQ] = useState<PoliceKillingQKey>("Q1");
-  const [PoliceKillingYear, setPoliceKillingYear] = useState<number>(2026);
 
   // Props for displaying homicide data
   const [showMurderData, setShowMurderData] = useState(false);
@@ -435,8 +432,6 @@ export default function MainPage() {
     setSelectedRaceCensusId("all");
     setSelectedSexId(null);
     setShowPoliceKillingData(false);
-    setPoliceKillingQ("Q1");
-    setPoliceKillingYear(2026);
     setShowMurderData(false);
     setMurderCategory("victim");
     setMurderAttribute("age");
@@ -462,8 +457,6 @@ export default function MainPage() {
     selectedRaceCensusId,
     selectedSexId,
     showPoliceKillingData,
-    PoliceKillingQ,
-    PoliceKillingYear,
     showMurderData,
     murderCategory,
     murderAttribute,
@@ -493,8 +486,6 @@ export default function MainPage() {
     setSelectedRaceCensusId(c.selectedRaceCensusId ?? "all");
     setSelectedSexId(c.selectedSexId ?? null);
     setShowPoliceKillingData(!!c.showPoliceKillingData);
-    setPoliceKillingQ(c.PoliceKillingQ ?? "Q1");
-    setPoliceKillingYear(c.PoliceKillingYear ?? 2026);
     setShowMurderData(!!c.showMurderData);
     setMurderCategory(c.murderCategory ?? "victim");
     setMurderAttribute(c.murderAttribute ?? "age");
@@ -840,8 +831,6 @@ export default function MainPage() {
                   showChoropleth={showChoropleth}
 
                   showPoliceKillingData={showPoliceKillingData}
-                  PoliceKillingQ={PoliceKillingQ}
-                  PoliceKillingYear={PoliceKillingYear}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -1085,10 +1074,6 @@ export default function MainPage() {
 
                   showPoliceKillingData={showPoliceKillingData}
                   onTogglePoliceKillingData={() => setShowPoliceKillingData((v) => !v)}
-                  PoliceKillingQ={PoliceKillingQ}
-                  onPoliceKillingQChange={setPoliceKillingQ}
-                  PoliceKillingYear={PoliceKillingYear}
-                  onPoliceKillingYearChange={setPoliceKillingYear}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
