@@ -44,6 +44,7 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
+import MassShootingMarkers from "./MassShootingMarkers";
 
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
@@ -380,6 +381,8 @@ export default function LeafletMap({
   missingPersonQ = "Q1",
   missingPersonYear = 2026,
 
+  showMassShootings = false,
+
   showConsentAgeData = false,
   showAlprCameras = false,
   alprFlockOnly = false,
@@ -448,6 +451,9 @@ export default function LeafletMap({
   showMissingPersonsData?: boolean;
   missingPersonQ?: string;
   missingPersonYear?: any;
+
+  /** Mother Jones mass shootings database */
+  showMassShootings?: boolean;
 
   showConsentAgeData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
@@ -1883,6 +1889,14 @@ export default function LeafletMap({
           timelineRange={timelineRange}
           onDateRangeChange={onDateRangeChange}
         />
+
+        {showMassShootings && (
+          <MassShootingMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
 

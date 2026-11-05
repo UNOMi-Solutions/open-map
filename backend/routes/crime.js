@@ -15,6 +15,7 @@ import * as cheerio from "cheerio";
 // Import file stream and csv reader for missing person data
 import fs from "fs";
 import path from "path";
+import { Readable } from "stream";
 import { fileURLToPath } from "url";
 import csvParser from "csv-parser";
 
@@ -23,6 +24,10 @@ import { getCached, mapWithConcurrency } from "../utils/dataCache.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MISSING_PERSONS_CSV = path.join(__dirname, "..", "data", "missingPersons.csv");
+// Bundled snapshot of the Mother Jones sheet, used when Google Sheets is unreachable.
+const MASS_SHOOTINGS_CSV = path.join(__dirname, "..", "data", "massShootings.csv");
+const MASS_SHOOTINGS_SHEET_URL =
+    "https://docs.google.com/spreadsheets/d/1b9o6uDO18sLxBqPwl_Gh9bnhW-ev_dABH83M5Vb5L8o/export?format=csv&gid=0";
 
 // Test Command
 router.get('/test', (req, res) => {
@@ -93,6 +98,118 @@ function getMissingPersons() {
                 .on("end", () => resolve(rows))
                 .on("error", reject);
         });
+    });
+}
+
+function parseCsv(stream) {
+    return new Promise((resolve, reject) => {
+        const rows = [];
+        stream
+            // The sheet has two columns named "location": city/state, then venue type.
+            .pipe(csvParser({ mapHeaders: ({ header, index }) => (index === 7 ? "venue" : header.trim()) }))
+            .on("data", (row) => rows.push(row))
+            .on("end", () => resolve(rows))
+            .on("error", reject);
+    });
+}
+
+function toNumber(value) {
+    const n = Number(String(value ?? "").replace(/,/g, "").trim());
+    return Number.isFinite(n) ? n : null;
+}
+
+function toText(value) {
+    const text = String(value ?? "").trim();
+    return text && text !== "-" ? text : null;
+}
+
+// Sheet spellings that don't match the zip-code dataset.
+const MASS_SHOOTING_STATE_ALIASES = { "lousiana": "LA", "d.c.": "DC" };
+const MASS_SHOOTING_CITY_ALIASES = {
+    "manhattan|ny": "new york",
+    "southport yacht basin|nc": "southport",
+    "hedingham|nc": "raleigh",
+};
+
+function parseLocation(location, stateCodes) {
+    const [city, state] = String(location ?? "").split(",").map((s) => s.trim());
+    if (!state) return { city, stateCode: null };
+    const key = state.toLowerCase();
+    const stateCode = state.length === 2
+        ? state.toUpperCase()
+        : stateCodes[key] ?? MASS_SHOOTING_STATE_ALIASES[key] ?? null;
+    return { city, stateCode };
+}
+
+/** Mother Jones stopped filling in coordinates in 2022, so fall back to the city's zip centroid. */
+function locateCity(city, stateCode, byPlace) {
+    if (!city || !stateCode) return null;
+    const key = `${city}|${stateCode}`.toLowerCase();
+    const row = byPlace[key] ?? byPlace[`${MASS_SHOOTING_CITY_ALIASES[key]}|${stateCode}`.toLowerCase()];
+    return row ? { latitude: Number(row.latitude), longitude: Number(row.longitude) } : null;
+}
+
+function parseSheetDate(value, yearColumn) {
+    const [month, day, rawYear] = String(value ?? "").split("/").map(Number);
+    // Some rows use two-digit years ("5/24/22"); the separate year column is authoritative.
+    const year = yearColumn || (rawYear < 100 ? 2000 + rawYear : rawYear);
+    if (!month || !day || !year) return null;
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : null;
+}
+
+function normalizeMassShooting(row, { byPlace, stateCodes }) {
+    const year = toNumber(row.year);
+    const { city, stateCode } = parseLocation(row.location, stateCodes);
+
+    let latitude = toNumber(row.latitude);
+    let longitude = toNumber(row.longitude);
+    const approximate = !latitude || !longitude;
+    if (approximate) {
+        const cityMatch = locateCity(city, stateCode, byPlace);
+        latitude = cityMatch?.latitude ?? null;
+        longitude = cityMatch?.longitude ?? null;
+    }
+
+    return {
+        name: toText(row.case),
+        location: toText(row.location),
+        state: stateCode,
+        date: parseSheetDate(row.date, year),
+        year,
+        fatalities: toNumber(row.fatalities),
+        injured: toNumber(row.injured),
+        totalVictims: toNumber(row.total_victims),
+        venue: toText(row.venue),
+        summary: toText(row.summary),
+        shooterAge: toText(row.age_of_shooter),
+        shooterGender: toText(row.gender),
+        weaponType: toText(row.weapon_type),
+        weaponsObtainedLegally: toText(row.weapons_obtained_legally),
+        type: toText(row.type),
+        sources: (toText(row.sources) || "").split(/;\s*/).filter(Boolean),
+        latitude,
+        longitude,
+        coordinatesApproximate: approximate && latitude != null,
+    };
+}
+
+/** Mother Jones' public mass shootings database, refreshed from the live sheet once per TTL. */
+function getMassShootings() {
+    return getCached("crime:massShootings", FBI_CACHE_TTL_MS, async () => {
+        const zipData = await getZipData();
+
+        let rows;
+        try {
+            const response = await axios.get(MASS_SHOOTINGS_SHEET_URL, { responseType: "text", timeout: 15000 });
+            rows = await parseCsv(Readable.from([response.data]));
+            if (!rows.length || !("fatalities" in rows[0])) throw new Error("Unexpected sheet format");
+        } catch (error) {
+            console.warn("[crime] Mother Jones sheet unavailable, using bundled snapshot:", error.message);
+            rows = await parseCsv(fs.createReadStream(MASS_SHOOTINGS_CSV));
+        }
+
+        return rows.map((row) => normalizeMassShooting(row, zipData)).filter((r) => r.name);
     });
 }
 
@@ -285,6 +402,24 @@ router.get('/missingPersons', async (req, res) => {
     } catch (error) {
         console.error("Error reading CSV file:", error);
         res.status(500).json({ error: "Error reading CSV file" });
+    }
+});
+
+// Get US mass shootings, 1982 to present
+// Taken from Mother Jones: https://www.motherjones.com/politics/2012/12/mass-shootings-mother-jones-full-data/
+router.get('/massShootings', async (req, res) => {
+    try {
+        const incidents = await getMassShootings();
+        res.json({
+            success: true,
+            source: "Mother Jones US Mass Shootings Database",
+            sourceUrl: "https://www.motherjones.com/politics/2012/12/mass-shootings-mother-jones-full-data/",
+            count: incidents.length,
+            data: incidents,
+        });
+    } catch (error) {
+        console.error("[crime] massShootings failed:", error.message);
+        res.status(500).json({ success: false, message: "Failed to load mass shooting data" });
     }
 });
 

@@ -854,6 +854,8 @@ export default function MainPage() {
                   missingPersonQ={missingPersonQ}
                   missingPersonYear={missingPersonYear}
 
+                  showMassShootings={selectedLayers.includes("mass-shootings")}
+
                   showConsentAgeData={showConsentAgeData}
                   showAlprCameras={selectedLayers.includes("alpr-cameras")}
                   alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
