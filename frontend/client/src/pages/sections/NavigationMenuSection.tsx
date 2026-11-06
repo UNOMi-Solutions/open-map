@@ -825,7 +825,7 @@ export const NavigationMenuSection = ({
               </div>
               {selectedLayers.includes("mass-shootings") && (
                 <p className="ml-[31px] mt-1 text-[11px] text-white/60 leading-snug [font-family:'Futura PT']">
-                  Mother Jones, 1982–present. Public attacks with 3+ killed. Circle size = total victims.
+                  Gun Violence Archive, 2014–present. 4+ victims shot. Circle size = total victims.
                 </p>
               )}
             </div>

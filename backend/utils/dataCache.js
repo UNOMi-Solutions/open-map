@@ -21,10 +21,9 @@ export function getCached(key, ttlMs, fetchFn) {
     return data;
   })();
 
-  inFlight.set(
-    key,
-    promise.finally(() => inFlight.delete(key))
-  );
+  inFlight.set(key, promise);
+  // Callers handle the rejection; this derived promise must not surface as an unhandled one.
+  promise.finally(() => inFlight.delete(key)).catch(() => {});
 
   return promise;
 }

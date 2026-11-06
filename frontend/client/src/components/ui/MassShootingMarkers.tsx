@@ -10,21 +10,23 @@ import {
 import MarkerCompound from "./MarkerCompound";
 
 type MassShooting = {
-  name: string;
+  id: number;
   location: string | null;
+  address: string | null;
+  venue: string | null;
   state: string | null;
   date: string | null;
+  time: string | null;
   year: number | null;
   fatalities: number | null;
   injured: number | null;
   totalVictims: number | null;
-  venue: string | null;
-  summary: string | null;
-  shooterAge: string | null;
-  shooterGender: string | null;
-  weaponType: string | null;
-  weaponsObtainedLegally: string | null;
+  suspectsKilled: number | null;
+  suspectsInjured: number | null;
+  suspectsArrested: number | null;
+  characteristics: string[];
   sources: string[];
+  gvaUrl: string | null;
   latitude: number | null;
   longitude: number | null;
   coordinatesApproximate: boolean;
@@ -82,7 +84,7 @@ const MassShootingMarkers = ({
     let cancelled = false;
     setLoading(true);
     cachedApiGet<MassShootingsResponse>(
-      "crime:massShootings",
+      "crime:massShootings:gva",
       "/api/v1/crime/massShootings",
       CACHE_TTL.CRIME,
     )
@@ -117,31 +119,50 @@ const MassShootingMarkers = ({
 
   return (
     <MarkerCompound>
-      {visible.map((incident, index) => (
+      {visible.map((incident) => (
         <Marker
-          key={`${incident.name}-${incident.date ?? index}`}
+          key={incident.id}
           position={[incident.latitude as number, incident.longitude as number]}
           icon={getIcon(incident.totalVictims)}
         >
           <Popup>
             <div className="min-w-0 max-w-[300px] max-h-[320px] overflow-y-auto overflow-x-hidden break-words">
-              <h3 className="text-base font-bold">{incident.name}</h3>
+              <h3 className="text-base font-bold">{incident.venue ?? incident.location ?? "Mass shooting"}</h3>
               {incident.location && <p><strong>Location:</strong> {incident.location}</p>}
+              {incident.address && <p><strong>Address:</strong> {incident.address}</p>}
               {incident.date && (
-                <p><strong>Date:</strong> {toDate(incident)?.toLocaleDateString(undefined, { timeZone: "UTC" })}</p>
+                <p>
+                  <strong>Date:</strong> {toDate(incident)?.toLocaleDateString(undefined, { timeZone: "UTC" })}
+                  {incident.time && ` · ${incident.time}`}
+                </p>
               )}
               <p>
-                <strong>Killed:</strong> {incident.fatalities ?? "?"} · <strong>Injured:</strong> {incident.injured ?? "?"}
+                <strong>Victims killed:</strong> {incident.fatalities ?? "?"} · <strong>Injured:</strong> {incident.injured ?? "?"}
               </p>
-              {incident.venue && <p><strong>Venue:</strong> {incident.venue}</p>}
-              {incident.weaponType && <p><strong>Weapon:</strong> {incident.weaponType}</p>}
-              {incident.weaponsObtainedLegally && (
-                <p><strong>Obtained legally:</strong> {incident.weaponsObtainedLegally}</p>
+              {!!(incident.suspectsKilled || incident.suspectsInjured || incident.suspectsArrested) && (
+                <p>
+                  <strong>Suspects:</strong>{" "}
+                  {[
+                    incident.suspectsKilled && `${incident.suspectsKilled} killed`,
+                    incident.suspectsInjured && `${incident.suspectsInjured} injured`,
+                    incident.suspectsArrested && `${incident.suspectsArrested} arrested`,
+                  ].filter(Boolean).join(", ")}
+                </p>
               )}
-              {incident.summary && <p className="mt-1">{incident.summary}</p>}
-              {incident.sources[0] && (
+              {incident.characteristics.length > 0 && (
+                <ul className="mt-1 list-disc pl-4 text-xs">
+                  {incident.characteristics.map((c) => <li key={c}>{c}</li>)}
+                </ul>
+              )}
+              {(incident.gvaUrl || incident.sources[0]) && (
                 <p className="mt-1">
-                  <a href={incident.sources[0]} target="_blank" rel="noopener noreferrer">Source</a>
+                  {incident.gvaUrl && (
+                    <a href={incident.gvaUrl} target="_blank" rel="noopener noreferrer">GVA incident</a>
+                  )}
+                  {incident.gvaUrl && incident.sources[0] && " · "}
+                  {incident.sources[0] && (
+                    <a href={incident.sources[0]} target="_blank" rel="noopener noreferrer">News source</a>
+                  )}
                 </p>
               )}
               {incident.coordinatesApproximate && (

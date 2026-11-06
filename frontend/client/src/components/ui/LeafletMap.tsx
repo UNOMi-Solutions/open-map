@@ -452,7 +452,7 @@ export default function LeafletMap({
   missingPersonQ?: string;
   missingPersonYear?: any;
 
-  /** Mother Jones mass shootings database */
+  /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
   showMassShootings?: boolean;
 
   showConsentAgeData?: boolean;
