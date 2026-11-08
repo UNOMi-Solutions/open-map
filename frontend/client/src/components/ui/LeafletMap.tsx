@@ -88,9 +88,7 @@ import CongressionalDistrictsLayer from "./CongressionalDistrictsLayer";
 import HouseMarkers from "./HouseMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
-
-// Flock cameras
-import FlockMarkers from "./FlockMarkers";
+import AlprCameraMarkers from "./AlprCameraMarkers";
 
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
@@ -383,6 +381,8 @@ export default function LeafletMap({
   missingPersonYear = 2026,
 
   showConsentAgeData = false,
+  showAlprCameras = false,
+  alprFlockOnly = false,
 
   /*toggle environmental information */
   showOilSpills = false,  
@@ -417,7 +417,6 @@ export default function LeafletMap({
   healthMetricId = null,
   showSplcHateMap = false,
 
-  showFlockData = false,
   timelineRange = null,
   onDateRangeChange,
   timelineVisible = false,
@@ -451,6 +450,9 @@ export default function LeafletMap({
   missingPersonYear?: any;
 
   showConsentAgeData?: boolean;
+  /** OpenStreetMap ALPR cameras, including Flock Safety */
+  showAlprCameras?: boolean;
+  alprFlockOnly?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
@@ -491,7 +493,6 @@ export default function LeafletMap({
   /** SPLC Hate Map-derived group counts by state GEOID (/data/splc/by-state-geoid.json) */
   showSplcHateMap?: boolean;
 
-  showFlockData?: boolean;
   timelineRange?: TimelineDateRange | null;
   onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
   timelineVisible?: boolean;
@@ -1868,11 +1869,12 @@ export default function LeafletMap({
           onDateRangeChange={onDateRangeChange}
         />
 
+        {showAlprCameras && (
+          <AlprCameraMarkers flockOnly={alprFlockOnly} setLoading={setLoading} />
+        )}
+
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
-
-        {/* Flock Camera data */}
-        {showFlockData && <FlockMarkers setLoading={setLoading}></FlockMarkers>}
 
         <MissingPersons 
           missingPersonQ={missingPersonQ}
