@@ -7,7 +7,6 @@ interface LoadingBarProps {
 }
 
 const LoadingBar = ({ isOpen, progress }: LoadingBarProps) => {
-
   if (!isOpen) return null;
 
   const showProgress = progress != null;
@@ -18,24 +17,37 @@ const LoadingBar = ({ isOpen, progress }: LoadingBarProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="relative flex items-center justify-center rounded-[30px] border-2 border-white/70 bg-transparent p-6 shadow-2xl">
-        {showProgress ? (
-          <div className="w-64" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={normalizedProgress}>
-            <div className="h-2 overflow-hidden rounded-full bg-white/20">
+      <div className="relative flex flex-col items-center justify-center gap-6 rounded-[30px] border-2 border-white/70 bg-transparent p-6 shadow-2xl">
+        <img
+          src="/loading-globe.svg"
+          alt=""
+          aria-hidden="true"
+          className="h-24 w-24 brightness-0 invert"
+        />
+        <div
+          className="w-64"
+          role="progressbar"
+          aria-label="Loading progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={showProgress ? normalizedProgress : undefined}
+        >
+          <div className="h-2 overflow-hidden rounded-full bg-white/20">
+            {showProgress ? (
               <div
                 className="h-full rounded-full bg-white transition-[width] duration-200"
                 style={{ width: `${normalizedProgress}%` }}
               />
-            </div>
+            ) : (
+              <div className="loading-progress-indeterminate h-full rounded-full bg-white" />
+            )}
+          </div>
+          {showProgress && (
             <div className="mt-2 text-center text-sm text-white">
               {normalizedProgress}%
             </div>
-          </div>
-        ) : (
-          <div className="spinner-container">
-            <div className="spinner"></div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
