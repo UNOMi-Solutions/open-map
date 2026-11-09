@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getCached, mapWithConcurrency } from "../utils/dataCache.js";
 
-const RTB_BASE_URL = "https://cdn.statically.io/gh/komed3/rtb-api/main/api/v1";
+const RTB_BASE_URL = "https://cdn.statically.io/gh/komed3/rtb-api/v1/api";
 
 const CACHE_KEY = "rtb:billionaires:US:profiles";
 const CACHE_MS = 24 * 60 * 60 * 1000;

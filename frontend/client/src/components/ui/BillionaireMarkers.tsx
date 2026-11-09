@@ -220,7 +220,7 @@ export default function BillionaireMarkers({ setLoading }: BillionaireMarkersPro
 
     cachedApiGet<BillionairesResponse>(
       "rtb:billionaires:US:profiles",
-      "/api/v1/billionaires/",
+      "/api/v1/economics/billionaires/",
       CACHE_TTL.POLITICS,
     )
       .then((data) => {

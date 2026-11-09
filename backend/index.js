@@ -39,7 +39,6 @@ import stripeWebhook from "./routes/stripeWebhook.js";
 import profileRoutes from "./routes/profiles.js";
 import transportationRoutes from "./routes/transportation.js";
 import flockRoutes from "./routes/flock.js";
-import billionaireRoutes from "./routes/billionaires.js";
 import { warmAlprCache } from "./lib/alprCameras.js";
 
 // Connect to MongoDB
@@ -166,7 +165,6 @@ app.use("/api/v1/politics", auth, politicsRoutes);
 app.use("/api/v1/social", auth, socialRoutes);
 app.use("/api/v1/transportation", auth, transportationRoutes); // optional key for more frequent requests
 app.use("/api/v1/flock", auth, flockRoutes);
-app.use("/api/v1/billionaires", auth, billionaireRoutes);
 
 // Stripe checkout routes (API-key protected, like the data routes).
 // The webhook is mounted separately above (before JSON parsing).

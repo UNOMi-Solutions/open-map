@@ -2,6 +2,7 @@ import axios from "axios";
 import { Router } from "express";
 import { requireEnv } from "../lib/requireEnv.js";
 import { getSNP500Companies } from "../lib/s&p500.js";
+import { getUsBillionaireProfiles } from "../lib/rtbBillionaires.js";
 
 const router = Router();
 
@@ -12,6 +13,16 @@ router.get("/test", (req, res) => {
 router.get("/sp500", async (req, res) => {
   const companies = await getSNP500Companies();
   res.json({ count: companies.length, companies });
+});
+
+router.get("/billionaires", async (req, res) => {
+  try {
+    const profiles = await getUsBillionaireProfiles();
+    return res.json({ count: profiles.length, profiles });
+  } catch (error) {
+    console.error("GET /economics/billionaires error:", error.message);
+    return res.status(502).json({ error: "Failed to retrieve U.S. billionaire profiles" });
+  }
 });
 
 /**
