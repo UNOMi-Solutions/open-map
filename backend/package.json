@@ -8,7 +8,8 @@
     "test": "echo 'Error: no test specified' && exit 1",
     "dev": "nodemon --exec \"node --use-system-ca index.js\"",
     "start": "node --use-system-ca index.js",
-    "seed:user": "node scripts/seed-user.js"
+    "seed:user": "node scripts/seed-user.js",
+    "seed:alpr": "node scripts/build-alpr-seed.js"
   },
   "repository": {
     "type": "git",
