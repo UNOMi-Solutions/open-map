@@ -13,6 +13,8 @@ interface CacheEnvelope<T> {
 export const CACHE_TTL = {
   /** Crime aggregates, arrests, missing persons — changes infrequently. */
   CRIME: 24 * 60 * 60 * 1000,
+  /** Provisional county health surveillance data. */
+  HEALTH: 24 * 60 * 60 * 1000,
   /** Law enforcement incident datasets. */
   LAW_ENFORCEMENT: 24 * 60 * 60 * 1000,
   /** Global environment datasets (oil spills, data centers). */

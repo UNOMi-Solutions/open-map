@@ -51,6 +51,10 @@ test("readResidentialCount reads the current FBI NIBRS response", () => {
   assert.equal(readResidentialCount({ victim: { location: { "Residence/Home": 17 } } }), 17);
   assert.equal(readResidentialCount({ victim: { location: { "Residence/Home": "23" } } }), 23);
   assert.throws(() => readResidentialCount({ victim: { location: {} } }), /Residence\/Home count/);
+  assert.equal(readResidentialCount({ victim: { location: { "Residence/Home": 0 } } }), 0);
+  for (const count of [null, "", " ", false, [], -1, 1.5]) {
+    assert.throws(() => readResidentialCount({ victim: { location: { "Residence/Home": count } } }), /Residence\/Home count/);
+  }
 });
 
 test("fetchHomeInvasionState returns robbery and burglary counts for the pie chart", async () => {

@@ -117,6 +117,7 @@ export default function MainPage() {
     useState<HouseDistrictPartyMode>("both");
   /** CDC PLACES county choropleth; exclusive with census race/age/sex selection */
   const [healthMetricId, setHealthMetricId] = useState<string | null>(null);
+  const [overdosePeriod, setOverdosePeriod] = useState("latest");
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
@@ -266,11 +267,22 @@ export default function MainPage() {
   };
 
   const handleLayerToggle = (layerId: string, checked: boolean) => {
+    if (layerId === "toxic-water-supply" && checked) {
+      setSelectedLayers(prev => [...prev.filter(id => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && id !== layerId), layerId]);
+      setHealthMetricId(null);
+      setSelectedRaceCensusId("all");
+      setSelectedAgeGroupId(null);
+      setSelectedSexId(null);
+      setShowChoropleth(false);
+      setShowHomeInvasionData(false);
+      setPoliticalLayerIds(prev => prev.filter(id => !["red-blue-district", "electoral-college", "gerrymandering"].includes(id)));
+      return;
+    }
     if (SPLC_LAYER_IDS.has(layerId)) {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && id !== "toxic-water-supply"
           ),
           layerId,
         ]);
@@ -288,11 +300,11 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && id !== "toxic-water-supply"
           ),
           layerId,
         ]);
-        if (HEALTH_WIRED_LAYER_IDS.has(layerId)) {
+        if (HEALTH_WIRED_LAYER_IDS.has(layerId) || layerId === "drug-overdose-deaths") {
           setHealthMetricId(layerId);
           setSelectedRaceCensusId("all");
           setSelectedAgeGroupId(null);
@@ -313,6 +325,7 @@ export default function MainPage() {
   };
 
   const handlePoliticalLayerToggle = (layerId: string, checked: boolean) => {
+    if (checked && ["red-blue-district", "electoral-college", "gerrymandering"].includes(layerId)) setSelectedLayers(prev => prev.filter(id => id !== "toxic-water-supply"));
     setPoliticalLayerIds((prev) =>
       checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
     );
@@ -344,12 +357,13 @@ export default function MainPage() {
     setHouseDistrictPartyMode("both");
     setSearchQuery("");
     setHealthMetricId(null);
+    setOverdosePeriod("latest");
   };
 
   /** Snapshot of the full map setup, saved as a profile's `config`. */
   const getCurrentConfig = (): Record<string, unknown> => ({
     mapPins,
-    selectedLayers,
+    selectedLayers, // Includes sewage outfalls and other Environment toggles in saved profiles and reset.
     choroplethMetric,
     showChoropleth,
     selectedAgeGroupId,
@@ -372,6 +386,7 @@ export default function MainPage() {
     politicalLayerIds,
     houseDistrictPartyMode,
     healthMetricId,
+    overdosePeriod,
     searchQuery,
   });
 
@@ -403,6 +418,7 @@ export default function MainPage() {
     setPoliticalLayerIds(Array.isArray(c.politicalLayerIds) ? c.politicalLayerIds : []);
     setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
     setHealthMetricId(c.healthMetricId ?? null);
+    setOverdosePeriod(typeof c.overdosePeriod === "string" && /^(latest|20\d{2}-(0[1-9]|1[0-2]))$/.test(c.overdosePeriod) ? c.overdosePeriod : "latest");
     setSearchQuery(c.searchQuery ?? "");
     // Make sure the loaded configuration is actually visible.
     setShowLanding(false);
@@ -448,7 +464,7 @@ export default function MainPage() {
         prev.filter((id) => !HEALTH_ALL_LAYER_IDS.has(id))
       );
     }
-    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id)));
+    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id) && id !== "toxic-water-supply"));
   }, [selectedRaceCensusId, selectedAgeGroupId, selectedSexId, healthMetricId]);
 
   /** Population choropleth and SPLC are mutually exclusive for the colored layer */
@@ -457,7 +473,7 @@ export default function MainPage() {
       const next = !v;
       if (next) {
         setSelectedLayers((prev) =>
-          prev.filter((id) => !SPLC_LAYER_IDS.has(id))
+          prev.filter((id) => !SPLC_LAYER_IDS.has(id) && id !== "toxic-water-supply")
         );
       }
       return next;
@@ -763,12 +779,22 @@ export default function MainPage() {
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
                   showDataCenters={selectedLayers.includes("data-centers")}
+                  showSuperfundSites={selectedLayers.includes("superfund-sites")}
+                  showEnergyPlants={selectedLayers.includes("energy-plants")}
+                  showSewageDischarge={selectedLayers.includes("sewage-discharge")}
+                  environmentalRiskSelections={selectedLayers}
+                  onEnvironmentalOptionChange={(name, value) => setSelectedLayers(prev => [
+                    ...prev.filter(id => !id.startsWith(`environment:${name}:`)), `environment:${name}:${value}`,
+                  ])}
+                  energyPlantTypes={(["solar", "wind", "hydro"] as const).filter((type) => !selectedLayers.includes(`energy-hide:${type}`))}
                   selectedAgeGroupId={selectedAgeGroupId}
                   selectedRaceCensusId={selectedRaceCensusId}
                   selectedSexId={selectedSexId}
                   politicalLayerIds={politicalLayerIds}
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
+                  overdosePeriod={overdosePeriod}
+                  onOverdosePeriodChange={setOverdosePeriod}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
                 />
               </div>
@@ -886,7 +912,10 @@ export default function MainPage() {
                   onSetChoroplethActive={setShowChoropleth}
 
                   showHomeInvasionData={showHomeInvasionData}
-                  onToggleHomeInvasionData={() => setShowHomeInvasionData((v) => !v)}
+                  onToggleHomeInvasionData={() => {
+                    if (!showHomeInvasionData) setSelectedLayers(prev => prev.filter(id => id !== "toxic-water-supply"));
+                    setShowHomeInvasionData(v => !v);
+                  }}
                   homeInvasionYear={homeInvasionYear}
                   onHomeInvasionYearChange={setHomeInvasionYear}
 

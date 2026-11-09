@@ -75,6 +75,12 @@ import HouseMarkers from "./HouseMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
 import HomeInvasionMarkers from "./HomeInvasionMarkers";
+import SuperfundMarkers from "./SuperfundMarkers";
+import EnergyPlantMarkers from "./EnergyPlantMarkers";
+import SewageDischargeMarkers from "./SewageDischargeMarkers";
+import EnvironmentalRiskLayers from "./EnvironmentalRiskLayers";
+import DrugOverdoseLayer from "./DrugOverdoseLayer";
+import { ENERGY_TYPES, EnergyType } from "@/lib/energy-plants";
 
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
@@ -379,12 +385,20 @@ export default function LeafletMap({
   showNaturalDisasterIncidents = false,
   naturalDisasterIncidentTypes = [],
   showDataCenters = false,
+  showSuperfundSites = false,
+  showEnergyPlants = false,
+  showSewageDischarge = false,
+  environmentalRiskSelections = [],
+  onEnvironmentalOptionChange = () => {},
+  energyPlantTypes = ENERGY_TYPES,
   selectedAgeGroupId = null,
   selectedRaceCensusId = "all",
   selectedSexId = null,
   politicalLayerIds = [],
   houseDistrictPartyMode = "both",
   healthMetricId = null,
+  overdosePeriod = "latest",
+  onOverdosePeriodChange = () => {},
   showSplcHateMap = false,
 }: {
   loading?: boolean;
@@ -426,6 +440,12 @@ export default function LeafletMap({
   showNaturalDisasterIncidents?: boolean;
   naturalDisasterIncidentTypes?: string[];
   showDataCenters?: boolean;
+  showSuperfundSites?: boolean;
+  showEnergyPlants?: boolean;
+  showSewageDischarge?: boolean;
+  environmentalRiskSelections?: string[];
+  onEnvironmentalOptionChange?: (name: string, value: string) => void;
+  energyPlantTypes?: readonly EnergyType[];
   /** When set with a race metric, choropleth uses race+age data from /data/{race}_age_{id} */
   selectedAgeGroupId?: string | null;
   /** When "all", age selection uses age-only files (e.g. Age1-5); otherwise race+age */
@@ -437,6 +457,8 @@ export default function LeafletMap({
   houseDistrictPartyMode?: HouseDistrictPartyMode;
   /** CDC PLACES county health layer id from sidebar */
   healthMetricId?: string | null;
+  overdosePeriod?: string;
+  onOverdosePeriodChange?: (period: string) => void;
   /** SPLC Hate Map-derived group counts by state GEOID (/data/splc/by-state-geoid.json) */
   showSplcHateMap?: boolean;
 }) {
@@ -448,7 +470,7 @@ export default function LeafletMap({
     (showChoropleth ||
       Boolean(healthMetricId) ||
       showSplcHateMap) &&
-    !politicalDistrictsActive;
+    !politicalDistrictsActive && healthMetricId !== "drug-overdose-deaths" && !environmentalRiskSelections.includes("toxic-water-supply");
 
   const mapRef = useRef<LeafletMapType | null>(null);
   const choroplethLayerRef = useRef<L.GeoJSON | null>(null);
@@ -806,7 +828,7 @@ export default function LeafletMap({
 
   /** CDC PLACES county values for selected health metric */
   useEffect(() => {
-    if (!healthMetricId) {
+    if (!healthMetricId || healthMetricId === "drug-overdose-deaths") {
       setHealthValueByGeoid(null);
       return;
     }
@@ -1696,6 +1718,23 @@ export default function LeafletMap({
         {/* Data centers – shown when Data Centers is selected in sidebar */}
         {showDataCenters && <DataCenterMarkers setLoading={setLoading}/>}
 
+        {/* EPA sites and selected boundaries use the shared environment layer toggle. */}
+        {showSuperfundSites && <SuperfundMarkers sidebarOffsetPx={sidebarOffsetPx} pinDropMode={pinDropMode} />}
+        {/* Plant locations and capacity circles use the latest complete EIA snapshot. */}
+        {showEnergyPlants && <EnergyPlantMarkers types={energyPlantTypes} sidebarOffsetPx={sidebarOffsetPx} pinDropMode={pinDropMode} />}
+        {showSewageDischarge && <SewageDischargeMarkers sidebarOffsetPx={sidebarOffsetPx} pinDropMode={pinDropMode} />}
+        {environmentalRiskSelections.some(id => ["fracking-locations", "industrial-runoff", "toxic-water-supply"].includes(id)) && <EnvironmentalRiskLayers
+          active={[
+            ...(environmentalRiskSelections.includes("fracking-locations") ? ["fracking" as const] : []),
+            ...(environmentalRiskSelections.includes("industrial-runoff") ? ["runoff" as const] : []),
+            ...(environmentalRiskSelections.includes("toxic-water-supply") && !politicalDistrictsActive ? ["drinkingWater" as const] : []),
+          ]}
+          selections={environmentalRiskSelections} onOptionChange={onEnvironmentalOptionChange}
+          counties={choroplethGeo} sidebarOffsetPx={sidebarOffsetPx} pinDropMode={pinDropMode} />}
+        {healthMetricId === "drug-overdose-deaths" && !politicalDistrictsActive && !environmentalRiskSelections.includes("toxic-water-supply") && <DrugOverdoseLayer
+          counties={choroplethGeo} period={overdosePeriod} onPeriodChange={onOverdosePeriodChange}
+          pinDropMode={pinDropMode} sidebarOffsetPx={sidebarOffsetPx} />}
+
         {politicalLayerIds.includes("senators") && <SenatorMarkers setLoading={setLoading}/>}
         {politicalLayerIds.includes("governors") && <GovernorMarkers />}
         {(politicalLayerIds.includes("president") ||
@@ -1720,10 +1759,12 @@ export default function LeafletMap({
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
 
-        {/* Displays state markers for the selected Home Invasions year. */}
+        {/* Reuses state boundaries for the clickable Home Invasions heat map. */}
         <HomeInvasionMarkers
           show={showHomeInvasionData}
           year={homeInvasionYear}
+          states={statesFC}
+          pinDropMode={pinDropMode}
         />
 
         <MissingPersons 

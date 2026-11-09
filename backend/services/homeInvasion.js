@@ -39,7 +39,7 @@ export function buildHomeInvasionUrl({ state, year, offense, apiKey, baseUrl }) 
 
 export function readResidentialCount(payload) {
   const count = payload?.victim?.location?.["Residence/Home"];
-  if (!Number.isFinite(Number(count))) {
+  if (!["number", "string"].includes(typeof count) || String(count).trim() === "" || !Number.isSafeInteger(Number(count)) || Number(count) < 0) {
     throw new Error("FBI NIBRS response did not include a Residence/Home count.");
   }
   return Number(count);

@@ -141,6 +141,14 @@ export const NavigationMenuSection = ({
     { id: "air-quality", label: "Air Quality" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    // Superfund is the EPA-backed subset of the requested Toxic Area datapoint.
+    { id: "superfund-sites", label: "Toxic Area — Superfund Sites" },
+    // Energy technology filters share the existing reset and saved-profile state.
+    { id: "energy-plants", label: "Energy Plants — Solar, Wind & Hydro" },
+    { id: "sewage-discharge", label: "Sewage Discharge — CSO Outfalls" },
+    { id: "fracking-locations", label: "Fracking Locations" },
+    { id: "industrial-runoff", label: "Industrial Runoff — Water Releases" },
+    { id: "toxic-water-supply", label: "Toxic Water Supply — Health Violations" },
     // { id: "toxic-spills", label: "Toxic Spills" },
     // { id: "toxic-area", label: "Toxic Area" },
   ];
@@ -188,7 +196,7 @@ export const NavigationMenuSection = ({
     // { id: "illegal-hard-drug-use", label: "Illegal/Hard drug use" },
     // { id: "healthy-eating", label: "Healthy eating" },
     { id: "alcoholism", label: "Alcoholism" },
-    // { id: "drug-addiction", label: "Drug addiction" },
+    { id: "drug-overdose-deaths", label: "Drug Overdose Deaths" },
     { id: "mental-health", label: "Mental Health" },
     { id: "best-healthcare-coverage", label: "Best healthcare coverage" },
     { id: "worst-healthcare-coverage", label: "Worst Healthcare Coverage" },
@@ -420,6 +428,21 @@ export const NavigationMenuSection = ({
                     </label>
                   </div>
                   {/* Sub-filters for Natural Disaster Incidents – show only when layer is enabled */}
+                  {item.id === "energy-plants" && selectedLayers.includes("energy-plants") && (
+                    <div className="ml-6 mt-2 mb-2">
+                      <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">Plant types:</span>
+                      <div className="flex flex-wrap gap-x-3 gap-y-1">
+                        {["solar", "wind", "hydro"].map((type) => (
+                          <div key={type} className="flex items-center mt-0.5">
+                            <Checkbox id={`energy-type-${type}`} className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                              checked={!selectedLayers.includes(`energy-hide:${type}`)}
+                              onCheckedChange={(checked) => onLayerToggle?.(`energy-hide:${type}`, checked !== true)} />
+                            <label htmlFor={`energy-type-${type}`} className="ml-2 text-white/90 text-[11px] leading-[100%] capitalize [font-family:'Futura PT']">{type}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {item.id === "natural-disaster-incidents" && selectedLayers.includes("natural-disaster-incidents") && (
                     <div className="ml-6 mt-2 mb-2">
                       <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
