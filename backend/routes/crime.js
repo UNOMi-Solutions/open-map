@@ -12,17 +12,20 @@ import axios from "axios";
 // Import cheerio for web scraping
 import * as cheerio from "cheerio";
 
-// Import file stream and csv reader for missing person data
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import csvParser from "csv-parser";
-
 import { getZipData } from "../utils/zipData.js";
 import { getCached, mapWithConcurrency } from "../utils/dataCache.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MISSING_PERSONS_CSV = path.join(__dirname, "..", "data", "missingPersons.csv");
+import {
+    downloadGvaMassShootingsCsv,
+    getDataHubRequester,
+    normalizeGvaMassShooting,
+    parseGvaCsv,
+    readGvaSnapshot,
+} from "../lib/gvaMassShootings.js";
+import {
+    downloadNamusMissingPersons,
+    normalizeNamusMissingPerson,
+    readNamusSnapshot,
+} from "../lib/namusMissingPersons.js";
 
 // Test Command
 router.get('/test', (req, res) => {
@@ -77,22 +80,45 @@ async function fetchAllStates(buildUrl) {
     return Object.fromEntries(entries);
 }
 
-/** Reads the bundled missing persons CSV once per TTL instead of per request. */
+/** Open NamUs missing persons cases, refreshed from NamUs once per TTL. */
 function getMissingPersons() {
     return getCached("crime:missingPersons", FBI_CACHE_TTL_MS, async () => {
-        const { byCounty } = await getZipData();
+        const zipData = await getZipData();
 
-        return new Promise((resolve, reject) => {
-            const rows = [];
-            fs.createReadStream(MISSING_PERSONS_CSV)
-                .pipe(csvParser())
-                .on("data", (row) => {
-                    row["locationData"] = byCounty[row["County"]];
-                    rows.push(row);
-                })
-                .on("end", () => resolve(rows))
-                .on("error", reject);
-        });
+        let rows;
+        try {
+            rows = await downloadNamusMissingPersons();
+        } catch (error) {
+            console.warn("[crime] NamUs unavailable, using bundled snapshot:", error.message);
+            rows = await readNamusSnapshot();
+        }
+
+        return rows
+            .map((row) => normalizeNamusMissingPerson(row, zipData))
+            .filter((r) => r.id && r.dateOfLastContact);
+    });
+}
+
+/** Gun Violence Archive mass shootings, refreshed from The Trace's Data Hub once per TTL. */
+function getMassShootings() {
+    return getCached("crime:massShootings", FBI_CACHE_TTL_MS, async () => {
+        const zipData = await getZipData();
+
+        let rows = null;
+        if (getDataHubRequester()) {
+            try {
+                rows = await parseGvaCsv(await downloadGvaMassShootingsCsv());
+                if (!rows.length || !("victims_killed" in rows[0])) throw new Error("Unexpected Data Hub CSV format");
+            } catch (error) {
+                console.warn("[crime] GVA Data Hub unavailable, using bundled snapshot:", error.message);
+                rows = null;
+            }
+        }
+        rows ??= await readGvaSnapshot();
+
+        return rows
+            .map((row) => normalizeGvaMassShooting(row, zipData))
+            .filter((r) => r.id && r.date);
     });
 }
 
@@ -277,14 +303,39 @@ router.get('/arrestsByState', async (req, res) => {
     }
 });
 
-// Get national missing person data
-// Taken from https://www.fbi.gov/wanted/kidnap
+// Get open US missing persons cases
+// Taken from NamUs: https://www.namus.gov/MissingPersons/Search
 router.get('/missingPersons', async (req, res) => {
     try {
-        res.json(await getMissingPersons());
+        const cases = await getMissingPersons();
+        res.json({
+            success: true,
+            source: "NamUs (National Missing and Unidentified Persons System)",
+            sourceUrl: "https://www.namus.gov/MissingPersons/Search",
+            count: cases.length,
+            data: cases,
+        });
     } catch (error) {
-        console.error("Error reading CSV file:", error);
-        res.status(500).json({ error: "Error reading CSV file" });
+        console.error("[crime] missingPersons failed:", error.message);
+        res.status(500).json({ success: false, message: "Failed to load missing persons data" });
+    }
+});
+
+// Get US mass shootings (4+ victims shot), 2014 to present
+// Taken from the Gun Violence Archive via The Trace: https://datahub.thetrace.org/dataset/mass-shootings/
+router.get('/massShootings', async (req, res) => {
+    try {
+        const incidents = await getMassShootings();
+        res.json({
+            success: true,
+            source: "Gun Violence Archive (via The Trace Gun Violence Data Hub)",
+            sourceUrl: "https://datahub.thetrace.org/dataset/mass-shootings/",
+            count: incidents.length,
+            data: incidents,
+        });
+    } catch (error) {
+        console.error("[crime] massShootings failed:", error.message);
+        res.status(500).json({ success: false, message: "Failed to load mass shooting data" });
     }
 });
 

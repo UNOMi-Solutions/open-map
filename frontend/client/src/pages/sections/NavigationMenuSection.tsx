@@ -740,7 +740,28 @@ export const NavigationMenuSection = ({
                   Missing Persons
                 </label>
               </div>
+            </div>
 
+            <div className="ml-4">
+              <div className="mt-2 flex items-center">
+                <Checkbox
+                  id="mass-shootings"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={selectedLayers.includes("mass-shootings")}
+                  onCheckedChange={(checked) => onLayerToggle?.("mass-shootings", checked === true)}
+                />
+                <label
+                  htmlFor="mass-shootings"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]"
+                >
+                  Mass Shootings
+                </label>
+              </div>
+              {selectedLayers.includes("mass-shootings") && (
+                <p className="ml-[31px] mt-1 text-[11px] text-white/60 leading-snug [font-family:'Futura PT']">
+                  Gun Violence Archive, 2014–present. 4+ victims shot. Circle size = total victims.
+                </p>
+              )}
             </div>
 
             <div className="ml-4">

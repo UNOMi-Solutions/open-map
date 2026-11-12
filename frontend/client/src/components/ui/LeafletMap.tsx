@@ -44,6 +44,7 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
+import MassShootingMarkers from "./MassShootingMarkers";
 
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
@@ -376,6 +377,8 @@ export default function LeafletMap({
 
   showMissingPersonsData = false,
 
+  showMassShootings = false,
+
   showConsentAgeData = false,
   showAlprCameras = false,
   alprFlockOnly = false,
@@ -440,6 +443,9 @@ export default function LeafletMap({
   showArrestData?: boolean;
 
   showMissingPersonsData?: boolean;
+
+  /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
+  showMassShootings?: boolean;
 
   showConsentAgeData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
@@ -1871,6 +1877,14 @@ export default function LeafletMap({
           timelineRange={timelineRange}
           onDateRangeChange={onDateRangeChange}
         />
+
+        {showMassShootings && (
+          <MassShootingMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
 

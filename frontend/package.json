@@ -112,6 +112,7 @@
     "@types/express-session": "^1.18.0",
     "@types/html2canvas": "^0.5.35",
     "@types/leaflet": "^1.9.21",
+    "@types/leaflet.markercluster": "^1.5.6",
     "@types/node": "20.16.11",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",

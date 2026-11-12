@@ -167,7 +167,7 @@ All data routes require an `x-api-key` header matching `API_DEV_KEY`.
 |---|---|
 | `GET /api/v1/crime/murderByState` | Murder data by state |
 | `GET /api/v1/crime/arrestsByState` | Arrest data by state and offense |
-| `GET /api/v1/crime/missingPersons` | FBI missing persons data |
+| `GET /api/v1/crime/missingPersons` | NamUs open missing persons cases (`npm run seed:missing-persons` refreshes the bundled snapshot) |
 | `GET /api/v1/environment/*` | Environmental data (disasters, emissions, air quality) |
 | `GET /api/v1/lawEnforcement/*` | Law enforcement statistics |
 | `GET /api/v1/census/*` | Census data |

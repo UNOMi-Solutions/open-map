@@ -9,7 +9,9 @@
     "dev": "nodemon --exec \"node --use-system-ca index.js\"",
     "start": "node --use-system-ca index.js",
     "seed:user": "node scripts/seed-user.js",
-    "seed:alpr": "node scripts/build-alpr-seed.js"
+    "seed:alpr": "node scripts/build-alpr-seed.js",
+    "seed:mass-shootings": "node scripts/build-gva-mass-shootings-seed.js",
+    "seed:missing-persons": "node scripts/build-namus-missing-persons-seed.js"
   },
   "repository": {
     "type": "git",

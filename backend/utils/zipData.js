@@ -18,14 +18,21 @@ export function getZipData() {
     loadPromise = new Promise((resolve, reject) => {
       const byPostalCode = {};
       const byCounty = {};
+      // Keyed "place name|STATE CODE" in lowercase, e.g. "austin|tx".
+      const byPlace = {};
+      // Full state name (lowercase) -> two-letter code, e.g. "texas" -> "TX".
+      const stateCodes = {};
 
       fs.createReadStream(ZIP_CSV_PATH)
         .pipe(csvParser())
         .on("data", (row) => {
           byPostalCode[row["postal code"]] = row;
           byCounty[row["admin name2"]] = row;
+          const placeKey = `${row["place name"]}|${row["admin code1"]}`.toLowerCase();
+          byPlace[placeKey] ??= row;
+          stateCodes[row["admin name1"].toLowerCase()] = row["admin code1"];
         })
-        .on("end", () => resolve({ byPostalCode, byCounty }))
+        .on("end", () => resolve({ byPostalCode, byCounty, byPlace, stateCodes }))
         .on("error", reject);
     }).catch((error) => {
       loadPromise = null;
