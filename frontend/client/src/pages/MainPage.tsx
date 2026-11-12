@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignUp from "./sections/SignUp";
@@ -46,6 +46,147 @@ import {
   formatTimelineDate,
   type TimelineDateRange,
 } from "@/lib/timeline";
+
+interface TimelineRangeControlProps {
+  availableDateRange: TimelineDateRange;
+  selectedRange: TimelineDateRange;
+  onCommit: (range: TimelineDateRange) => void;
+}
+
+function TimelineRangeControl({
+  availableDateRange,
+  selectedRange,
+  onCommit,
+}: TimelineRangeControlProps) {
+  const [draftRange, setDraftRange] = useState(selectedRange);
+  const [isUpdating, startTransition] = useTransition();
+  const dayInMs = 24 * 60 * 60 * 1000;
+  const dateSpan = availableDateRange.end - availableDateRange.start || 1;
+
+  useEffect(() => {
+    setDraftRange(selectedRange);
+  }, [selectedRange.start, selectedRange.end]);
+
+  const commitRange = (range: TimelineDateRange) => {
+    startTransition(() => onCommit(range));
+  };
+
+  const commitDraftRange = () => {
+    if (
+      draftRange.start !== selectedRange.start ||
+      draftRange.end !== selectedRange.end
+    ) {
+      commitRange(draftRange);
+    }
+  };
+
+  const resetRange = () => {
+    setDraftRange(availableDateRange);
+    commitRange(availableDateRange);
+  };
+
+  return (
+    <aside
+      aria-label="Data timeline"
+      className="fixed bottom-5 right-5 z-[3000] w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-[#0c1022]/95 p-4 text-white shadow-2xl backdrop-blur"
+    >
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold">Timeline</h2>
+          {isUpdating && (
+            <span role="status" className="inline-flex items-center gap-1 text-xs text-sky-200">
+              <Loader className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              Updating map
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={resetRange}
+          className="text-xs text-sky-300 hover:text-sky-200 disabled:opacity-50"
+          disabled={
+            selectedRange.start === availableDateRange.start &&
+            selectedRange.end === availableDateRange.end
+          }
+        >
+          Reset
+        </button>
+      </div>
+      <div className="mb-1 flex justify-between gap-3 text-xs text-white/80">
+        <span>
+          From <strong>{formatTimelineDate(draftRange.start)}</strong>
+        </span>
+        <span>
+          Through <strong>{formatTimelineDate(draftRange.end)}</strong>
+        </span>
+      </div>
+      <div className="relative my-2 h-6">
+        <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/20" />
+        <div
+          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+          style={{
+            left: `${((draftRange.start - availableDateRange.start) / dateSpan) * 100}%`,
+            right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
+          }}
+        />
+        <label className="sr-only" htmlFor="timeline-start">
+          Earliest displayed date
+        </label>
+        <input
+          id="timeline-start"
+          aria-label="Earliest displayed date"
+          type="range"
+          min={availableDateRange.start}
+          max={availableDateRange.end}
+          step={dayInMs}
+          value={draftRange.start}
+          disabled={availableDateRange.start === availableDateRange.end}
+          onChange={(event) => {
+            const start = Number(event.target.value);
+            setDraftRange((current) => ({
+              ...current,
+              start: Math.min(start, current.end),
+            }));
+          }}
+          onPointerUp={commitDraftRange}
+          onPointerCancel={commitDraftRange}
+          onKeyUp={commitDraftRange}
+          onBlur={commitDraftRange}
+          className="timeline-range-input"
+        />
+        <label className="sr-only" htmlFor="timeline-end">
+          Latest displayed date
+        </label>
+        <input
+          id="timeline-end"
+          aria-label="Latest displayed date"
+          type="range"
+          min={availableDateRange.start}
+          max={availableDateRange.end}
+          step={dayInMs}
+          value={draftRange.end}
+          disabled={availableDateRange.start === availableDateRange.end}
+          onChange={(event) => {
+            const end = Number(event.target.value);
+            setDraftRange((current) => ({
+              ...current,
+              end: Math.max(end, current.start),
+            }));
+          }}
+          onPointerUp={commitDraftRange}
+          onPointerCancel={commitDraftRange}
+          onKeyUp={commitDraftRange}
+          onBlur={commitDraftRange}
+          className="timeline-range-input"
+        />
+      </div>
+      <div className="mt-1 flex justify-between text-[10px] text-white/50">
+        <span>{formatTimelineDate(availableDateRange.start)}</span>
+        <span>{formatTimelineDate(availableDateRange.end)}</span>
+      </div>
+    </aside>
+  );
+}
 
 export default function MainPage() {
   const [progress, setProgress] = useState(0);
@@ -172,8 +313,6 @@ export default function MainPage() {
 
   // Props for missing persons data
   const [showMissingPersonsData, setShowMissingPersonsData] = useState(false);
-  const [missingPersonQ, setMissingPersonQ] = useState<string>("Q1");
-  const [missingPersonYear, setMissingPersonYear] = useState<number>(2026);
 
   // Props for consent age data
   const [showConsentAgeData, setShowConsentAgeData] = useState(false);
@@ -438,8 +577,6 @@ export default function MainPage() {
     setArrestCategory("Arrestee Sex");
     setShowArrestData(false);
     setShowMissingPersonsData(false);
-    setMissingPersonQ("Q1");
-    setMissingPersonYear(2026);
     setShowConsentAgeData(false);
     setPoliticalLayerIds([]);
     setHouseDistrictPartyMode("both");
@@ -463,8 +600,6 @@ export default function MainPage() {
     arrestCategory,
     showArrestData,
     showMissingPersonsData,
-    missingPersonQ,
-    missingPersonYear,
     showConsentAgeData,
     politicalLayerIds,
     houseDistrictPartyMode,
@@ -492,8 +627,6 @@ export default function MainPage() {
     setArrestCategory(c.arrestCategory ?? "Arrestee Sex");
     setShowArrestData(!!c.showArrestData);
     setShowMissingPersonsData(!!c.showMissingPersonsData);
-    setMissingPersonQ(c.missingPersonQ ?? "Q1");
-    setMissingPersonYear(c.missingPersonYear ?? 2026);
     setShowConsentAgeData(!!c.showConsentAgeData);
     setPoliticalLayerIds(Array.isArray(c.politicalLayerIds) ? c.politicalLayerIds : []);
     setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
@@ -840,8 +973,6 @@ export default function MainPage() {
                   showArrestData={showArrestData}
 
                   showMissingPersonsData={showMissingPersonsData}
-                  missingPersonQ={missingPersonQ}
-                  missingPersonYear={missingPersonYear}
 
                   showConsentAgeData={showConsentAgeData}
                   showAlprCameras={selectedLayers.includes("alpr-cameras")}
@@ -898,91 +1029,11 @@ export default function MainPage() {
               </div>
 
               {availableDateRange && timelineRange && (
-                <aside
-                  aria-label="Data timeline"
-                  className="fixed bottom-5 right-5 z-[3000] w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-[#0c1022]/95 p-4 text-white shadow-2xl backdrop-blur"
-                >
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <h2 className="text-sm font-semibold">Timeline</h2>
-                    <button
-                      type="button"
-                      onClick={() => setTimelineRange(availableDateRange)}
-                      className="text-xs text-sky-300 hover:text-sky-200 disabled:opacity-50"
-                      disabled={
-                        timelineRange.start === availableDateRange.start &&
-                        timelineRange.end === availableDateRange.end
-                      }
-                    >
-                      Reset
-                    </button>
-                  </div>
-                  <div className="mb-1 flex justify-between gap-3 text-xs text-white/80">
-                    <span>
-                      From <strong>{formatTimelineDate(timelineRange.start)}</strong>
-                    </span>
-                    <span>
-                      Through <strong>{formatTimelineDate(timelineRange.end)}</strong>
-                    </span>
-                  </div>
-                  <div className="relative my-2 h-6">
-                    <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/20" />
-                    <div
-                      className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
-                      style={{
-                        left: `${((timelineRange.start - availableDateRange.start) / (availableDateRange.end - availableDateRange.start || 1)) * 100}%`,
-                        right: `${100 - ((timelineRange.end - availableDateRange.start) / (availableDateRange.end - availableDateRange.start || 1)) * 100}%`,
-                      }}
-                    />
-                    <label className="sr-only" htmlFor="timeline-start">
-                      Earliest displayed date
-                    </label>
-                    <input
-                      id="timeline-start"
-                      aria-label="Earliest displayed date"
-                      type="range"
-                      min={availableDateRange.start}
-                      max={availableDateRange.end}
-                      step={24 * 60 * 60 * 1000}
-                      value={timelineRange.start}
-                      disabled={availableDateRange.start === availableDateRange.end}
-                      onChange={(event) => {
-                        const start = Number(event.target.value);
-                        setTimelineRange((current) =>
-                          current
-                            ? { ...current, start: Math.min(start, current.end) }
-                            : current,
-                        );
-                      }}
-                      className="timeline-range-input"
-                    />
-                    <label className="sr-only" htmlFor="timeline-end">
-                      Latest displayed date
-                    </label>
-                    <input
-                      id="timeline-end"
-                      aria-label="Latest displayed date"
-                      type="range"
-                      min={availableDateRange.start}
-                      max={availableDateRange.end}
-                      step={24 * 60 * 60 * 1000}
-                      value={timelineRange.end}
-                      disabled={availableDateRange.start === availableDateRange.end}
-                      onChange={(event) => {
-                        const end = Number(event.target.value);
-                        setTimelineRange((current) =>
-                          current
-                            ? { ...current, end: Math.max(end, current.start) }
-                            : current,
-                        );
-                      }}
-                      className="timeline-range-input"
-                    />
-                  </div>
-                  <div className="mt-1 flex justify-between text-[10px] text-white/50">
-                    <span>{formatTimelineDate(availableDateRange.start)}</span>
-                    <span>{formatTimelineDate(availableDateRange.end)}</span>
-                  </div>
-                </aside>
+                <TimelineRangeControl
+                  availableDateRange={availableDateRange}
+                  selectedRange={timelineRange}
+                  onCommit={setTimelineRange}
+                />
               )}
 
               {/* Landing content overlay (full screen) */}
@@ -1090,10 +1141,6 @@ export default function MainPage() {
 
                   showMissingPersonsData={showMissingPersonsData}
                   onToggleMissingPersonsData={() => setShowMissingPersonsData((v) => !v)}
-                  missingPersonQ={missingPersonQ}
-                  onMissingPersonQChange={setMissingPersonQ}
-                  missingPersonYear={missingPersonYear}
-                  onMissingPersonYearChange={setMissingPersonYear}
 
                   showConsentAgeData={showConsentAgeData}
                   onToggleConsentAgeData={() => setShowConsentAgeData((v) => !v)}

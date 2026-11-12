@@ -375,8 +375,6 @@ export default function LeafletMap({
   showArrestData = false,
 
   showMissingPersonsData = false,
-  missingPersonQ = "Q1",
-  missingPersonYear = 2026,
 
   showConsentAgeData = false,
   showAlprCameras = false,
@@ -442,8 +440,6 @@ export default function LeafletMap({
   showArrestData?: boolean;
 
   showMissingPersonsData?: boolean;
-  missingPersonQ?: string;
-  missingPersonYear?: any;
 
   showConsentAgeData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
@@ -1871,8 +1867,6 @@ export default function LeafletMap({
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
 
         <MissingPersons 
-          missingPersonQ={missingPersonQ}
-          missingPersonYear={missingPersonYear}
           showMissingPersonsData={showMissingPersonsData}
           timelineRange={timelineRange}
           onDateRangeChange={onDateRangeChange}
