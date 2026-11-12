@@ -50,10 +50,6 @@ interface NavigationMenuSectionProps {
 
   showMissingPersonsData: boolean;
   onToggleMissingPersonsData: () => void;
-  missingPersonQ: string;
-  onMissingPersonQChange: (value: string) => void;
-  missingPersonYear: number;
-  onMissingPersonYearChange: (value: number) => void;
 
   showConsentAgeData: boolean;
   onToggleConsentAgeData: () => void;
@@ -100,10 +96,6 @@ export const NavigationMenuSection = ({
 
   showMissingPersonsData,
   onToggleMissingPersonsData,
-  missingPersonQ,
-  onMissingPersonQChange,
-  missingPersonYear,
-  onMissingPersonYearChange,
 
   showConsentAgeData,
   onToggleConsentAgeData,
@@ -745,57 +737,6 @@ export const NavigationMenuSection = ({
                   Missing Persons
                 </label>
               </div>
-
-              {
-                (showMissingPersonsData) ? <>
-                  <label className="mt-2 block text-[11px] text-white/80">
-                    Year
-                  </label>
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) => {
-                      onMissingPersonYearChange(
-                        parseInt(e.target.value)
-                      )
-                    }}
-                  >
-                    {Array.from(
-                      { length: new Date().getFullYear() - 2013 + 1 },
-                      (_, i) => {
-                        const year = 2013 + i;
-                        return (
-                          <option className="text-black" key={year} value={year}>
-                            {year}
-                          </option>
-                        );
-                      }
-                    ).reverse()}
-                  </select>
-              
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) =>
-                      onMissingPersonQChange(
-                        e.target.value as unknown as string
-                      )
-                    }
-                  >
-                      <option className="text-black" value="Q1">
-                        Q1
-                      </option>
-                      <option className="text-black" value="Q2">
-                        Q2
-                      </option>
-                      <option className="text-black" value="Q3">
-                        Q3
-                      </option>
-                      <option className="text-black" value="Q4">
-                        Q4
-                      </option>
-                  </select>
-                </> : null
-                
-              }    
 
             </div>
 

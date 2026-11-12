@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 
 import { Marker, Popup } from "react-leaflet";
 
-import { CreateMarker, CreatePulsingIcon } from "./CreateMarker";
+import { CreatePulsingIcon } from "./CreateMarker";
+import MarkerCompound from "./MarkerCompound";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 import {
     getTimelineDateRange,
@@ -12,8 +13,6 @@ import {
 
 interface MissingPersonsProps {
     showMissingPersonsData: boolean;
-    missingPersonQ?: string;
-    missingPersonYear?: any;
     timelineRange: TimelineDateRange | null;
     onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 }
@@ -39,40 +38,11 @@ function getMissingPersonDate(person: Record<string, unknown>): Date | null {
 
 const MissingPersons = ({
     showMissingPersonsData,
-    missingPersonQ,
-    missingPersonYear,
     timelineRange,
     onDateRangeChange,
 } : MissingPersonsProps) => {
     const [missingPersonsData, setMissingPersonsData] = useState<MissingPerson[]>([]);
-    const [loadingMissingPersonsData, setLoadingMissingPersonsData] = useState<Boolean>(true);
-
-    const [startDate, setStartDate] = useState<Date>(new Date("2026-01-01"));
-    const [endDate, setEndDate] = useState<Date>(new Date("2026-03-31"));
-
-    useEffect(() => {
-        switch(missingPersonQ) {
-            case "Q1":
-                setStartDate(new Date(`${missingPersonYear}-01-01`));
-                setEndDate(new Date(`${missingPersonYear}-03-31`));
-                break;
-            case "Q2":
-                setStartDate(new Date(`${missingPersonYear}-04-01`));
-                setEndDate(new Date(`${missingPersonYear}-06-30`));
-                break;
-            case "Q3":
-                setStartDate(new Date(`${missingPersonYear}-07-01`));
-                setEndDate(new Date(`${missingPersonYear}-09-30`));
-                break;
-            case "Q4":
-                setStartDate(new Date(`${missingPersonYear}-10-01`));
-                setEndDate(new Date(`${missingPersonYear}-12-31`));
-                break;
-            default:
-                setStartDate(new Date(`${missingPersonYear}-01-01`));
-                setEndDate(new Date(`${missingPersonYear}-03-31`));
-        }
-    }, [missingPersonQ, missingPersonYear]);
+    const [loadingMissingPersonsData, setLoadingMissingPersonsData] = useState<boolean>(true);
 
     useEffect(() => {
         let cancelled = false;
@@ -107,11 +77,11 @@ const MissingPersons = ({
         return () => onDateRangeChange("missing-persons", null);
     }, [missingPersonsData, showMissingPersonsData, onDateRangeChange]);
 
-    return <>
-        {
-            showMissingPersonsData &&
-            !loadingMissingPersonsData && 
-            missingPersonsData.map((missingPerson: MissingPerson, index: number) => {
+    if (!showMissingPersonsData || loadingMissingPersonsData) return null;
+
+    return (
+        <MarkerCompound>
+            {missingPersonsData.map((missingPerson: MissingPerson, index: number) => {
                 const cleanedObj = Object.fromEntries(
                     Object.entries(missingPerson).map(([key, value]) => [
                         key.replace(/^\uFEFF/, '').replace(/^"(.*)"$/, '$1'),
@@ -121,17 +91,34 @@ const MissingPersons = ({
                 const { locationData, "Case Number": caseNumber, "Legal First Name": legalFirstName, "Legal Last Name": legalLastName } = cleanedObj;
                 const missingPersonDate = getMissingPersonDate(cleanedObj);
 
-                return (locationData != null && missingPersonDate && missingPersonDate >= startDate && missingPersonDate <= endDate && isDateInTimelineRange(missingPersonDate, timelineRange)) ? <Marker icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)} position={[Number(locationData["latitude"]), Number(locationData["longitude"])]} key={index}>
-                    <Popup>
-                        <h1>Case Number: { caseNumber }</h1>
-                        <h1>{ legalFirstName } { legalLastName }</h1>
-                        <h2>Went missing in { cleanedObj['City'] }, { cleanedObj['State'] }</h2>
-                        <h2>Date of Last Contact: { missingPersonDate.toLocaleDateString() }</h2>
-                    </Popup>
-                </Marker> : null;
-            })
-        }
-    </>
+                if (
+                    !missingPersonDate ||
+                    !isDateInTimelineRange(missingPersonDate, timelineRange) ||
+                    locationData == null
+                ) {
+                    return null;
+                }
+
+                return (
+                    <Marker
+                        icon={CreatePulsingIcon(`hsl(${color},80%,50%)`)}
+                        key={index}
+                        position={[
+                            Number(locationData.latitude),
+                            Number(locationData.longitude),
+                        ]}
+                    >
+                        <Popup>
+                            <h1>Case Number: {caseNumber}</h1>
+                            <h1>{legalFirstName} {legalLastName}</h1>
+                            <h2>Went missing in {cleanedObj["City"]}, {cleanedObj["State"]}</h2>
+                            <h2>Date of Last Contact: {missingPersonDate.toLocaleDateString()}</h2>
+                        </Popup>
+                    </Marker>
+                );
+            })}
+        </MarkerCompound>
+    );
 }
 
 export default MissingPersons;
