@@ -14,7 +14,6 @@ import {
   HouseDistrictPartyMode,
 } from "@/components/ui/LeafletMap";
 
-import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
 import {
   INCIDENT_MENU_ID,
@@ -35,10 +34,6 @@ interface NavigationMenuSectionProps {
 
   showPoliceKillingData: boolean;
   onTogglePoliceKillingData: () => void;
-  PoliceKillingQ: PoliceKillingQKey;
-  onPoliceKillingQChange: (value: PoliceKillingQKey) => void;
-  PoliceKillingYear: number;
-  onPoliceKillingYearChange: (value: number) => void;
 
   showMurderData: boolean;
   murderCategory: string;
@@ -85,10 +80,6 @@ export const NavigationMenuSection = ({
 
   showPoliceKillingData,
   onTogglePoliceKillingData,
-  PoliceKillingQ,
-  onPoliceKillingQChange,
-  PoliceKillingYear,
-  onPoliceKillingYearChange,
 
   showMurderData,
   murderCategory,
@@ -139,6 +130,15 @@ export const NavigationMenuSection = ({
     // { id: "toxic-area", label: "Toxic Area" },
   ];
 
+  const incidentTypeItems: LayerOption[] = [
+    ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    
+    // { id: "toxic-spills", label: "Toxic Spills" },
+    // { id: "toxic-area", label: "Toxic Area" },
+  ];
+
   // Category data for Transportation section
   const transportationItems = [
     { id: "rural-access", label: "Rural Access to Intercity Transportation" },
@@ -163,12 +163,6 @@ export const NavigationMenuSection = ({
     { id: "nd-type:Tropical Depression", label: "Tropical Depression" },
     { id: "nd-type:Biological", label: "Biological" },
     { id: "nd-type:Other", label: "Other" },
-  ];
-
-  const incidentTypeItems: LayerOption[] = [
-    ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
-    ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
-    ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
   ];
 
   const incidentMenuOpen =
@@ -785,55 +779,7 @@ export const NavigationMenuSection = ({
                   Police Killings
                 </span>
               </div>
-              {
-                (showPoliceKillingData) ? <>
-                  <label className="mt-2 block text-[11px] text-white/80">
-                    Year
-                  </label>
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    value={PoliceKillingYear}
-                    onChange={(e) => {
-                      onPoliceKillingYearChange(parseInt(e.target.value, 10))
-                    }}
-                  >
-                    {Array.from(
-                      { length: new Date().getFullYear() - 2013 + 1 },
-                      (_, i) => {
-                        const year = 2013 + i;
-                        return (
-                          <option className="text-black" key={year} value={year}>
-                            {year}
-                          </option>
-                        );
-                      }
-                    ).reverse()}
-                  </select>
-
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    value={PoliceKillingQ}
-                    onChange={(e) =>
-                      onPoliceKillingQChange(
-                        e.target.value as PoliceKillingQKey
-                      )
-                    }
-                  >
-                      <option className="text-black" value="Q1">
-                        Q1
-                      </option>
-                      <option className="text-black" value="Q2">
-                        Q2
-                      </option>
-                      <option className="text-black" value="Q3">
-                        Q3
-                      </option>
-                      <option className="text-black" value="Q4">
-                        Q4
-                      </option>
-                  </select>
-                </> : null
-              }
+              
             </div>
 
             <div className="ml-4">

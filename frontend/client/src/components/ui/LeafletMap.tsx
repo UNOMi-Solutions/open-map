@@ -59,7 +59,7 @@ import RuralAccessChoropleth from "./RuralAccessChoropleth";
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
 // Police Killing Data
-import PoliceKillings, { PoliceKillingQKey } from "./PoliceKillings";
+import PoliceKillings from "./PoliceKillings";
 
 // State markers with arrest data
 import ArrestMarkers from "./ArrestMarkers";
@@ -367,8 +367,6 @@ export default function LeafletMap({
   showChoropleth = true,
 
   showPoliceKillingData = false,
-  PoliceKillingQ = "Q1",
-  PoliceKillingYear = 2026,
 
   showMurderData = false,
   murderCategory = "victim",
@@ -436,8 +434,6 @@ export default function LeafletMap({
   showChoropleth?: boolean;
 
   showPoliceKillingData?: boolean;
-  PoliceKillingQ?: PoliceKillingQKey;
-  PoliceKillingYear?: any;
   
   showMurderData?: boolean;
   murderCategory?: string;
@@ -1864,8 +1860,6 @@ export default function LeafletMap({
 
         {/* TESTING - Case by case police killings */}
         <PoliceKillings
-          PoliceKillingQ={PoliceKillingQ}
-          PoliceKillingYear={PoliceKillingYear}
           showPoliceKillingData={showPoliceKillingData}
           timelineRange={timelineRange}
           onDateRangeChange={onDateRangeChange}
