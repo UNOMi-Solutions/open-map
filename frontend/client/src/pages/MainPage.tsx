@@ -175,9 +175,6 @@ export default function MainPage() {
 
   // Props for missing persons data
   const [showMissingPersonsData, setShowMissingPersonsData] = useState(false);
-  const [missingPersonQ, setMissingPersonQ] = useState<string>("Q1");
-  const [missingPersonYear, setMissingPersonYear] = useState<number>(2026);
-
   // Props for consent age data
   const [showConsentAgeData, setShowConsentAgeData] = useState(false);
 
@@ -443,8 +440,6 @@ export default function MainPage() {
     setArrestCategory("Arrestee Sex");
     setShowArrestData(false);
     setShowMissingPersonsData(false);
-    setMissingPersonQ("Q1");
-    setMissingPersonYear(2026);
     setShowConsentAgeData(false);
     setPoliticalLayerIds([]);
     setHouseDistrictPartyMode("both");
@@ -470,8 +465,6 @@ export default function MainPage() {
     arrestCategory,
     showArrestData,
     showMissingPersonsData,
-    missingPersonQ,
-    missingPersonYear,
     showConsentAgeData,
     politicalLayerIds,
     houseDistrictPartyMode,
@@ -501,8 +494,6 @@ export default function MainPage() {
     setArrestCategory(c.arrestCategory ?? "Arrestee Sex");
     setShowArrestData(!!c.showArrestData);
     setShowMissingPersonsData(!!c.showMissingPersonsData);
-    setMissingPersonQ(c.missingPersonQ ?? "Q1");
-    setMissingPersonYear(c.missingPersonYear ?? 2026);
     setShowConsentAgeData(!!c.showConsentAgeData);
     setPoliticalLayerIds(Array.isArray(c.politicalLayerIds) ? c.politicalLayerIds : []);
     setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
@@ -851,8 +842,6 @@ export default function MainPage() {
                   showArrestData={showArrestData}
 
                   showMissingPersonsData={showMissingPersonsData}
-                  missingPersonQ={missingPersonQ}
-                  missingPersonYear={missingPersonYear}
 
                   showMassShootings={selectedLayers.includes("mass-shootings")}
 
@@ -1107,10 +1096,6 @@ export default function MainPage() {
 
                   showMissingPersonsData={showMissingPersonsData}
                   onToggleMissingPersonsData={() => setShowMissingPersonsData((v) => !v)}
-                  missingPersonQ={missingPersonQ}
-                  onMissingPersonQChange={setMissingPersonQ}
-                  missingPersonYear={missingPersonYear}
-                  onMissingPersonYearChange={setMissingPersonYear}
 
                   showConsentAgeData={showConsentAgeData}
                   onToggleConsentAgeData={() => setShowConsentAgeData((v) => !v)}

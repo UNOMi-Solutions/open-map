@@ -378,8 +378,6 @@ export default function LeafletMap({
   showArrestData = false,
 
   showMissingPersonsData = false,
-  missingPersonQ = "Q1",
-  missingPersonYear = 2026,
 
   showMassShootings = false,
 
@@ -449,8 +447,6 @@ export default function LeafletMap({
   showArrestData?: boolean;
 
   showMissingPersonsData?: boolean;
-  missingPersonQ?: string;
-  missingPersonYear?: any;
 
   /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
   showMassShootings?: boolean;
@@ -1883,8 +1879,6 @@ export default function LeafletMap({
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
 
         <MissingPersons 
-          missingPersonQ={missingPersonQ}
-          missingPersonYear={missingPersonYear}
           showMissingPersonsData={showMissingPersonsData}
           timelineRange={timelineRange}
           onDateRangeChange={onDateRangeChange}

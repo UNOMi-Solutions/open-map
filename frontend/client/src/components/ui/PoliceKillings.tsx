@@ -4,7 +4,8 @@ import {
   Popup
 } from "react-leaflet";
 
-import { CreateMarker, CreatePulsingIcon } from "./CreateMarker";
+import { CreatePulsingIcon } from "./CreateMarker";
+import MarkerCompound from "./MarkerCompound";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 import {
     getTimelineDateRange,
@@ -118,8 +119,8 @@ const PoliceKillings = ({
         return () => onDateRangeChange("police-killings", null);
     }, [PDKillingData, showPoliceKillingData, onDateRangeChange]);
 
-    return (!showPoliceKillingData) ? null : <>
-    
+    return (!showPoliceKillingData) ? null : (
+        <MarkerCompound>
         {
             PDKillingData.map((incident: Incident, index: number) => {
                 const { locationData } = incident;
@@ -146,8 +147,8 @@ const PoliceKillings = ({
                 }
             })
         }
-    
-    </>
+        </MarkerCompound>
+    );
 }
 
 export default PoliceKillings;

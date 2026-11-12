@@ -49,12 +49,6 @@ function getIconSize(totalVictims: number | null): number {
   return Math.round(Math.min(44, 14 + Math.sqrt(totalVictims ?? 0) * 3));
 }
 
-/**
- * Only cluster dots that would visually overlap: two typical dots (GVA's
- * minimum of 4 victims) touch when their centers are one diameter apart.
- */
-const CLUSTER_RADIUS_PX = getIconSize(4);
-
 /** Circle sized by total victims so the deadliest incidents stand out. */
 function getIcon(totalVictims: number | null): L.DivIcon {
   const size = getIconSize(totalVictims);
@@ -128,7 +122,7 @@ const MassShootingMarkers = ({
   );
 
   return (
-    <MarkerCompound maxClusterRadius={CLUSTER_RADIUS_PX}>
+    <MarkerCompound>
       {visible.map((incident) => (
         <Marker
           key={incident.id}
