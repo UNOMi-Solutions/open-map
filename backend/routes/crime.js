@@ -12,12 +12,6 @@ import axios from "axios";
 // Import cheerio for web scraping
 import * as cheerio from "cheerio";
 
-// Import file stream and csv reader for missing person data
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import csvParser from "csv-parser";
-
 import { getZipData } from "../utils/zipData.js";
 import { getCached, mapWithConcurrency } from "../utils/dataCache.js";
 import {
@@ -27,9 +21,11 @@ import {
     parseGvaCsv,
     readGvaSnapshot,
 } from "../lib/gvaMassShootings.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MISSING_PERSONS_CSV = path.join(__dirname, "..", "data", "missingPersons.csv");
+import {
+    downloadNamusMissingPersons,
+    normalizeNamusMissingPerson,
+    readNamusSnapshot,
+} from "../lib/namusMissingPersons.js";
 
 // Test Command
 router.get('/test', (req, res) => {
@@ -84,22 +80,22 @@ async function fetchAllStates(buildUrl) {
     return Object.fromEntries(entries);
 }
 
-/** Reads the bundled missing persons CSV once per TTL instead of per request. */
+/** Open NamUs missing persons cases, refreshed from NamUs once per TTL. */
 function getMissingPersons() {
     return getCached("crime:missingPersons", FBI_CACHE_TTL_MS, async () => {
-        const { byCounty } = await getZipData();
+        const zipData = await getZipData();
 
-        return new Promise((resolve, reject) => {
-            const rows = [];
-            fs.createReadStream(MISSING_PERSONS_CSV)
-                .pipe(csvParser())
-                .on("data", (row) => {
-                    row["locationData"] = byCounty[row["County"]];
-                    rows.push(row);
-                })
-                .on("end", () => resolve(rows))
-                .on("error", reject);
-        });
+        let rows;
+        try {
+            rows = await downloadNamusMissingPersons();
+        } catch (error) {
+            console.warn("[crime] NamUs unavailable, using bundled snapshot:", error.message);
+            rows = await readNamusSnapshot();
+        }
+
+        return rows
+            .map((row) => normalizeNamusMissingPerson(row, zipData))
+            .filter((r) => r.id && r.dateOfLastContact);
     });
 }
 
@@ -307,14 +303,21 @@ router.get('/arrestsByState', async (req, res) => {
     }
 });
 
-// Get national missing person data
-// Taken from https://www.fbi.gov/wanted/kidnap
+// Get open US missing persons cases
+// Taken from NamUs: https://www.namus.gov/MissingPersons/Search
 router.get('/missingPersons', async (req, res) => {
     try {
-        res.json(await getMissingPersons());
+        const cases = await getMissingPersons();
+        res.json({
+            success: true,
+            source: "NamUs (National Missing and Unidentified Persons System)",
+            sourceUrl: "https://www.namus.gov/MissingPersons/Search",
+            count: cases.length,
+            data: cases,
+        });
     } catch (error) {
-        console.error("Error reading CSV file:", error);
-        res.status(500).json({ error: "Error reading CSV file" });
+        console.error("[crime] missingPersons failed:", error.message);
+        res.status(500).json({ success: false, message: "Failed to load missing persons data" });
     }
 });
 
