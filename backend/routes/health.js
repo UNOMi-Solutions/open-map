@@ -1,8 +1,11 @@
 import axios from "axios";
 import { Router } from "express";
 import mongoose from "mongoose";
+import drugOverdoseRoutes from "./drugOverdose.js";
 
 const router = Router();
+// Inherits the existing /api/v1/health API-key protection in index.js.
+router.use("/drugOverdoseDeaths", drugOverdoseRoutes);
 const US_STATE_NAMES = {
   AL: "Alabama",
   AK: "Alaska",

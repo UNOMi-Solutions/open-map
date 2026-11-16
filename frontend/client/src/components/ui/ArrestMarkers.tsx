@@ -77,6 +77,8 @@ const HomicideMarkers = ({ arrestCategory, showArrestData } : ArrestMarkersProps
     const [currentCategory, setCurrentCategory] = useState<string>("Arrestee Race");
 
     useEffect(() => {
+        // Avoid the all-state FBI request until the Arrests layer is enabled.
+        if (!showArrestData) return;
         let cancelled = false;
         cachedApiGet<Record<string, unknown>>(
             "crime:arrestsByState",
@@ -95,7 +97,7 @@ const HomicideMarkers = ({ arrestCategory, showArrestData } : ArrestMarkersProps
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [showArrestData]);
 
     return <>
     

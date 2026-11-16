@@ -48,6 +48,11 @@ interface NavigationMenuSectionProps {
   onToggleArrestData: () => void;
   onSetChoroplethActive: (active: boolean) => void;
 
+  showHomeInvasionData: boolean;
+  onToggleHomeInvasionData: () => void;
+  homeInvasionYear: number;
+  onHomeInvasionYearChange: (value: number) => void;
+
   showMissingPersonsData: boolean;
   onToggleMissingPersonsData: () => void;
 
@@ -94,6 +99,11 @@ export const NavigationMenuSection = ({
   onToggleArrestData,
   onSetChoroplethActive,
 
+  showHomeInvasionData,
+  onToggleHomeInvasionData,
+  homeInvasionYear,
+  onHomeInvasionYearChange,
+
   showMissingPersonsData,
   onToggleMissingPersonsData,
 
@@ -124,6 +134,14 @@ export const NavigationMenuSection = ({
     { id: "air-quality", label: "Air Quality" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    // Superfund is the EPA-backed subset of the requested Toxic Area datapoint.
+    { id: "superfund-sites", label: "Toxic Area — Superfund Sites" },
+    // Energy technology filters share the existing reset and saved-profile state.
+    { id: "energy-plants", label: "Energy Plants — Solar, Wind & Hydro" },
+    { id: "sewage-discharge", label: "Sewage Discharge — CSO Outfalls" },
+    { id: "fracking-locations", label: "Fracking Locations" },
+    { id: "industrial-runoff", label: "Industrial Runoff — Water Releases" },
+    { id: "toxic-water-supply", label: "Toxic Water Supply — Health Violations" },
     { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
     
     // { id: "toxic-spills", label: "Toxic Spills" },
@@ -313,6 +331,22 @@ export const NavigationMenuSection = ({
                 {item.label}
               </label>
             </div>
+            {item.id === "energy-plants" && selectedLayers.includes("energy-plants") && (
+              <div className="ml-6 mt-2 mb-2">
+                <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">Plant types:</span>
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                  {["solar", "wind", "hydro"].map((type) => (
+                    <div key={type} className="flex items-center mt-0.5">
+                      <Checkbox id={`energy-type-${type}`} className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                        checked={!selectedLayers.includes(`energy-hide:${type}`)}
+                        onCheckedChange={(checked) => onLayerToggle?.(`energy-hide:${type}`, checked !== true)} />
+                      <label htmlFor={`energy-type-${type}`} className="ml-2 text-white/90 text-[11px] leading-[100%] capitalize [font-family:'Futura PT']">{type}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {renderSubFilters(item.id, subFilters)}
           </div>
         ),
@@ -342,7 +376,7 @@ export const NavigationMenuSection = ({
     // { id: "illegal-hard-drug-use", label: "Illegal/Hard drug use" },
     // { id: "healthy-eating", label: "Healthy eating" },
     { id: "alcoholism", label: "Alcoholism" },
-    // { id: "drug-addiction", label: "Drug addiction" },
+    { id: "drug-overdose-deaths", label: "Drug Overdose Deaths" },
     { id: "mental-health", label: "Mental Health" },
     { id: "best-healthcare-coverage", label: "Best healthcare coverage" },
     { id: "worst-healthcare-coverage", label: "Worst Healthcare Coverage" },
@@ -679,6 +713,49 @@ export const NavigationMenuSection = ({
 
                   </select>
                   </> : null }
+            </div>
+
+            {/* Controls the Home Invasions layer and reporting year. */}
+            <div className="ml-4">
+              <div className="mt-2 flex items-center left">
+                <Checkbox
+                  id="home-invasion-data"
+                  checked={showHomeInvasionData}
+                  onCheckedChange={onToggleHomeInvasionData}
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                />
+                <label
+                  htmlFor="home-invasion-data"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]"
+                >
+                  Home Invasions
+                </label>
+              </div>
+
+              {showHomeInvasionData && (
+                <div className="mt-2 flex w-full max-w-[240px] flex-col gap-2">
+                  <label className="text-[11px] text-white/80">
+                    Year
+                    <select
+                      aria-label="Home invasion year"
+                      className="mt-1 w-full rounded-md border border-white/70 bg-white/10 px-2 py-1 text-[11px] text-white outline-none focus:border-white focus:ring-1 focus:ring-white/40"
+                      value={homeInvasionYear}
+                      onChange={(event) => onHomeInvasionYearChange(Number(event.target.value))}
+                    >
+                      {Array.from({ length: 12 }, (_, index) => 2026 - index).map((year) => (
+                        <option className="text-black" key={year} value={year}>
+                          {year === 2026 ? "2026 (YTD)" : year}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {homeInvasionYear === 2026 && (
+                    <p className="text-[10px] leading-3 text-white/60">
+                      Year-to-date FBI data; totals may change as agencies submit updates.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="ml-4">

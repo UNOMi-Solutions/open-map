@@ -311,6 +311,10 @@ export default function MainPage() {
   const [arrestCategory, setArrestCategory] = useState<string>("Arrestee Sex");
   const [showArrestData, setShowArrestData] = useState(false);
 
+  // Stores the Home Invasions layer visibility and selected reporting year.
+  const [showHomeInvasionData, setShowHomeInvasionData] = useState(false);
+  const [homeInvasionYear, setHomeInvasionYear] = useState(2026);
+
   // Props for missing persons data
   const [showMissingPersonsData, setShowMissingPersonsData] = useState(false);
 
@@ -325,6 +329,7 @@ export default function MainPage() {
     useState<HouseDistrictPartyMode>("both");
   /** CDC PLACES county choropleth; exclusive with census race/age/sex selection */
   const [healthMetricId, setHealthMetricId] = useState<string | null>(null);
+  const [overdosePeriod, setOverdosePeriod] = useState("latest");
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
@@ -474,11 +479,22 @@ export default function MainPage() {
   };
 
   const handleLayerToggle = (layerId: string, checked: boolean) => {
+    if (layerId === "toxic-water-supply" && checked) {
+      setSelectedLayers(prev => [...prev.filter(id => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && id !== layerId), layerId]);
+      setHealthMetricId(null);
+      setSelectedRaceCensusId("all");
+      setSelectedAgeGroupId(null);
+      setSelectedSexId(null);
+      setShowChoropleth(false);
+      setShowHomeInvasionData(false);
+      setPoliticalLayerIds(prev => prev.filter(id => !["red-blue-district", "electoral-college", "gerrymandering"].includes(id)));
+      return;
+    }
     if (SPLC_LAYER_IDS.has(layerId)) {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && id !== "toxic-water-supply"
           ),
           layerId,
         ]);
@@ -496,11 +512,11 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && id !== "toxic-water-supply"
           ),
           layerId,
         ]);
-        if (HEALTH_WIRED_LAYER_IDS.has(layerId)) {
+        if (HEALTH_WIRED_LAYER_IDS.has(layerId) || layerId === "drug-overdose-deaths") {
           setHealthMetricId(layerId);
           setSelectedRaceCensusId("all");
           setSelectedAgeGroupId(null);
@@ -557,6 +573,7 @@ export default function MainPage() {
   };
 
   const handlePoliticalLayerToggle = (layerId: string, checked: boolean) => {
+    if (checked && ["red-blue-district", "electoral-college", "gerrymandering"].includes(layerId)) setSelectedLayers(prev => prev.filter(id => id !== "toxic-water-supply"));
     setPoliticalLayerIds((prev) =>
       checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
     );
@@ -576,18 +593,21 @@ export default function MainPage() {
     setMurderAttribute("age");
     setArrestCategory("Arrestee Sex");
     setShowArrestData(false);
+    setShowHomeInvasionData(false);
+    setHomeInvasionYear(2026);
     setShowMissingPersonsData(false);
     setShowConsentAgeData(false);
     setPoliticalLayerIds([]);
     setHouseDistrictPartyMode("both");
     setSearchQuery("");
     setHealthMetricId(null);
+    setOverdosePeriod("latest");
   };
 
   /** Snapshot of the full map setup, saved as a profile's `config`. */
   const getCurrentConfig = (): Record<string, unknown> => ({
     mapPins,
-    selectedLayers,
+    selectedLayers, // Includes sewage outfalls and other Environment toggles in saved profiles and reset.
     choroplethMetric,
     showChoropleth,
     selectedAgeGroupId,
@@ -599,11 +619,14 @@ export default function MainPage() {
     murderAttribute,
     arrestCategory,
     showArrestData,
+    showHomeInvasionData,
+    homeInvasionYear,
     showMissingPersonsData,
     showConsentAgeData,
     politicalLayerIds,
     houseDistrictPartyMode,
     healthMetricId,
+    overdosePeriod,
     searchQuery,
   });
 
@@ -626,11 +649,14 @@ export default function MainPage() {
     setMurderAttribute(c.murderAttribute ?? "age");
     setArrestCategory(c.arrestCategory ?? "Arrestee Sex");
     setShowArrestData(!!c.showArrestData);
+    setShowHomeInvasionData(!!c.showHomeInvasionData);
+    setHomeInvasionYear(c.homeInvasionYear ?? 2026);
     setShowMissingPersonsData(!!c.showMissingPersonsData);
     setShowConsentAgeData(!!c.showConsentAgeData);
     setPoliticalLayerIds(Array.isArray(c.politicalLayerIds) ? c.politicalLayerIds : []);
     setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
     setHealthMetricId(c.healthMetricId ?? null);
+    setOverdosePeriod(typeof c.overdosePeriod === "string" && /^(latest|20\d{2}-(0[1-9]|1[0-2]))$/.test(c.overdosePeriod) ? c.overdosePeriod : "latest");
     setSearchQuery(c.searchQuery ?? "");
     // Make sure the loaded configuration is actually visible.
     setShowLanding(false);
@@ -676,7 +702,7 @@ export default function MainPage() {
         prev.filter((id) => !HEALTH_ALL_LAYER_IDS.has(id))
       );
     }
-    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id)));
+    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id) && id !== "toxic-water-supply"));
   }, [selectedRaceCensusId, selectedAgeGroupId, selectedSexId, healthMetricId]);
 
   /** Population choropleth and SPLC are mutually exclusive for the colored layer */
@@ -685,7 +711,7 @@ export default function MainPage() {
       const next = !v;
       if (next) {
         setSelectedLayers((prev) =>
-          prev.filter((id) => !SPLC_LAYER_IDS.has(id))
+          prev.filter((id) => !SPLC_LAYER_IDS.has(id) && id !== "toxic-water-supply")
         );
       }
       return next;
@@ -972,6 +998,9 @@ export default function MainPage() {
                   arrestCategory={arrestCategory}
                   showArrestData={showArrestData}
 
+                  showHomeInvasionData={showHomeInvasionData}
+                  homeInvasionYear={homeInvasionYear}
+
                   showMissingPersonsData={showMissingPersonsData}
 
                   showMassShootings={selectedLayers.includes("mass-shootings")}
@@ -1017,12 +1046,22 @@ export default function MainPage() {
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
                   showDataCenters={selectedLayers.includes("data-centers")}
+                  showSuperfundSites={selectedLayers.includes("superfund-sites")}
+                  showEnergyPlants={selectedLayers.includes("energy-plants")}
+                  showSewageDischarge={selectedLayers.includes("sewage-discharge")}
+                  environmentalRiskSelections={selectedLayers}
+                  onEnvironmentalOptionChange={(name, value) => setSelectedLayers(prev => [
+                    ...prev.filter(id => !id.startsWith(`environment:${name}:`)), `environment:${name}:${value}`,
+                  ])}
+                  energyPlantTypes={(["solar", "wind", "hydro"] as const).filter((type) => !selectedLayers.includes(`energy-hide:${type}`))}
                   selectedAgeGroupId={selectedAgeGroupId}
                   selectedRaceCensusId={selectedRaceCensusId}
                   selectedSexId={selectedSexId}
                   politicalLayerIds={politicalLayerIds}
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
+                  overdosePeriod={overdosePeriod}
+                  onOverdosePeriodChange={setOverdosePeriod}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
                   timelineRange={timelineRange}
                   onDateRangeChange={handleDatasetDateRangeChange}
@@ -1140,6 +1179,14 @@ export default function MainPage() {
                   setArrestCategory={setArrestCategory}
                   onToggleArrestData={() => setShowArrestData((v) => !v)}
                   onSetChoroplethActive={setShowChoropleth}
+
+                  showHomeInvasionData={showHomeInvasionData}
+                  onToggleHomeInvasionData={() => {
+                    if (!showHomeInvasionData) setSelectedLayers(prev => prev.filter(id => id !== "toxic-water-supply"));
+                    setShowHomeInvasionData(v => !v);
+                  }}
+                  homeInvasionYear={homeInvasionYear}
+                  onHomeInvasionYearChange={setHomeInvasionYear}
 
                   showMissingPersonsData={showMissingPersonsData}
                   onToggleMissingPersonsData={() => setShowMissingPersonsData((v) => !v)}

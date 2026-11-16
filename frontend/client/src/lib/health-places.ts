@@ -26,6 +26,7 @@ export const HEALTH_WIRED_LAYER_IDS = new Set([
 
 /** All Health accordion checkbox ids (includes topics without a PLACES measure). */
 export const HEALTH_ALL_LAYER_IDS = new Set([
+  "drug-overdose-deaths",
   "heart-disease",
   "cancer",
   "breast-cancer",
