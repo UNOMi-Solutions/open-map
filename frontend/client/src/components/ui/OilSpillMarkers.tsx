@@ -2,6 +2,12 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import {
+  getTimelineDateRange,
+  isDateInTimelineRange,
+  type TimelineDateRange,
+} from "@/lib/timeline";
+import MarkerCompound from "./MarkerCompound";
 
 // marker icon to distinguish oil spills from default blue markers
 const OIL_SPILL_ICON = L.divIcon({
@@ -48,9 +54,15 @@ function getCoords(incident: OilSpillIncident): [number, number] | null {
 // Fetch oil spill data from api and set state 
 type OilSpillMarkersProps = {
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 };
 
-const OilSpillMarkers = ({ setLoading }: OilSpillMarkersProps) => {
+const OilSpillMarkers = ({
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+}: OilSpillMarkersProps) => {
   const [oilSpillData, setOilSpillData] = useState<OilSpillIncident[]>([]);
   const [loadingOilSpillData, setLoadingOilSpillData] = useState<Boolean>(true);
 
@@ -78,14 +90,33 @@ const OilSpillMarkers = ({ setLoading }: OilSpillMarkersProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "oil-spills",
+      getTimelineDateRange(
+        oilSpillData.map((incident) =>
+          incident.open_date ? new Date(incident.open_date) : null,
+        ),
+      ),
+    );
+    return () => onDateRangeChange("oil-spills", null);
+  }, [oilSpillData, onDateRangeChange]);
+
   /* Attach coordinates to each incident and remove invalid ones;
    an array of objects with incident, index, and coordinates is 
    returned so it can be displayed on the map */
   const incidentsWithCoords = oilSpillData
     .map((incident, index) => ({ incident, index, coords: getCoords(incident) }))
-    .filter((x): x is { incident: OilSpillIncident; index: number; coords: [number, number] } => x.coords !== null);
+    .filter(
+      (x): x is { incident: OilSpillIncident; index: number; coords: [number, number] } =>
+        x.coords !== null &&
+        isDateInTimelineRange(
+          x.incident.open_date ? new Date(x.incident.open_date) : null,
+          timelineRange,
+        ),
+    );
 
-  return <>
+  return (<MarkerCompound>
     {
       incidentsWithCoords.map(({ incident, index, coords: [lat, lng] }) => {
         const title = incident.name ?? incident.location ?? `Oil spill #${index + 1}`;
@@ -111,7 +142,8 @@ const OilSpillMarkers = ({ setLoading }: OilSpillMarkersProps) => {
         );
       })
     }
-  </>
+  </MarkerCompound>
+  );
 };
 
 export default OilSpillMarkers;

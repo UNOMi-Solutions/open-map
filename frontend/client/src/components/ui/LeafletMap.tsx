@@ -24,6 +24,7 @@ import type {
 import type { Topology } from "topojson-specification";
 import { feature as topojsonFeature } from "topojson-client";
 import { patchLeafletIcons } from "@/lib/leaflet-icons";
+import type { TimelineDateRange } from "@/lib/timeline";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
 import {
   getHealthChoroplethColors,
@@ -43,18 +44,22 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
-
-// Natural disaster incidents data
-import NaturalDisasterIncidentMarkers from "./NaturalDisasterIncidentMarkers";
+import MassShootingMarkers from "./MassShootingMarkers";
 
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
+
+// Noise pollution data
+import NoisePollutionLayer from "./NoisePollutionLayer";
+
+// Rural access to intercity transportation (BTS)
+import RuralAccessChoropleth from "./RuralAccessChoropleth";
 
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
 // Police Killing Data
-import PoliceKillings, { PoliceKillingQKey } from "./PoliceKillings";
+import PoliceKillings from "./PoliceKillings";
 
 // State markers with arrest data
 import ArrestMarkers from "./ArrestMarkers";
@@ -66,6 +71,16 @@ import GhgEmissionsMarkers from "./GhgEmissionsMarkers";
 
 // Data centers
 import DataCenterMarkers from "./DataCenterMarkers";
+import EarthquakeMarkers from "./EarthquakeMarkers";
+import StormEventsLayer from "./StormEventsLayer";
+import TornadoPathsLayer from "./TornadoPathsLayer";
+import DebrisFlowMarkers from "./DebrisFlowMarkers";
+import LandslideMarkers from "./LandslideMarkers";
+import NationalRiskIndexLayer from "./NationalRiskIndexLayer";
+import WildfireMarkers from "./WildfireMarkers";
+import VolcanoMarkers from "./VolcanoMarkers";
+import TsunamiMarkers from "./TsunamiMarkers";
+import DroughtLayer from "./DroughtLayer";
 import SenatorMarkers from "./SenatorMarkers";
 import GovernorMarkers from "./GovernorMarkers";
 import GerrymanderingMarkers from "./GerrymanderingMarkers";
@@ -81,6 +96,7 @@ import SewageDischargeMarkers from "./SewageDischargeMarkers";
 import EnvironmentalRiskLayers from "./EnvironmentalRiskLayers";
 import DrugOverdoseLayer from "./DrugOverdoseLayer";
 import { ENERGY_TYPES, EnergyType } from "@/lib/energy-plants";
+import AlprCameraMarkers from "./AlprCameraMarkers";
 
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
@@ -358,8 +374,6 @@ export default function LeafletMap({
   showChoropleth = true,
 
   showPoliceKillingData = false,
-  PoliceKillingQ = "Q1",
-  PoliceKillingYear = 2026,
 
   showMurderData = false,
   murderCategory = "victim",
@@ -372,18 +386,37 @@ export default function LeafletMap({
   homeInvasionYear = 2026,
 
   showMissingPersonsData = false,
-  missingPersonQ = "Q1",
-  missingPersonYear = 2026,
+
+  showMassShootings = false,
 
   showConsentAgeData = false,
+  showAlprCameras = false,
+  alprFlockOnly = false,
 
   /*toggle environmental information */
   showOilSpills = false,  
   showAirQuality = false,
+  showNoisePollution = false,
+  showRuralAccess = false,
+  ruralAccessYear = 2021,
+  onRuralAccessYearChange,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
-  showNaturalDisasterIncidents = false,
-  naturalDisasterIncidentTypes = [],
+  showEarthquakes = false,
+  earthquakeMinMagnitude = null,
+  stormEventCategory = null,
+  showTornadoes = false,
+  showDebrisFlow = false,
+  showLandslides = false,
+  showVolcanoes = false,
+  volcanoMinAlert = null,
+  showTsunamis = false,
+  showWildfires = false,
+  wildfireMinAcres = null,
+  showDrought = false,
+  droughtCategory = null,
+  showNationalRiskIndex = false,
+  nationalRiskIndexHazard = null,
   showDataCenters = false,
   showSuperfundSites = false,
   showEnergyPlants = false,
@@ -400,6 +433,10 @@ export default function LeafletMap({
   overdosePeriod = "latest",
   onOverdosePeriodChange = () => {},
   showSplcHateMap = false,
+
+  timelineRange = null,
+  onDateRangeChange,
+  timelineVisible = false,
 }: {
   loading?: boolean;
   // Required: marker children call this unconditionally, and every code path
@@ -415,8 +452,6 @@ export default function LeafletMap({
   showChoropleth?: boolean;
 
   showPoliceKillingData?: boolean;
-  PoliceKillingQ?: PoliceKillingQKey;
-  PoliceKillingYear?: any;
   
   showMurderData?: boolean;
   murderCategory?: string;
@@ -429,16 +464,39 @@ export default function LeafletMap({
   homeInvasionYear?: number;
 
   showMissingPersonsData?: boolean;
-  missingPersonQ?: string;
-  missingPersonYear?: any;
+
+  /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
+  showMassShootings?: boolean;
 
   showConsentAgeData?: boolean;
+  /** OpenStreetMap ALPR cameras, including Flock Safety */
+  showAlprCameras?: boolean;
+  alprFlockOnly?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
+  showNoisePollution?: boolean;
+  showRuralAccess?: boolean;  
+  ruralAccessYear?: number;
+  onRuralAccessYearChange?: (year: number) => void;
+  
   showWasteTreatmentDisposal?: boolean;
-  showNaturalDisasterIncidents?: boolean;
-  naturalDisasterIncidentTypes?: string[];
+  showEarthquakes?: boolean;
+  earthquakeMinMagnitude?: number | null;
+  stormEventCategory?: string | null;
+  showTornadoes?: boolean;
+  showDebrisFlow?: boolean;
+  showLandslides?: boolean;
+  showVolcanoes?: boolean;
+  volcanoMinAlert?: string | null;
+  showTsunamis?: boolean;
+  showWildfires?: boolean;
+  wildfireMinAcres?: number | null;
+  showDrought?: boolean;
+  droughtCategory?: number | null;
+  showNationalRiskIndex?: boolean;
+  /** NRI hazard code (e.g. "TRND"); null shows the composite risk rating */
+  nationalRiskIndexHazard?: string | null;
   showDataCenters?: boolean;
   showSuperfundSites?: boolean;
   showEnergyPlants?: boolean;
@@ -461,6 +519,10 @@ export default function LeafletMap({
   onOverdosePeriodChange?: (period: string) => void;
   /** SPLC Hate Map-derived group counts by state GEOID (/data/splc/by-state-geoid.json) */
   showSplcHateMap?: boolean;
+
+  timelineRange?: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
+  timelineVisible?: boolean;
 }) {
   const politicalDistrictsActive =
     politicalLayerIds.includes("red-blue-district") ||
@@ -1590,7 +1652,10 @@ export default function LeafletMap({
   };
   
   return (
-    <div ref={mapSectionRef} className="relative h-full w-full">
+    <div
+      ref={mapSectionRef}
+      className={`relative h-full w-full${timelineVisible ? " timeline-visible-map" : ""}`}
+    >
       <MapContainer
         ref={setMapInstanceRef}
         className="h-full w-full"
@@ -1689,22 +1754,112 @@ export default function LeafletMap({
         <HomicideMarkers murderCategory={murderCategory} murderAttribute={murderAttribute} showMurderData={showMurderData}></HomicideMarkers>
 
         {/* Oil spill incidents – shown when Oil Spills is selected in sidebar */}
-        {showOilSpills && <OilSpillMarkers setLoading={setLoading} />}
-
-        {/* Natural disaster incidents – fetches only for the state selected */}
-        {showNaturalDisasterIncidents && (
-          <NaturalDisasterIncidentMarkers
-            selectedStateCode={clickedStateCode}
-            selectedIncidentTypes={naturalDisasterIncidentTypes}
+        {showOilSpills && (
+          <OilSpillMarkers
             setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+
+        {/* FEMA National Risk Index – county risk ratings, overall or for one hazard */}
+        {showNationalRiskIndex && (
+          <NationalRiskIndexLayer selectedHazard={nationalRiskIndexHazard} setLoading={setLoading} />
+        )}
+
+        {stormEventCategory && (
+          <StormEventsLayer
+            key={stormEventCategory}
+            title={stormEventCategory}
+            categories={[stormEventCategory]}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+        {showTornadoes && (
+          <TornadoPathsLayer
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+        {showDebrisFlow && (
+          <DebrisFlowMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+        {showLandslides && (
+          <LandslideMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+
+        {showEarthquakes && (
+          <EarthquakeMarkers
+            minMagnitude={earthquakeMinMagnitude}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+        {showVolcanoes && (
+          <VolcanoMarkers
+            minAlertLevel={volcanoMinAlert}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+        {showTsunamis && (
+          <TsunamiMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+        {showWildfires && (
+          <WildfireMarkers
+            minAcres={wildfireMinAcres}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
+        {showDrought && (
+          <DroughtLayer
+            selectedCategory={droughtCategory}
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
           />
         )}
 
         {/* Air quality – fetches only for the state selected */}
         {showAirQuality && (
-          <AirQualityMarkers setLoading={setLoading}/>
+          <AirQualityMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         )}
 
+        {/* Noise pollution - loads image tile map for selected area */}
+        {showNoisePollution && <NoisePollutionLayer/>}
+
+        {/* Rural access to intercity transportation – county choropleth */}
+        {showRuralAccess && (
+          <RuralAccessChoropleth
+            year={ruralAccessYear}
+            onYearChange={onRuralAccessYearChange}
+            setLoading={setLoading}
+          />
+        )}        
+        
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
@@ -1751,10 +1906,14 @@ export default function LeafletMap({
 
         {/* TESTING - Case by case police killings */}
         <PoliceKillings
-          PoliceKillingQ={PoliceKillingQ}
-          PoliceKillingYear={PoliceKillingYear}
           showPoliceKillingData={showPoliceKillingData}
-          ></PoliceKillings>
+          timelineRange={timelineRange}
+          onDateRangeChange={onDateRangeChange}
+        />
+
+        {showAlprCameras && (
+          <AlprCameraMarkers flockOnly={alprFlockOnly} setLoading={setLoading} />
+        )}
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
@@ -1768,9 +1927,18 @@ export default function LeafletMap({
         />
 
         <MissingPersons 
-          missingPersonQ={missingPersonQ}
-          missingPersonYear={missingPersonYear}
-          showMissingPersonsData={showMissingPersonsData}></MissingPersons>
+          showMissingPersonsData={showMissingPersonsData}
+          timelineRange={timelineRange}
+          onDateRangeChange={onDateRangeChange}
+        />
+
+        {showMassShootings && (
+          <MassShootingMarkers
+            setLoading={setLoading}
+            timelineRange={timelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
 

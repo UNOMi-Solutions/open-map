@@ -21,10 +21,11 @@ export function getCached(key, ttlMs, fetchFn) {
     return data;
   })();
 
-  // Return the cleanup promise too, so upstream failures stay catchable by routes.
-  const trackedPromise = promise.finally(() => inFlight.delete(key));
-  inFlight.set(key, trackedPromise);
-  return trackedPromise;
+  inFlight.set(key, promise);
+  // Callers handle the rejection; this derived promise must not surface as an unhandled one.
+  promise.finally(() => inFlight.delete(key)).catch(() => {});
+
+  return promise;
 }
 
 /**
