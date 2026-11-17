@@ -57,6 +57,10 @@ interface NavigationMenuSectionProps {
   onToggleConsentAgeData: () => void;
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
+  povertyYear: number | null;
+  povertyLatestYear: number | null;
+  povertyAvailableYears: number[];
+  onPovertyYearChange: (year: number | null) => void;
   selectedAgeGroupId: string | null;
   onSelectedAgeGroupChange: (ageGroupId: string | null) => void;
   selectedRaceCensusId: string;
@@ -111,6 +115,10 @@ export const NavigationMenuSection = ({
   onToggleConsentAgeData,
   selectedLayers = [],
   onLayerToggle,
+  povertyYear,
+  povertyLatestYear,
+  povertyAvailableYears,
+  onPovertyYearChange,
   selectedAgeGroupId,
   onSelectedAgeGroupChange,
   selectedRaceCensusId,
@@ -123,19 +131,7 @@ export const NavigationMenuSection = ({
   onHouseDistrictPartyModeChange,
   onResetAllFilters,
 }: NavigationMenuSectionProps): JSX.Element => {
-  // Category data for Environment section
-  const environmentItems = [
-    { id: "oil-spills", label: "Oil Spills" },
-    { id: "data-centers", label: "Data Centers" },
-    { id: "natural-disaster-incidents", label: "Natural Disaster Incidents" },
-    { id: "air-quality", label: "Air Quality" },
-    { id: "ghg-emissions", label: "GHG Emissions" },
-    { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
-    // { id: "toxic-spills", label: "Toxic Spills" },
-    // { id: "toxic-area", label: "Toxic Area" },
-  ];
-
-  // Sub-filters for Natural Disaster Incidents (matches backend incident types)
+  // Disaster incident types match the backend's incident types.
   const naturalDisasterIncidentTypes = [
     { id: "nd-type:Flood", label: "Flood" },
     { id: "nd-type:Fire", label: "Fire" },
@@ -154,6 +150,18 @@ export const NavigationMenuSection = ({
     { id: "nd-type:Tropical Depression", label: "Tropical Depression" },
     { id: "nd-type:Biological", label: "Biological" },
     { id: "nd-type:Other", label: "Other" },
+  ];
+
+  // Category data for Environment section
+  const environmentItems = [
+    { id: "oil-spills", label: "Oil Spills" },
+    ...naturalDisasterIncidentTypes,
+    { id: "air-quality", label: "Air Quality" },
+    { id: "ghg-emissions", label: "GHG Emissions" },
+    { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    { id: "data-centers", label: "Data Centers" },
+    // { id: "toxic-spills", label: "Toxic Spills" },
+    // { id: "toxic-area", label: "Toxic Area" },
   ];
 
   // Health category items (checkbox state via selectedLayers; map layers not wired yet)
@@ -409,32 +417,6 @@ export const NavigationMenuSection = ({
                       {item.label}
                     </label>
                   </div>
-                  {/* Sub-filters for Natural Disaster Incidents – show only when layer is enabled */}
-                  {item.id === "natural-disaster-incidents" && selectedLayers.includes("natural-disaster-incidents") && (
-                    <div className="ml-6 mt-2 mb-2">
-                      <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
-                        Filter by type:
-                      </span>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1">
-                        {naturalDisasterIncidentTypes.map((sub) => (
-                          <div key={sub.id} className="flex items-center mt-0.5">
-                            <Checkbox
-                              id={sub.id}
-                              className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
-                              checked={selectedLayers.includes(sub.id)}
-                              onCheckedChange={(checked) => onLayerToggle?.(sub.id, checked === true)}
-                            />
-                            <label
-                              htmlFor={sub.id}
-                              className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
-                            >
-                              {sub.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -724,6 +706,79 @@ export const NavigationMenuSection = ({
                 </> : null
                 
               }
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="economy" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Economic
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            <div className="ml-4">
+              {[
+                { id: "income", label: "Annual Income" },
+                { id: "high-income-households", label: "High-income households ($200k+)" },
+                { id: "unemployment", label: "Unemployment Rate" },
+                { id: "poverty-stricken-areas", label: "Poverty-Stricken Areas" },
+              ].map((item) => (
+                <div key={item.id} className="mt-1.5">
+                  <div className="flex items-center">
+                    <Checkbox
+                      id={`economy-${item.id}`}
+                      className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                      checked={selectedLayers.includes(item.id)}
+                      onCheckedChange={(checked) =>
+                        onLayerToggle?.(item.id, checked === true)
+                      }
+                    />
+                    <label
+                      htmlFor={`economy-${item.id}`}
+                      className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                    >
+                      {item.label}
+                    </label>
+                  </div>
+                  {item.id === "poverty-stricken-areas"
+                    && selectedLayers.includes(item.id) && (
+                      <label className="ml-[31px] mt-2 flex items-center gap-2 text-[11px] text-white/80">
+                        Estimate year
+                        <select
+                          aria-label="Poverty estimate year"
+                          className="rounded-md border border-white/70 bg-[#0c1022] text-white text-[11px] px-2 py-1 outline-none focus:ring-1 focus:ring-white/40"
+                          value={povertyYear == null ? "latest" : String(povertyYear)}
+                          onChange={(event) => {
+                            onPovertyYearChange(
+                              event.target.value === "latest"
+                                ? null
+                                : Number(event.target.value),
+                            );
+                          }}
+                        >
+                          <option value="latest">
+                            {povertyLatestYear == null
+                              ? "Most recent"
+                              : `Most recent (${povertyLatestYear})`}
+                          </option>
+                          {povertyAvailableYears
+                            .filter((year) => year !== povertyLatestYear)
+                            .slice()
+                            .sort((a, b) => b - a)
+                            .map((year) => (
+                              <option className="text-black" key={year} value={year}>
+                                {year}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                    )}
+                </div>
+              ))}
             </div>
           </AccordionContent>
         </AccordionItem>

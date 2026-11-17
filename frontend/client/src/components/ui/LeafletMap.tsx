@@ -24,6 +24,7 @@ import type {
 import type { Topology } from "topojson-specification";
 import { feature as topojsonFeature } from "topojson-client";
 import { patchLeafletIcons } from "@/lib/leaflet-icons";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
 import {
   getHealthChoroplethColors,
@@ -213,6 +214,16 @@ const CHOROPLETH_COLORS = [
   "#ed8936", // lighter orange
 ];
 
+const INCOME_CHOROPLETH_COLORS = [
+  "#93c5fd", // lowest: blue
+  "#60a5fa",
+  "#38bdf8",
+  "#2dd4bf",
+  "#34d399",
+  "#22c55e",
+  "#166534", // highest: green
+];
+
 /** Approximate US national totals (2020 Census) for choropleth summary popup */
 const US_TOTAL_POPULATION = 331_900_000;
 const US_NATIONAL_CHOROPLETH_TOTALS: Partial<
@@ -381,6 +392,12 @@ export default function LeafletMap({
   politicalLayerIds = [],
   houseDistrictPartyMode = "both",
   healthMetricId = null,
+  showIncome = false,
+  showHighIncomeHouseholds = false,
+  showUnemployment = false,
+  showPoverty = false,
+  povertyYear = null,
+  onPovertyDataMeta,
   showSplcHateMap = false,
 }: {
   loading?: boolean;
@@ -430,6 +447,12 @@ export default function LeafletMap({
   houseDistrictPartyMode?: HouseDistrictPartyMode;
   /** CDC PLACES county health layer id from sidebar */
   healthMetricId?: string | null;
+  showIncome?: boolean;
+  showHighIncomeHouseholds?: boolean;
+  showUnemployment?: boolean;
+  showPoverty?: boolean;
+  povertyYear?: number | null;
+  onPovertyDataMeta?: (latestYear: number, availableYears: number[]) => void;
   /** SPLC Hate Map-derived group counts by state GEOID (/data/splc/by-state-geoid.json) */
   showSplcHateMap?: boolean;
 }) {
@@ -440,6 +463,10 @@ export default function LeafletMap({
   const choroplethVisible =
     (showChoropleth ||
       Boolean(healthMetricId) ||
+      showIncome ||
+      showHighIncomeHouseholds ||
+      showUnemployment ||
+      showPoverty ||
       showSplcHateMap) &&
     !politicalDistrictsActive;
 
@@ -485,6 +512,20 @@ export default function LeafletMap({
   const [healthValueByGeoid, setHealthValueByGeoid] = useState<
     Record<string, number> | null
   >(null);
+  const [incomeValueByGeoid, setIncomeValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [highIncomeHouseholdValueByGeoid, setHighIncomeHouseholdValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [unemploymentValueByGeoid, setUnemploymentValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [povertyValueByGeoid, setPovertyValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [povertyDataYear, setPovertyDataYear] = useState<number | null>(null);
+  const [unemploymentPeriod, setUnemploymentPeriod] = useState<string | null>(null);
   const [splcByStateGeoid, setSplcByStateGeoid] = useState<
     Record<string, number> | null
   >(null);
@@ -835,6 +876,177 @@ export default function LeafletMap({
     };
   }, [healthMetricId]);
 
+  /** 2024 ACS median household income by county GEOID */
+  useEffect(() => {
+    if (!showIncome) {
+      setIncomeValueByGeoid(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    cachedApiGet<{
+      counties: Array<{ geoid: string; medianHouseholdIncome: number }>;
+    }>(
+      "economics:incomeByCounty",
+      "/api/v1/economics/incomeByCounty",
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const values: Record<string, number> = {};
+        for (const county of response.counties ?? []) {
+          if (Number.isFinite(county.medianHouseholdIncome)) {
+            values[String(county.geoid).padStart(5, "0")] = county.medianHouseholdIncome;
+          }
+        }
+        setIncomeValueByGeoid(values);
+      })
+      .catch((error) => {
+        console.error("County income data load failed:", error);
+        if (!cancelled) setIncomeValueByGeoid(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [showIncome]);
+
+  /** 2024 ACS share of households earning $200,000 or more by county */
+  useEffect(() => {
+    if (!showHighIncomeHouseholds) {
+      setHighIncomeHouseholdValueByGeoid(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    cachedApiGet<{
+      counties: Array<{ geoid: string; highIncomeHouseholdPercent: number }>;
+    }>(
+      "economics:highIncomeHouseholdsByCounty",
+      "/api/v1/economics/highIncomeHouseholdsByCounty",
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const values: Record<string, number> = {};
+        for (const county of response.counties ?? []) {
+          if (Number.isFinite(county.highIncomeHouseholdPercent)) {
+            values[String(county.geoid).padStart(5, "0")] = county.highIncomeHouseholdPercent;
+          }
+        }
+        setHighIncomeHouseholdValueByGeoid(values);
+      })
+      .catch((error) => {
+        console.error("County high-income household data load failed:", error);
+        if (!cancelled) setHighIncomeHouseholdValueByGeoid(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [showHighIncomeHouseholds]);
+
+  /** Latest BLS Local Area Unemployment Statistics by county GEOID */
+  useEffect(() => {
+    if (!showUnemployment) {
+      setUnemploymentValueByGeoid(null);
+      setUnemploymentPeriod(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    cachedApiGet<{
+      year: number;
+      periodName: string;
+      counties: Array<{ geoid: string; unemploymentRate: number }>;
+    }>(
+      "economics:unemploymentByCounty",
+      "/api/v1/economics/unemploymentByCounty",
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const values: Record<string, number> = {};
+        for (const county of response.counties ?? []) {
+          if (Number.isFinite(county.unemploymentRate)) {
+            values[String(county.geoid).padStart(5, "0")] = county.unemploymentRate;
+          }
+        }
+        setUnemploymentValueByGeoid(values);
+        setUnemploymentPeriod(`${response.periodName} ${response.year}`);
+      })
+      .catch((error) => {
+        console.error("County unemployment data load failed:", error);
+        if (!cancelled) {
+          setUnemploymentValueByGeoid(null);
+          setUnemploymentPeriod(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [showUnemployment]);
+
+  /** Latest available SAIPE poverty rate by county GEOID */
+  useEffect(() => {
+    if (!showPoverty) {
+      setPovertyValueByGeoid(null);
+      setPovertyDataYear(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    const povertyPath = povertyYear == null
+      ? "/api/v1/economics/povertyByCounty"
+      : `/api/v1/economics/povertyByCounty?year=${povertyYear}`;
+    cachedApiGet<{
+      year: number;
+      latestYear: number;
+      availableYears: number[];
+      counties: Array<{ geoid: string; povertyRate: number }>;
+    }>(
+      `economics:povertyByCounty:${povertyYear ?? "latest"}`,
+      povertyPath,
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const values: Record<string, number> = {};
+        for (const county of response.counties ?? []) {
+          if (Number.isFinite(county.povertyRate)) {
+            values[String(county.geoid).padStart(5, "0")] = county.povertyRate;
+          }
+        }
+        setPovertyValueByGeoid(values);
+        setPovertyDataYear(response.year);
+        onPovertyDataMeta?.(response.latestYear, response.availableYears);
+      })
+      .catch((error) => {
+        console.error("County poverty data load failed:", error);
+        if (!cancelled) {
+          setPovertyValueByGeoid(null);
+          setPovertyDataYear(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [showPoverty, povertyYear, onPovertyDataMeta]);
+
   /** SPLC Hate Map: group totals by state GEOID */
   useEffect(() => {
     if (!showSplcHateMap) {
@@ -991,6 +1203,10 @@ export default function LeafletMap({
       }
       return {};
     }
+    if (showHighIncomeHouseholds) return highIncomeHouseholdValueByGeoid ?? {};
+    if (showUnemployment) return unemploymentValueByGeoid ?? {};
+    if (showPoverty) return povertyValueByGeoid ?? {};
+    if (showIncome) return incomeValueByGeoid ?? {};
     if (healthMetricId) {
       if (
         healthValueByGeoid &&
@@ -1038,6 +1254,14 @@ export default function LeafletMap({
     raceAgeValueByGeoid,
     healthMetricId,
     healthValueByGeoid,
+    showUnemployment,
+    unemploymentValueByGeoid,
+    showPoverty,
+    povertyValueByGeoid,
+    showHighIncomeHouseholds,
+    highIncomeHouseholdValueByGeoid,
+    showIncome,
+    incomeValueByGeoid,
     showSplcHateMap,
     splcByStateGeoid,
   ]);
@@ -1049,8 +1273,9 @@ export default function LeafletMap({
   const activeChoroplethColors = useMemo(() => {
     if (showSplcHateMap) return [...HEALTH_CHOROPLETH_COLORS_NEGATIVE];
     if (healthMetricId) return getHealthChoroplethColors(healthMetricId);
+    if (showIncome || showHighIncomeHouseholds) return INCOME_CHOROPLETH_COLORS;
     return CHOROPLETH_COLORS;
-  }, [healthMetricId, showSplcHateMap]);
+  }, [healthMetricId, showHighIncomeHouseholds, showIncome, showSplcHateMap]);
 
   const choroplethBreaks = useMemo(() => {
     const values = Array.from(choroplethValueByGeoid.values()).sort(
@@ -1081,12 +1306,24 @@ export default function LeafletMap({
       if (value == null || Number.isNaN(value)) return "N/A";
       if (showSplcHateMap)
         return `${Math.round(value)} group${Math.round(value) === 1 ? "" : "s"}`;
+      if (showHighIncomeHouseholds) return `${value.toFixed(1)}%`;
+      if (showUnemployment) return `${value.toFixed(1)}%`;
+      if (showPoverty) return `${value.toFixed(1)}%`;
+      if (showIncome) return `$${Math.round(value).toLocaleString("en-US")}`;
       if (healthMetricId) return `${value.toFixed(1)}%`;
       const unit = CHOROPLETH_METRICS[choroplethMetric].unit;
       if (unit === "%") return `${value.toFixed(1)}%`;
       return `${value.toFixed(1)} yrs`;
     },
-    [choroplethMetric, healthMetricId, showSplcHateMap]
+    [
+      choroplethMetric,
+      healthMetricId,
+      showHighIncomeHouseholds,
+      showIncome,
+      showPoverty,
+      showSplcHateMap,
+      showUnemployment,
+    ]
   );
 
   const choroplethStyle = useCallback(
@@ -1108,7 +1345,11 @@ export default function LeafletMap({
     if (!choroplethBreaks.length) return [];
     const fmt = showSplcHateMap
       ? (n: number) => String(Math.round(n))
-      : (n: number) => n.toFixed(1);
+      : showIncome
+        ? (n: number) => `$${Math.round(n).toLocaleString("en-US")}`
+        : showPoverty || showHighIncomeHouseholds || showUnemployment
+            ? (n: number) => n.toFixed(1)
+          : (n: number) => n.toFixed(1);
     const items: Array<{ color: string; label: string }> = [];
     for (let i = 0; i < choroplethBreaks.length; i++) {
       const lower = i === 0 ? 0 : choroplethBreaks[i - 1];
@@ -1120,7 +1361,15 @@ export default function LeafletMap({
       items.push({ color: activeChoroplethColors[i], label });
     }
     return items;
-  }, [choroplethBreaks, activeChoroplethColors, showSplcHateMap]);
+  }, [
+    choroplethBreaks,
+    activeChoroplethColors,
+    showHighIncomeHouseholds,
+    showIncome,
+    showPoverty,
+    showSplcHateMap,
+    showUnemployment,
+  ]);
 
   /** National-level summary for the current choropleth metric (for popup above legend) */
   const nationalSummary = useMemo(() => {
@@ -1132,6 +1381,7 @@ export default function LeafletMap({
       const total = values.reduce((a, b) => a + b, 0);
       return { splcTotal: total, isSplc: true as const };
     }
+    if (showIncome || showHighIncomeHouseholds || showUnemployment || showPoverty) return null;
     if (healthMetricId) {
       const values = Array.from(choroplethValueByGeoid.values()).filter(
         (v) => typeof v === "number" && !Number.isNaN(v)
@@ -1168,6 +1418,9 @@ export default function LeafletMap({
     selectedSexId,
     choroplethValueByGeoid,
     healthMetricId,
+    showIncome,
+    showPoverty,
+    showUnemployment,
     showSplcHateMap,
   ]);
 
@@ -1253,7 +1506,15 @@ export default function LeafletMap({
       const isSexView = selectedSexId != null;
       const metricLabel = showSplcHateMap
         ? SPLC_HATE_MAP_LABEL
-        : healthMetricId
+        : showUnemployment
+          ? `County Unemployment Rate${unemploymentPeriod ? ` (${unemploymentPeriod})` : ""}`
+          : showPoverty
+          ? `County Poverty Rate (${povertyYear ?? povertyDataYear ?? "most recent"})`
+          : showHighIncomeHouseholds
+          ? "Households earning $200,000 or more (2024)"
+          : showIncome
+          ? "Median Household Income (2024)"
+          : healthMetricId
           ? getHealthLayerMeta(healthMetricId).label
           : isAgeOnly
             ? `Percent population aged ${
@@ -1280,6 +1541,13 @@ export default function LeafletMap({
       selectedAgeGroupId,
       selectedSexId,
       healthMetricId,
+      showHighIncomeHouseholds,
+      showIncome,
+      showPoverty,
+      povertyYear,
+      povertyDataYear,
+      showUnemployment,
+      unemploymentPeriod,
       showSplcHateMap,
     ]
   );
@@ -1385,7 +1653,15 @@ export default function LeafletMap({
     const isSexView = selectedSexId != null;
     const metricLabel = showSplcHateMap
       ? SPLC_HATE_MAP_LABEL
-      : healthMetricId
+      : showUnemployment
+        ? `County Unemployment Rate${unemploymentPeriod ? ` (${unemploymentPeriod})` : ""}`
+        : showPoverty
+        ? `County Poverty Rate (${povertyYear ?? povertyDataYear ?? "most recent"})`
+        : showHighIncomeHouseholds
+        ? "Households earning $200,000 or more (2024)"
+        : showIncome
+        ? "Median Household Income (2024)"
+        : healthMetricId
         ? getHealthLayerMeta(healthMetricId).label
         : isAgeOnly
           ? `Percent population aged ${
@@ -1397,6 +1673,10 @@ export default function LeafletMap({
             : CHOROPLETH_METRICS[choroplethMetric].label;
     const unit = showSplcHateMap
       ? ""
+      : showUnemployment || showHighIncomeHouseholds || showPoverty
+        ? "%"
+      : showIncome
+        ? ""
       : healthMetricId
         ? "%"
         : isSexView
@@ -1446,7 +1726,15 @@ export default function LeafletMap({
       <div style="font-weight:600;font-size:11px;margin-bottom:4px;opacity:0.9;">${
         showSplcHateMap
           ? "State aggregates (tabular import)"
-          : healthMetricId
+          : showUnemployment
+            ? "BLS Local Area Unemployment Statistics"
+            : showPoverty
+            ? "Census SAIPE county estimates"
+            : showHighIncomeHouseholds
+            ? "ACS 5-year estimates"
+            : showIncome
+            ? "County estimates"
+            : healthMetricId
             ? "County model-based rate"
             : "Total population"
       }</div>
@@ -1463,6 +1751,13 @@ export default function LeafletMap({
     selectedSexId,
     nationalSummary,
     healthMetricId,
+    showHighIncomeHouseholds,
+    showIncome,
+    showPoverty,
+    povertyYear,
+    povertyDataYear,
+    showUnemployment,
+    unemploymentPeriod,
     activeChoroplethColors,
     showSplcHateMap,
   ]);

@@ -3,20 +3,13 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 
-/** Green marker icon for waste treatment/disposal sites */
+/** Translucent marker icon for waste treatment/disposal sites */
 const WASTE_TREATMENT_ICON = L.divIcon({
   className: "waste-treatment-marker",
-  html: `<div style="
-    width: 28px;
-    height: 28px;
-    background: #22c55e;
-    border: 2px solid #16a34a;
-    border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  "></div>`,
-  iconSize: [28, 28],
-  iconAnchor: [14, 28],
-  popupAnchor: [0, -28],
+  html: `<div style="width:100%;height:100%;border-radius:50%;background:rgba(79, 53, 3, 0.45);"></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  popupAnchor: [0, -7],
 });
 
 /** Facility type IDs to names (matches backend facilityCodes) */

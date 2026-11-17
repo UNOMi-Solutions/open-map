@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignUp from "./sections/SignUp";
@@ -31,6 +31,13 @@ import {
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
 import LoadingBar from "./sections/LoadingBar";
+
+const ECONOMICS_LAYER_IDS = new Set([
+  "income",
+  "high-income-households",
+  "unemployment",
+  "poverty-stricken-areas",
+]);
 
 export default function MainPage() {
   const [progress, setProgress] = useState(0);
@@ -67,6 +74,9 @@ export default function MainPage() {
     { id: string; lat: number; lng: number; stateName?: string }[]
   >([]);
   const [selectedLayers, setSelectedLayers] = useState<string[]>([]);
+  const [povertyYear, setPovertyYear] = useState<number | null>(null);
+  const [povertyLatestYear, setPovertyLatestYear] = useState<number | null>(null);
+  const [povertyAvailableYears, setPovertyAvailableYears] = useState<number[]>([]);
   const SIDEBAR_WIDTH_OPEN = 430;
   // NEW: sidebar open/close
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -108,6 +118,14 @@ export default function MainPage() {
     useState<HouseDistrictPartyMode>("both");
   /** CDC PLACES county choropleth; exclusive with census race/age/sex selection */
   const [healthMetricId, setHealthMetricId] = useState<string | null>(null);
+
+  const handlePovertyDataMeta = useCallback(
+    (latestYear: number, availableYears: number[]) => {
+      setPovertyLatestYear(latestYear);
+      setPovertyAvailableYears(availableYears);
+    },
+    [],
+  );
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
@@ -239,7 +257,25 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
+          ),
+          layerId,
+        ]);
+        setHealthMetricId(null);
+        setSelectedRaceCensusId("all");
+        setSelectedAgeGroupId(null);
+        setSelectedSexId(null);
+        setShowChoropleth(false);
+      } else {
+        setSelectedLayers((prev) => prev.filter((id) => id !== layerId));
+      }
+      return;
+    }
+    if (ECONOMICS_LAYER_IDS.has(layerId)) {
+      if (checked) {
+        setSelectedLayers((prev) => [
+          ...prev.filter(
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
           ),
           layerId,
         ]);
@@ -257,7 +293,7 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
           ),
           layerId,
         ]);
@@ -413,7 +449,9 @@ export default function MainPage() {
         prev.filter((id) => !HEALTH_ALL_LAYER_IDS.has(id))
       );
     }
-    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id)));
+    setSelectedLayers((prev) =>
+      prev.filter((id) => !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id))
+    );
   }, [selectedRaceCensusId, selectedAgeGroupId, selectedSexId, healthMetricId]);
 
   /** Population choropleth and SPLC are mutually exclusive for the colored layer */
@@ -422,7 +460,7 @@ export default function MainPage() {
       const next = !v;
       if (next) {
         setSelectedLayers((prev) =>
-          prev.filter((id) => !SPLC_LAYER_IDS.has(id))
+          prev.filter((id) => !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id))
         );
       }
       return next;
@@ -686,7 +724,7 @@ export default function MainPage() {
 
                   showConsentAgeData={showConsentAgeData}
                   showOilSpills={selectedLayers.includes("oil-spills")}
-                  showNaturalDisasterIncidents={selectedLayers.includes("natural-disaster-incidents")}
+                  showNaturalDisasterIncidents={selectedLayers.some((id) => id.startsWith("nd-type:")) || selectedLayers.includes("natural-disaster-incidents")}
                   naturalDisasterIncidentTypes={selectedLayers
                     .filter((id) => id.startsWith("nd-type:"))
                     .map((id) => id.replace("nd-type:", ""))}
@@ -700,6 +738,12 @@ export default function MainPage() {
                   politicalLayerIds={politicalLayerIds}
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
+                  showIncome={selectedLayers.includes("income")}
+                  showHighIncomeHouseholds={selectedLayers.includes("high-income-households")}
+                  showUnemployment={selectedLayers.includes("unemployment")}
+                  showPoverty={selectedLayers.includes("poverty-stricken-areas")}
+                  povertyYear={povertyYear}
+                  onPovertyDataMeta={handlePovertyDataMeta}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
                 />
               </div>
@@ -834,6 +878,10 @@ export default function MainPage() {
                   
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
+                  povertyYear={povertyYear}
+                  povertyLatestYear={povertyLatestYear}
+                  povertyAvailableYears={povertyAvailableYears}
+                  onPovertyYearChange={setPovertyYear}
                   politicalLayerIds={politicalLayerIds}
                   onPoliticalLayerToggle={handlePoliticalLayerToggle}
                   houseDistrictPartyMode={houseDistrictPartyMode}

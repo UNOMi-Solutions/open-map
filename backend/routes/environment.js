@@ -676,6 +676,58 @@ router.get('/naturalDisasterIncidents', async (req, res) => {
     }
 })
 
+// Retrieve earthquake events from the USGS Earthquake Catalog API
+router.get('/earthquakeIncidents', async (req, res) => {
+    try {
+        const response = await axios.get('https://earthquake.usgs.gov/fdsnws/event/1/query', {
+            params: {
+                format: 'geojson',
+                starttime: req.query.starttime || DISASTER_START_DATE,
+                endtime: req.query.endtime || new Date().toISOString(),
+                minmagnitude: req.query.minmagnitude || 2.5,
+                // limits info to US only
+                minlatitude: 18,
+                maxlatitude: 72,
+                minlongitude: -180,
+                maxlongitude: -60,
+                orderby: 'time',
+                limit: 5000
+            }
+        });
+
+        const incidents = (response.data?.features || [])
+            .map((event) => {
+                const coordinates = event.geometry?.coordinates || [];
+                const properties = event.properties || {};
+                const [longitude, latitude, depth] = coordinates;
+
+                return {
+                    id: event.id,
+                    incidentType: 'Earthquake',
+                    declarationTitle: properties.title || 'Earthquake',
+                    incidentBeginDate: properties.time ? new Date(properties.time).toISOString() : null,
+                    latitude,
+                    longitude,
+                    depth,
+                    magnitude: properties.mag,
+                    place: properties.place || null,
+                    url: properties.url || null,
+                    county: null
+                };
+            })
+            .filter((incident) => Number.isFinite(incident.latitude) && Number.isFinite(incident.longitude));
+
+        res.json({
+            source: 'USGS Earthquake Catalog',
+            totalIncidents: incidents.length,
+            incidents
+        });
+    } catch (error) {
+        console.error('Error fetching USGS earthquake data:', error.message);
+        res.status(502).json({ error: 'Unable to fetch earthquake data from the USGS Earthquake Catalog API' });
+    }
+})
+
 // Source: IM3 Open Source Data Center Atlas
 // Data was manually downloaded so check for updates on the website
 const DATACENTER_CSV_PATH = path.join(__dirname, "../datacenter.csv");

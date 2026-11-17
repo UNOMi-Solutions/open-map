@@ -2,7 +2,8 @@ import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { feature } from "topojson-client";
-import { cachedApiGetBatch, CACHE_TTL } from "@/lib/apiCache";
+import * as turf from "@turf/turf";
+import { cachedApiGet, cachedApiGetBatch, CACHE_TTL } from "@/lib/apiCache";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from "geojson";
 
@@ -41,6 +42,12 @@ type NaturalDisasterIncident = {
   incidentType?: string;
   incidentBeginDate?: string;
   county?: string;
+  latitude?: number;
+  longitude?: number;
+  depth?: number;
+  magnitude?: number;
+  place?: string | null;
+  url?: string | null;
   [key: string]: unknown;
 };
 
@@ -100,6 +107,9 @@ function Popup(countyName: string, stateAbbrev: string, incidents: NaturalDisast
         <p style="margin:0;font-weight:600;font-size:13px;">${String(inc.declarationTitle ?? "—")}</p>
         <p style="margin:2px 0 0;font-size:12px;"><strong>Type:</strong> ${String(inc.incidentType ?? "—")}</p>
         <p style="margin:2px 0 0;font-size:12px;"><strong>Date:</strong> ${formatDate(inc.incidentBeginDate)}</p>
+        ${inc.incidentType === "Earthquake" ? `
+          <p style="margin:2px 0 0;font-size:12px;"><strong>Magnitude:</strong> ${typeof inc.magnitude === "number" ? inc.magnitude.toFixed(1) : "—"}</p>
+          <p style="margin:2px 0 0;font-size:12px;">${String(inc.place ?? "Unknown location")}</p>` : ""}
       </li>`,
     )
     .join("");
@@ -161,24 +171,35 @@ const NaturalDisasterIncidentMarkers = ({
       path: `/api/v1/environment/naturalDisasterIncidents?stateCode=${encodeURIComponent(code)}`,
     }));
 
-    cachedApiGetBatch<Record<string, unknown>>(requests, CACHE_TTL.ENVIRONMENT_STATE)
-      .then((results) => {
+    Promise.allSettled([
+      cachedApiGetBatch<Record<string, unknown>>(requests, CACHE_TTL.ENVIRONMENT_STATE),
+      cachedApiGet<Record<string, unknown>>(
+        "environment:earthquakeIncidents",
+        "/api/v1/environment/earthquakeIncidents",
+        CACHE_TTL.ENVIRONMENT_STATE,
+      ),
+    ])
+      .then(([femaResult, earthquakeResult]) => {
         if (cancelled) return;
-        const combined = results.flatMap((data, index) => {
-          const stateCode = STATE_ABBREVS[index];
-          const list =
-            data?.incidents ?? data?.naturalDisasterIncidents ?? data?.data ?? [];
-          const arr = Array.isArray(list) ? list : [];
-          return arr.map((inc: NaturalDisasterIncident) => ({
-            ...inc,
-            _stateCode: stateCode,
-          }));
-        });
-        setIncidentData(combined);
-      })
-      .catch((error) => {
-        console.error("[NaturalDisasterChoropleth] Fetch error:", error);
-        if (!cancelled) setIncidentData([]);
+        const femaIncidents = femaResult.status === "fulfilled"
+          ? femaResult.value.flatMap((data, index) => {
+              const stateCode = STATE_ABBREVS[index];
+              const list = data?.incidents ?? data?.naturalDisasterIncidents ?? data?.data ?? [];
+              const arr = Array.isArray(list) ? list : [];
+              return arr.map((inc: NaturalDisasterIncident) => ({ ...inc, _stateCode: stateCode }));
+            })
+          : [];
+        const earthquakeIncidents = earthquakeResult.status === "fulfilled"
+          ? (Array.isArray(earthquakeResult.value?.incidents) ? earthquakeResult.value.incidents : [])
+          : [];
+
+        if (femaResult.status === "rejected") {
+          console.error("[NaturalDisasterChoropleth] FEMA fetch error:", femaResult.reason);
+        }
+        if (earthquakeResult.status === "rejected") {
+          console.error("[NaturalDisasterChoropleth] USGS fetch error:", earthquakeResult.reason);
+        }
+        setIncidentData([...femaIncidents, ...earthquakeIncidents]);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -205,16 +226,34 @@ const NaturalDisasterIncidentMarkers = ({
   const incidentsByCounty = useMemo(() => {
     const grouped = new Map<string, NaturalDisasterIncident[]>();
     for (const incident of filteredIncidents) {
-      if (!incident.county) continue;
-      const stateCode = (incident as NaturalDisasterIncident & { _stateCode?: string })._stateCode;
-      const fips = stateCode ? STATE_CODES[stateCode] : "";
-      const key = fips ? `${fips}-${normalizeCountyName(String(incident.county))}` : normalizeCountyName(String(incident.county));
+      let key: string | null = null;
+      if (incident.county) {
+        const stateCode = (incident as NaturalDisasterIncident & { _stateCode?: string })._stateCode;
+        const fips = stateCode ? STATE_CODES[stateCode] : "";
+        key = fips
+          ? `${fips}-${normalizeCountyName(String(incident.county))}`
+          : normalizeCountyName(String(incident.county));
+      } else if (
+        incident.incidentType === "Earthquake" &&
+        typeof incident.latitude === "number" &&
+        typeof incident.longitude === "number"
+      ) {
+        const point = turf.point([incident.longitude, incident.latitude]);
+        const countyFeature = allCountyFeatures.find((county) =>
+          turf.booleanPointInPolygon(point, county as any),
+        );
+        if (countyFeature) {
+          const fips = String(countyFeature.id ?? "").slice(0, 2);
+          key = `${fips}-${normalizeCountyName(countyFeature.properties.name)}`;
+        }
+      }
+      if (!key) continue;
       const list = grouped.get(key) ?? [];
       list.push(incident);
       grouped.set(key, list);
     }
     return grouped;
-  }, [filteredIncidents]);
+  }, [allCountyFeatures, filteredIncidents]);
 
   // Count incidents per county (keyed by stateFips-normalizedCounty)
   const countsByCounty = useMemo(() => {
@@ -240,7 +279,7 @@ const NaturalDisasterIncidentMarkers = ({
       legendRef.current = null;
     }
 
-    if ( allCountyFeatures.length === 0) return;
+    if (allCountyFeatures.length === 0) return;
 
     // Info control (top-right hover panel)
     const info = new L.Control({ position: "topright" });
