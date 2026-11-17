@@ -17,7 +17,10 @@ const LoadingBar = ({ isOpen, progress }: LoadingBarProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="relative flex flex-col items-center justify-center gap-6 rounded-[30px] border-2 border-white/70 bg-transparent p-6 shadow-2xl">
+      <div
+        className="relative flex flex-col items-center justify-center gap-6 rounded-[30px] bg-transparent p-6 shadow-2xl"
+        style={{ transform: "scale(0.8)" }}
+      >
         <img
           src="/loading-globe.svg"
           alt=""
