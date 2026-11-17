@@ -14,7 +14,6 @@ import {
   HouseDistrictPartyMode,
 } from "@/components/ui/LeafletMap";
 
-import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
 import {
   INCIDENT_MENU_ID,
@@ -35,10 +34,6 @@ interface NavigationMenuSectionProps {
 
   showPoliceKillingData: boolean;
   onTogglePoliceKillingData: () => void;
-  PoliceKillingQ: PoliceKillingQKey;
-  onPoliceKillingQChange: (value: PoliceKillingQKey) => void;
-  PoliceKillingYear: number;
-  onPoliceKillingYearChange: (value: number) => void;
 
   showMurderData: boolean;
   murderCategory: string;
@@ -55,10 +50,6 @@ interface NavigationMenuSectionProps {
 
   showMissingPersonsData: boolean;
   onToggleMissingPersonsData: () => void;
-  missingPersonQ: string;
-  onMissingPersonQChange: (value: string) => void;
-  missingPersonYear: number;
-  onMissingPersonYearChange: (value: number) => void;
 
   showConsentAgeData: boolean;
   onToggleConsentAgeData: () => void;
@@ -89,10 +80,6 @@ export const NavigationMenuSection = ({
 
   showPoliceKillingData,
   onTogglePoliceKillingData,
-  PoliceKillingQ,
-  onPoliceKillingQChange,
-  PoliceKillingYear,
-  onPoliceKillingYearChange,
 
   showMurderData,
   murderCategory,
@@ -109,10 +96,6 @@ export const NavigationMenuSection = ({
 
   showMissingPersonsData,
   onToggleMissingPersonsData,
-  missingPersonQ,
-  onMissingPersonQChange,
-  missingPersonYear,
-  onMissingPersonYearChange,
 
   showConsentAgeData,
   onToggleConsentAgeData,
@@ -147,6 +130,15 @@ export const NavigationMenuSection = ({
     // { id: "toxic-area", label: "Toxic Area" },
   ];
 
+  const incidentTypeItems: LayerOption[] = [
+    ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    
+    // { id: "toxic-spills", label: "Toxic Spills" },
+    // { id: "toxic-area", label: "Toxic Area" },
+  ];
+
   // Category data for Transportation section
   const transportationItems = [
     { id: "rural-access", label: "Rural Access to Intercity Transportation" },
@@ -171,12 +163,6 @@ export const NavigationMenuSection = ({
     { id: "nd-type:Tropical Depression", label: "Tropical Depression" },
     { id: "nd-type:Biological", label: "Biological" },
     { id: "nd-type:Other", label: "Other" },
-  ];
-
-  const incidentTypeItems: LayerOption[] = [
-    ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
-    ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
-    ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
   ];
 
   const incidentMenuOpen =
@@ -443,7 +429,6 @@ export const NavigationMenuSection = ({
   // Collapsed categories
   const collapsedCategories = [
     // { id: "crime", label: "Crime" },
-    { id: "police", label: "Police" },
     { id: "health", label: "Health" },
     { id: "economics", label: "Economics" },
     { id: "social", label: "Social" },
@@ -756,72 +741,30 @@ export const NavigationMenuSection = ({
                   Missing Persons
                 </label>
               </div>
-
-              {
-                (showMissingPersonsData) ? <>
-                  <label className="mt-2 block text-[11px] text-white/80">
-                    Year
-                  </label>
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) => {
-                      onMissingPersonYearChange(
-                        parseInt(e.target.value)
-                      )
-                    }}
-                  >
-                    {Array.from(
-                      { length: new Date().getFullYear() - 2013 + 1 },
-                      (_, i) => {
-                        const year = 2013 + i;
-                        return (
-                          <option className="text-black" key={year} value={year}>
-                            {year}
-                          </option>
-                        );
-                      }
-                    ).reverse()}
-                  </select>
-              
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) =>
-                      onMissingPersonQChange(
-                        e.target.value as unknown as string
-                      )
-                    }
-                  >
-                      <option className="text-black" value="Q1">
-                        Q1
-                      </option>
-                      <option className="text-black" value="Q2">
-                        Q2
-                      </option>
-                      <option className="text-black" value="Q3">
-                        Q3
-                      </option>
-                      <option className="text-black" value="Q4">
-                        Q4
-                      </option>
-                  </select>
-                </> : null
-                
-              }    
-
             </div>
-          </AccordionContent>
-        </AccordionItem>
 
-        <AccordionItem value="police" className="border-0">
-          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
-            <div className="flex items-center">
-              <ChevronRight className="accordion-arrow" />
-              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
-                Police
-              </span>
+            <div className="ml-4">
+              <div className="mt-2 flex items-center">
+                <Checkbox
+                  id="mass-shootings"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={selectedLayers.includes("mass-shootings")}
+                  onCheckedChange={(checked) => onLayerToggle?.("mass-shootings", checked === true)}
+                />
+                <label
+                  htmlFor="mass-shootings"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]"
+                >
+                  Mass Shootings
+                </label>
+              </div>
+              {selectedLayers.includes("mass-shootings") && (
+                <p className="ml-[31px] mt-1 text-[11px] text-white/60 leading-snug [font-family:'Futura PT']">
+                  Gun Violence Archive, 2014–present. 4+ victims shot. Circle size = total victims.
+                </p>
+              )}
             </div>
-          </AccordionTrigger>
-          <AccordionContent className="pt-0 pb-0">
+
             <div className="ml-4">
               <div className="mt-2 flex items-center left">
                 <Checkbox
@@ -829,7 +772,7 @@ export const NavigationMenuSection = ({
                   checked={showPoliceKillingData}
                   onCheckedChange={() =>
                     onTogglePoliceKillingData()
-                  }                  
+                  }
                   className="h-4 w-4 border border-white/70 bg-white/10 text-white"
                 />
 
@@ -837,67 +780,45 @@ export const NavigationMenuSection = ({
                   Police Killings
                 </span>
               </div>
-              {
-                (showPoliceKillingData) ? <>
-                  <label className="mt-2 block text-[11px] text-white/80">
-                    Year
-                  </label>
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) => {
-                      onPoliceKillingYearChange(
-                        e.target.value as unknown as number
-                      )
-                    }}
-                  >
-                    {Array.from(
-                      { length: new Date().getFullYear() - 2013 + 1 },
-                      (_, i) => {
-                        const year = 2013 + i;
-                        return (
-                          <option className="text-black" key={year} value={year}>
-                            {year}
-                          </option>
-                        );
-                      }
-                    ).reverse()}
-                  </select>
               
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) =>
-                      onPoliceKillingQChange(
-                        e.target.value as PoliceKillingQKey
-                      )
-                    }
-                  >
-                      <option className="text-black" value="Q1">
-                        Q1
-                      </option>
-                      <option className="text-black" value="Q2">
-                        Q2
-                      </option>
-                      <option className="text-black" value="Q3">
-                        Q3
-                      </option>
-                      <option className="text-black" value="Q4">
-                        Q4
-                      </option>
-                  </select>
-                </> : null
-                
-              }
-            <div className="mt-2 flex items-center left">
-              <Checkbox
-                className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                checked={selectedLayers.includes("flock-cameras")}
-                onCheckedChange={(checked) => onLayerToggle?.("flock-cameras", checked === true)}
-              />
-
-              <span className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
-                Flock Cameras
-              </span>
             </div>
+
+            <div className="ml-4">
+              <div className="mt-2 flex items-center">
+                <Checkbox
+                  id="alpr-cameras"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={selectedLayers.includes("alpr-cameras")}
+                  onCheckedChange={(checked) => onLayerToggle?.("alpr-cameras", checked === true)}
+                />
+                <label
+                  htmlFor="alpr-cameras"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]"
+                >
+                  ALPR Cameras
+                </label>
+              </div>
+              {selectedLayers.includes("alpr-cameras") && (
+                <p className="ml-[31px] mt-1 text-[11px] text-white/60 leading-snug [font-family:'Futura PT']">
+                  OpenStreetMap. Visible at any zoom.
+                </p>
+              )}
+              {selectedLayers.includes("alpr-cameras") && (
+                <div className="ml-6 mt-2 mb-1 flex items-center">
+                  <Checkbox
+                    id="alpr-flock-only"
+                    className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                    checked={selectedLayers.includes("alpr-flock-only")}
+                    onCheckedChange={(checked) => onLayerToggle?.("alpr-flock-only", checked === true)}
+                  />
+                  <label
+                    htmlFor="alpr-flock-only"
+                    className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+                  >
+                    Flock Safety only
+                  </label>
+                </div>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>

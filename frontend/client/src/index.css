@@ -406,6 +406,58 @@ body {
   background: none;
   border: none;
 }
+.leaflet-div-icon.alpr-marker {
+  background: transparent;
+  border: none;
+}
+.alpr-lens {
+  display: block;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 1px 4px rgba(28, 22, 10, 0.28);
+}
+.alpr-lens.flock {
+  background: radial-gradient(circle at 32% 30%, #fff 0 16%, #ffe7a8 18% 40%, #f0b429 42% 76%, #b77908 100%);
+}
+.alpr-lens.other {
+  background: radial-gradient(circle at 32% 30%, #fff 0 16%, #e4e9ff 18% 40%, #7b8df2 42% 76%, #3a4ec4 100%);
+}
+.leaflet-marker-icon:hover .alpr-lens {
+  transform: scale(1.18);
+}
+.alpr-bubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: rgba(255, 252, 246, 0.94);
+  color: #3f2a08;
+  font: 600 11px/1 "Avenir Next", "Segoe UI", sans-serif;
+  letter-spacing: -0.02em;
+  box-shadow:
+    0 0 0 1.5px rgba(196, 132, 10, 0.9),
+    0 2px 8px rgba(40, 28, 8, 0.18);
+}
+.alpr-bubble:not(.flock) {
+  color: #243056;
+  box-shadow:
+    0 0 0 1.5px rgba(58, 78, 196, 0.72),
+    0 2px 8px rgba(20, 24, 48, 0.16);
+}
+.alpr-bubble.legend-bubble {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  font-size: 9px;
+}
+.legend-lens {
+  width: 12px;
+  height: 12px;
+  margin: 0 2px;
+  flex: 0 0 12px;
+}
 .legend-note {
   margin-top: 4px;
   font-size: 11px;
