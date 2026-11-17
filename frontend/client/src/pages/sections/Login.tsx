@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { getApiBaseUrl, setAuthToken } from '@/lib/apiClient';
+import ContinueWithGoogle from '@/components/ContinueWithGoogle';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -17,52 +18,43 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp,
   const [isError, setIsError] = useState(false);
 
   const handleLogin = async () => {
-    console.log('Email:', email, 'Password:', password);
-    // Handle login logic here
-
-    /*
-    THIS CODE HANDLES THE CALL TO THE BACK END
-    */
+    setIsError(false);
+    setError('');
     const baseURL = getApiBaseUrl();
-    const response = await fetch(baseURL+ "/api/auth/login", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password
-      }),
-    });
+    try {
+      const response = await fetch(baseURL+ "/api/auth/login", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        }),
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
+        const failure = await response.json().catch(() => null);
+        setIsError(true);
+        setError(failure?.message || "Something went wrong. Please try again later");
+        return;
+      }
+
+      const data = await response.json();
+
+      // Persist the JWT so per-user features (saved profiles) work and the
+      // session survives a page refresh.
+      if (data?.token) {
+        setAuthToken(data.token);
+      }
+
+      if (onLogin && email && password) {
+        onLogin(email, data?.user?.plan ?? null, data?.user?.verified ?? false);
+      }
+    } catch {
       setIsError(true);
       setError("Something went wrong. Please try again later");
-      return;
     }
-
-    const data = await response.json();
-    console.log('Success:', data);
-
-    // Persist the JWT so per-user features (saved profiles) work and the
-    // session survives a page refresh.
-    if (data?.token) {
-      setAuthToken(data.token);
-    }
-
-    if (onLogin && email && password) {
-      onLogin(email, data?.user?.plan ?? null, data?.user?.verified ?? false);
-    }
-  };
-
-  const handleAppleLogin = () => {
-    console.log('Login with Apple');
-    // Handle Apple login logic here
-  };
-
-  const handleGoogleLogin = () => {
-    console.log('Login with Google');
-    // Handle Google login logic here
   };
 
   const handleSignUp = () => {
@@ -116,9 +108,15 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp,
           Login
         </h2>
 
-        {/* Forgot Password Link */}
-        { 
+        {isError && (
           <p className="text-center text-red-400 text-sm mb-4">
+            {error}
+          </p>
+        )}
+
+        {/* Forgot Password Link */}
+        {
+          <p className="text-center text-gray-400 text-sm mb-4">
           Forgot your password?{' '}
           <button
             onClick={handleForgotPassword}
@@ -180,31 +178,15 @@ export default function LoginModal({ isOpen, onClose, onLogin, onSwitchToSignUp,
           </div>
         </div>
 
-        {/* Apple Login Button */}
-        <button
-          onClick={handleAppleLogin}
-          className="w-full bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 mb-3 flex items-center justify-center gap-2"
-        >
-          <img
-            className="w-[17px] h-[21px] opacity-100"
-            alt="Apple"
-            src="/figmaAssets/Apple.svg"
-          />
-          Continue with Apple
-        </button>
-
-        {/* Google Login Button */}
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-        >
-          <img
-            className="w-[18px] h-[19px] opacity-100"
-            alt="Google"
-            src="/figmaAssets/Google.svg"
-          />
-          Continue with Google
-        </button>
+        <ContinueWithGoogle
+          onSignedIn={(user) => {
+            onLogin?.(user.email, user.plan ?? null, user.verified ?? false);
+          }}
+          onError={(message) => {
+            setIsError(true);
+            setError(message);
+          }}
+        />
       </div>
     </div>
   );

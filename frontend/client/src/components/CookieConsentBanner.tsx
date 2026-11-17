@@ -1,6 +1,29 @@
 import { useEffect, useState } from "react";
 
+/** Also read by the Consent Mode bootstrap in index.html — keep the two in sync. */
 const STORAGE_KEY = "cookieConsent_v2";
+
+type ConsentChoice = "accepted" | "rejected" | "dismissed";
+
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
+/**
+ * Tells Google Analytics and AdSense whether they may use cookies. index.html
+ * starts both in the denied state, so this is what actually turns them on.
+ */
+function applyConsent(granted: boolean) {
+  const state = granted ? "granted" : "denied";
+  window.gtag?.("consent", "update", {
+    ad_storage: state,
+    ad_user_data: state,
+    ad_personalization: state,
+    analytics_storage: state,
+  });
+}
 
 export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
@@ -15,12 +38,13 @@ export default function CookieConsentBanner() {
     }
   }, []);
 
-  const dismiss = (value: string) => {
+  const dismiss = (value: ConsentChoice) => {
     try {
       localStorage.setItem(STORAGE_KEY, value);
     } catch {
       /* ignore */
     }
+    applyConsent(value === "accepted");
     setVisible(false);
   };
 

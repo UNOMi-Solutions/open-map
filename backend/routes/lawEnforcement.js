@@ -12,18 +12,8 @@ import axios from "axios";
 // Import spreadsheet reader
 import * as XLSX from "xlsx";
 
-// Import file stream and csv reader
-import fs from "fs";
-import csvParser from "csv-parser";
-const zips = {}
-
-fs.createReadStream("./data/USZipsWithLatLon_20231227.csv")
-  .pipe(csvParser())
-  .on("data", (data) => {
-    //zips.push(data);
-    zips[data["postal code"]] = data;
-  })
-
+import { getZipData } from "../utils/zipData.js";
+import { getCached, mapWithConcurrency } from "../utils/dataCache.js";
 
 // import { OpenStreetMapProvider } from 'leaflet-geosearch';
 // const provider = new OpenStreetMapProvider();
@@ -46,19 +36,63 @@ const US_STATE_ABBREVIATIONS = [
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear();
 
+const DATASET_TTL_MS = 24 * 60 * 60 * 1000;
+const FBI_STATE_CONCURRENCY = 5;
+const MPV_DATASET_URL = "https://mappingpoliceviolence.us/s/MPVDatasetDownload.xlsx";
+const MISCONDUCT_SHEET_URL =
+    "https://docs.google.com/spreadsheets/d/1tX4F7XP5_5jZEebNQ8ibHR476CsrpLifCWc9nee8uIU/export?format=xlsx";
+
+/**
+ * Downloads and parses the Mapping Police Violence workbook once per TTL. All
+ * three victim endpoints read from this one result: the workbook is several
+ * megabytes, and parsing it per request is what exhausts the container.
+ */
+function getMpvDataset() {
+    return getCached("lawEnforcement:mpv", DATASET_TTL_MS, async () => {
+        const response = await axios.get(MPV_DATASET_URL, { responseType: "arraybuffer" });
+        const workbook = XLSX.read(response.data, { type: "buffer" });
+        const { byPostalCode } = await getZipData();
+
+        const cases = XLSX.utils
+            .sheet_to_json(workbook.Sheets[workbook.SheetNames[0]])
+            .map((incident) => ({
+                locationData: incident["Zipcode"] != null ? byPostalCode[incident["Zipcode"]] : undefined,
+                "Date of Incident (month/day/year)": incident["Date of Incident (month/day/year)"],
+                "Media description of the circumstances surrounding the death":
+                    incident["Media description of the circumstances surrounding the death"],
+                "Link to news article or photo of official document":
+                    incident["Link to news article or photo of official document"],
+            }));
+
+        return {
+            cases,
+            departments: XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[1]]),
+            states: XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[2]]),
+        };
+    });
+}
+
+/** Fills the slowest caches so the first visitor of a cold instance isn't the one who pays. */
+export async function warmLawEnforcementCache() {
+    await getMpvDataset();
+}
+
 // Get police population data per state
 // takes in year as optional parameter but uses current as default
 router.get('/enforcementPopulation', async (req, res) => {
     const year = req.query.year || currentYear;
 
     try {
-        const results = await Promise.all(
-            US_STATE_ABBREVIATIONS.map(async (state) => {
-                const response = await axios.get(`https://api.usa.gov/crime/fbi/cde/pe/${state}?from=${year}&to=${year}&API_KEY=${process.env.FBI_CRIME_KEY}`);
-                let stateMurders = response.data;
-                stateMurders.state = state;
-                return stateMurders;
-            })
+        const results = await getCached(
+            `lawEnforcement:enforcementPopulation:${year}`,
+            DATASET_TTL_MS,
+            () =>
+                mapWithConcurrency(US_STATE_ABBREVIATIONS, FBI_STATE_CONCURRENCY, async (state) => {
+                    const response = await axios.get(`https://api.usa.gov/crime/fbi/cde/pe/${state}?from=${year}&to=${year}&API_KEY=${process.env.FBI_CRIME_KEY}`);
+                    let stateMurders = response.data;
+                    stateMurders.state = state;
+                    return stateMurders;
+                })
         );
         res.json(results);
     } catch (error) {
@@ -71,40 +105,8 @@ router.get('/enforcementPopulation', async (req, res) => {
 // Sourced from https://mappingpoliceviolence.us/
 router.get('/policeVictimCases', async (req, res) => {
     try {
-        const response = await axios.get("https://mappingpoliceviolence.us/s/MPVDatasetDownload.xlsx", {
-            responseType: "arraybuffer",
-        });
-
-        const workbook = XLSX.read(response.data, { type: "buffer" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-
-        const wantedColumns = [
-            'locationData',
-            'Date of Incident (month/day/year)',
-            'Media description of the circumstances surrounding the death',
-            'Link to news article or photo of official document'
-        ];
-
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-        jsonData.map(async (incident) => {
-            if(incident["Zipcode"] != null) {
-                incident["locationData"] = zips[incident["Zipcode"]]
-            }
-        });
-
-        const filteredData = jsonData.map(incident => {
-            Object.keys(incident).forEach(key => {
-                if (!wantedColumns.includes(key)) {
-                    delete incident[key];
-                }
-            });
-            return incident;
-        });
-
-        res.json(filteredData);
-
+        const { cases } = await getMpvDataset();
+        res.json(cases);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error });
@@ -115,18 +117,8 @@ router.get('/policeVictimCases', async (req, res) => {
 // Sourced from https://mappingpoliceviolence.us/
 router.get('/policeVictimDepts', async (req, res) => {
     try {
-        const response = await axios.get("https://mappingpoliceviolence.us/s/MPVDatasetDownload.xlsx", {
-            responseType: "arraybuffer",
-        });
-
-        const workbook = XLSX.read(response.data, { type: "buffer" });
-        const sheetName = workbook.SheetNames[1];
-        const sheet = workbook.Sheets[sheetName];
-
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-        res.json(jsonData);
-
+        const { departments } = await getMpvDataset();
+        res.json(departments);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error });
@@ -137,18 +129,8 @@ router.get('/policeVictimDepts', async (req, res) => {
 // Sourced from https://mappingpoliceviolence.us/
 router.get('/policeVictimStates', async (req, res) => {
     try {
-        const response = await axios.get("https://mappingpoliceviolence.us/s/MPVDatasetDownload.xlsx", {
-            responseType: "arraybuffer",
-        });
-
-        const workbook = XLSX.read(response.data, { type: "buffer" });
-        const sheetName = workbook.SheetNames[2];
-        const sheet = workbook.Sheets[sheetName];
-
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-        res.json(jsonData);
-
+        const { states } = await getMpvDataset();
+        res.json(states);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error });
@@ -157,35 +139,33 @@ router.get('/policeVictimStates', async (req, res) => {
 
 router.get('/policeGenderViolence', async (req, res) => {
     try {
-        const url = "https://docs.google.com/spreadsheets/d/1tX4F7XP5_5jZEebNQ8ibHR476CsrpLifCWc9nee8uIU/export?format=xlsx";
+        const data = await getCached("lawEnforcement:genderViolence", DATASET_TTL_MS, async () => {
+            const response = await axios.get(MISCONDUCT_SHEET_URL, {
+                responseType: "arraybuffer",
+            });
 
-        const response = await axios.get(url, {
-        responseType: "arraybuffer",
+            const workbook = XLSX.read(response.data, { type: "buffer" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+            const raw = XLSX.utils.sheet_to_json(sheet, {
+                header: 1,
+                defval: null
+            });
+
+            const headerRowIndex = raw.findIndex(row => row.includes("Name:"));
+            const rows = raw.slice(headerRowIndex + 1);
+
+            return rows
+                .filter(row => row[0])
+                .map(row => ({
+                    name: row[0],
+                    title: row[1],
+                    state: row[2],
+                    formOfViolence: row[3],
+                    arrestOrSentence: row[4],
+                    link: row[5],
+                }));
         });
-
-        const workbook = XLSX.read(response.data, { type: "buffer" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-        const raw = XLSX.utils.sheet_to_json(sheet, {
-        header: 1,     
-        defval: null
-        });
-
-        const headerRowIndex = raw.findIndex(row => row.includes("Name:"));
-
-        const headers = raw[headerRowIndex];
-        const rows = raw.slice(headerRowIndex + 1);
-
-        const data = rows
-        .filter(row => row[0])
-        .map(row => ({
-            name: row[0],
-            title: row[1],
-            state: row[2],
-            formOfViolence: row[3],
-            arrestOrSentence: row[4],
-            link: row[5],
-        }));
 
         res.json({
             source: "Police Sexual Violence Misconduct Database",

@@ -2,6 +2,7 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import MarkerCompound from "./MarkerCompound";
 
 // Hollow marker icon for data centers.
 const DATA_CENTER_ICON = L.divIcon({
@@ -94,7 +95,7 @@ const DataCenterMarkers = ({setLoading} : DataCenterMarkersProps) => {
 
   // Display markers and popups for data centers
   return (
-    <>
+    <MarkerCompound>
       {centersWithCoords.map(({ center, index, coords: [lat, lng] }) => {
         const title =
           center.name ?? center.address ?? `Data Center #${index + 1}`;
@@ -158,7 +159,7 @@ const DataCenterMarkers = ({setLoading} : DataCenterMarkersProps) => {
           </Marker>
         );
       })}
-    </>
+    </MarkerCompound>
   );
 };
 

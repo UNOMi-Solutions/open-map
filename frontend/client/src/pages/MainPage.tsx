@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignUp from "./sections/SignUp";
@@ -15,22 +15,178 @@ import AboutUsModal from "./sections/AboutUs";
 import NewsletterPopup from "./sections/NewsLetterPopup";
 import SharePopup from "./sections/SharePopup";
 import Profiles from "./sections/Profiles";
-import { fetchMe, getAuthToken, setAuthToken } from "@/lib/apiClient";
+import AccountSettings from "./sections/AccountSettings";
+import EmailChangeVerification from "./sections/EmailChangeVerification";
+import { fetchMe, getAuthToken, setAuthToken, type AccountUser } from "@/lib/apiClient";
 import LeafletMap, {
   ChoroplethMetricKey,
   HouseDistrictPartyMode,
 } from "@/components/ui/LeafletMap";
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
-import { X, UserPlusIcon } from "lucide-react";
+import { X, UserPlusIcon, SettingsIcon } from "lucide-react";
 import { BannerAd, VideoAd } from "@/components/ads";
 
-import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
 import {
   HEALTH_ALL_LAYER_IDS,
   HEALTH_WIRED_LAYER_IDS,
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
+import {
+  INCIDENT_FILTER_PREFIXES,
+  INCIDENT_MENU_ID,
+  INCIDENT_TYPE_IDS,
+  migrateIncidentLayers,
+  selectIncidentType,
+  stormCategoryFromLayers,
+  stripIncidentSelections,
+} from "@/lib/disaster-incidents";
 import LoadingBar from "./sections/LoadingBar";
+import AdsterraBanner from "@/components/ads/AdsterraBanner";
+import {
+  formatTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
+
+interface TimelineRangeControlProps {
+  availableDateRange: TimelineDateRange;
+  selectedRange: TimelineDateRange;
+  onCommit: (range: TimelineDateRange) => void;
+}
+
+function TimelineRangeControl({
+  availableDateRange,
+  selectedRange,
+  onCommit,
+}: TimelineRangeControlProps) {
+  const [draftRange, setDraftRange] = useState(selectedRange);
+  const [isUpdating, startTransition] = useTransition();
+  const dayInMs = 24 * 60 * 60 * 1000;
+  const dateSpan = availableDateRange.end - availableDateRange.start || 1;
+
+  useEffect(() => {
+    setDraftRange(selectedRange);
+  }, [selectedRange.start, selectedRange.end]);
+
+  const commitRange = (range: TimelineDateRange) => {
+    startTransition(() => onCommit(range));
+  };
+
+  const commitDraftRange = () => {
+    if (
+      draftRange.start !== selectedRange.start ||
+      draftRange.end !== selectedRange.end
+    ) {
+      commitRange(draftRange);
+    }
+  };
+
+  const resetRange = () => {
+    setDraftRange(availableDateRange);
+    commitRange(availableDateRange);
+  };
+
+  return (
+    <aside
+      aria-label="Data timeline"
+      className="fixed bottom-5 right-5 z-[3000] w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-[#0c1022]/95 p-4 text-white shadow-2xl backdrop-blur"
+    >
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold">Timeline</h2>
+          {isUpdating && (
+            <span role="status" className="inline-flex items-center gap-1 text-xs text-sky-200">
+              <Loader className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              Updating map
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={resetRange}
+          className="text-xs text-sky-300 hover:text-sky-200 disabled:opacity-50"
+          disabled={
+            selectedRange.start === availableDateRange.start &&
+            selectedRange.end === availableDateRange.end
+          }
+        >
+          Reset
+        </button>
+      </div>
+      <div className="mb-1 flex justify-between gap-3 text-xs text-white/80">
+        <span>
+          From <strong>{formatTimelineDate(draftRange.start)}</strong>
+        </span>
+        <span>
+          Through <strong>{formatTimelineDate(draftRange.end)}</strong>
+        </span>
+      </div>
+      <div className="relative my-2 h-6">
+        <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/20" />
+        <div
+          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+          style={{
+            left: `${((draftRange.start - availableDateRange.start) / dateSpan) * 100}%`,
+            right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
+          }}
+        />
+        <label className="sr-only" htmlFor="timeline-start">
+          Earliest displayed date
+        </label>
+        <input
+          id="timeline-start"
+          aria-label="Earliest displayed date"
+          type="range"
+          min={availableDateRange.start}
+          max={availableDateRange.end}
+          step={dayInMs}
+          value={draftRange.start}
+          disabled={availableDateRange.start === availableDateRange.end}
+          onChange={(event) => {
+            const start = Number(event.target.value);
+            setDraftRange((current) => ({
+              ...current,
+              start: Math.min(start, current.end),
+            }));
+          }}
+          onPointerUp={commitDraftRange}
+          onPointerCancel={commitDraftRange}
+          onKeyUp={commitDraftRange}
+          onBlur={commitDraftRange}
+          className="timeline-range-input"
+        />
+        <label className="sr-only" htmlFor="timeline-end">
+          Latest displayed date
+        </label>
+        <input
+          id="timeline-end"
+          aria-label="Latest displayed date"
+          type="range"
+          min={availableDateRange.start}
+          max={availableDateRange.end}
+          step={dayInMs}
+          value={draftRange.end}
+          disabled={availableDateRange.start === availableDateRange.end}
+          onChange={(event) => {
+            const end = Number(event.target.value);
+            setDraftRange((current) => ({
+              ...current,
+              end: Math.max(end, current.start),
+            }));
+          }}
+          onPointerUp={commitDraftRange}
+          onPointerCancel={commitDraftRange}
+          onKeyUp={commitDraftRange}
+          onBlur={commitDraftRange}
+          className="timeline-range-input"
+        />
+      </div>
+      <div className="mt-1 flex justify-between text-[10px] text-white/50">
+        <span>{formatTimelineDate(availableDateRange.start)}</span>
+        <span>{formatTimelineDate(availableDateRange.end)}</span>
+      </div>
+    </aside>
+  );
+}
 
 const ECONOMICS_LAYER_IDS = new Set([
   "income",
@@ -51,6 +207,8 @@ export default function MainPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
+  // Display name from the account settings page; empty until the user sets one.
+  const [userName, setUserName] = useState("");
   // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
   // logged-in user, or null when they have no active subscription.
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
@@ -68,6 +226,7 @@ export default function MainPage() {
   const [isNewsletterPopupOpen, setIsNewsletterPopupOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isProfilesOpen, setIsProfilesOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isSignUpDropdownOpen, setIsSignUpDropdownOpen] = useState(false);
   const [isPinDropMode, setIsPinDropMode] = useState(false);
   const [mapPins, setMapPins] = useState<
@@ -77,6 +236,64 @@ export default function MainPage() {
   const [povertyYear, setPovertyYear] = useState<number | null>(null);
   const [povertyLatestYear, setPovertyLatestYear] = useState<number | null>(null);
   const [povertyAvailableYears, setPovertyAvailableYears] = useState<number[]>([]);
+  const [datasetDateRanges, setDatasetDateRanges] = useState<
+    Record<string, TimelineDateRange>
+  >({});
+  const [timelineRange, setTimelineRange] = useState<TimelineDateRange | null>(null);
+  const previousAvailableDateRange = useRef<TimelineDateRange | null>(null);
+  const availableDateRange = useMemo(() => {
+    const ranges = Object.values(datasetDateRanges);
+    if (ranges.length === 0) return null;
+    return {
+      start: Math.min(...ranges.map((range) => range.start)),
+      end: Math.max(...ranges.map((range) => range.end)),
+    };
+  }, [datasetDateRanges]);
+
+  const handleDatasetDateRangeChange = useCallback(
+    (datasetId: string, range: TimelineDateRange | null) => {
+      setDatasetDateRanges((current) => {
+        const existing = current[datasetId];
+        if (!range) {
+          if (!existing) return current;
+          const next = { ...current };
+          delete next[datasetId];
+          return next;
+        }
+        if (existing?.start === range.start && existing.end === range.end) {
+          return current;
+        }
+        return { ...current, [datasetId]: range };
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const previous = previousAvailableDateRange.current;
+    previousAvailableDateRange.current = availableDateRange;
+
+    if (!availableDateRange) {
+      setTimelineRange(null);
+      return;
+    }
+    setTimelineRange((current) => {
+      if (
+        !current ||
+        !previous ||
+        (current.start === previous.start && current.end === previous.end)
+      ) {
+        return availableDateRange;
+      }
+      const clamp = (timestamp: number) =>
+        Math.min(availableDateRange.end, Math.max(availableDateRange.start, timestamp));
+      const start = clamp(current.start);
+      return {
+        start,
+        end: Math.max(start, clamp(current.end)),
+      };
+    });
+  }, [availableDateRange]);
   const SIDEBAR_WIDTH_OPEN = 430;
   // NEW: sidebar open/close
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -93,8 +310,6 @@ export default function MainPage() {
 
   // Props for Displaying Police Killing Data
   const [showPoliceKillingData, setShowPoliceKillingData] = useState(false);
-  const [PoliceKillingQ, setPoliceKillingQ] = useState<PoliceKillingQKey>("Q1");
-  const [PoliceKillingYear, setPoliceKillingYear] = useState<number>(2026);
 
   // Props for displaying homicide data
   const [showMurderData, setShowMurderData] = useState(false);
@@ -107,11 +322,12 @@ export default function MainPage() {
 
   // Props for missing persons data
   const [showMissingPersonsData, setShowMissingPersonsData] = useState(false);
-  const [missingPersonQ, setMissingPersonQ] = useState<string>("Q1");
-  const [missingPersonYear, setMissingPersonYear] = useState<number>(2026);
 
   // Props for consent age data
   const [showConsentAgeData, setShowConsentAgeData] = useState(false);
+
+  // props for rural access
+  const [ruralAccessYear, setRuralAccessYear] = useState(2021);
 
   const [politicalLayerIds, setPoliticalLayerIds] = useState<string[]>([]);
   const [houseDistrictPartyMode, setHouseDistrictPartyMode] =
@@ -155,6 +371,10 @@ export default function MainPage() {
 
   const [isResetOpen, setIsResetOpen] = useState(checkReset());
 
+  const checkEmailChange = (() => window.location.href.includes("/verify-email?"));
+
+  const [isEmailChangeOpen, setIsEmailChangeOpen] = useState(checkEmailChange());
+
   const handleSearchTrigger = () => {
     setIsSearchOpen(true);
     setIsSignUpDropdownOpen(false);
@@ -193,6 +413,14 @@ export default function MainPage() {
     setIsPinDropMode((prev) => !prev);
     setIsSignUpDropdownOpen(false);
   };
+  /** Mirrors the server's copy of the account into the shell's UI state. */
+  const applyAccount = (user: AccountUser) => {
+    setUserName(user.name || "");
+    setUserEmail(user.email);
+    setCurrentPlan(user.plan ?? null);
+    setIsVerified(!!user.verified);
+  };
+
   const handleUserLogin = (
     email: string,
     plan: string | null = null,
@@ -203,6 +431,13 @@ export default function MainPage() {
     setCurrentPlan(plan);
     setIsVerified(verified);
     setIsSignUpOpen(false);
+    // The login/verify responses don't carry every account field (e.g. the
+    // display name), so pull the full record once the token is stored.
+    fetchMe()
+      .then(({ user }) => user && applyAccount(user))
+      .catch(() => {
+        /* Session restore already handles a bad token; nothing to do here. */
+      });
     // If the user was trying to pick a plan before authenticating, bring them
     // back to the pricing screen to finish choosing.
     if (pendingPlan) {
@@ -231,9 +466,12 @@ export default function MainPage() {
     setAuthToken(null);
     setIsLoggedIn(false);
     setUserEmail("");
+    setUserName("");
     setCurrentPlan(null);
     setIsVerified(false);
     setIsSignUpDropdownOpen(false);
+    setIsAccountOpen(false);
+    setIsProfilesOpen(false);
   };
   const handlePricingClick = () => {
     setIsPricingOpen(true);
@@ -312,6 +550,42 @@ export default function MainPage() {
       }
       return;
     }
+    if (layerId === INCIDENT_MENU_ID) {
+      setSelectedLayers((prev) =>
+        checked
+          ? prev.includes(INCIDENT_MENU_ID)
+            ? prev
+            : [...prev, INCIDENT_MENU_ID]
+          : stripIncidentSelections(prev),
+      );
+      return;
+    }
+    if (INCIDENT_TYPE_IDS.has(layerId)) {
+      setSelectedLayers((prev) =>
+        checked
+          ? selectIncidentType(prev, layerId)
+          : prev.filter(
+              (id) =>
+                id !== layerId &&
+                !INCIDENT_FILTER_PREFIXES.some((prefix) => id.startsWith(prefix)),
+            ),
+      );
+      return;
+    }
+    const singleSelectPrefix = [
+      "eq-mag:",
+      "nri-hz:",
+      "vo-alert:",
+      "wf-acres:",
+      "dr-cat:",
+    ].find((p) => layerId.startsWith(p));
+    if (singleSelectPrefix) {
+      setSelectedLayers((prev) => [
+        ...prev.filter((id) => !id.startsWith(singleSelectPrefix)),
+        ...(checked ? [layerId] : []),
+      ]);
+      return;
+    }
     setSelectedLayers((prev) =>
       checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
     );
@@ -323,7 +597,7 @@ export default function MainPage() {
     );
   };
 
-  /** Clear sidebar map filters (layers, choropleth, crime/police/social/political). Does not remove dropped pins or pin-drop mode. */
+  /** Clear sidebar map filters (layers, choropleth, crime/social/political). Does not remove dropped pins or pin-drop mode. */
   const handleResetAllFilters = () => {
     setSelectedLayers([]);
     setChoroplethMetric("pct_white");
@@ -332,16 +606,12 @@ export default function MainPage() {
     setSelectedRaceCensusId("all");
     setSelectedSexId(null);
     setShowPoliceKillingData(false);
-    setPoliceKillingQ("Q1");
-    setPoliceKillingYear(2026);
     setShowMurderData(false);
     setMurderCategory("victim");
     setMurderAttribute("age");
     setArrestCategory("Arrestee Sex");
     setShowArrestData(false);
     setShowMissingPersonsData(false);
-    setMissingPersonQ("Q1");
-    setMissingPersonYear(2026);
     setShowConsentAgeData(false);
     setPoliticalLayerIds([]);
     setHouseDistrictPartyMode("both");
@@ -359,16 +629,12 @@ export default function MainPage() {
     selectedRaceCensusId,
     selectedSexId,
     showPoliceKillingData,
-    PoliceKillingQ,
-    PoliceKillingYear,
     showMurderData,
     murderCategory,
     murderAttribute,
     arrestCategory,
     showArrestData,
     showMissingPersonsData,
-    missingPersonQ,
-    missingPersonYear,
     showConsentAgeData,
     politicalLayerIds,
     houseDistrictPartyMode,
@@ -381,23 +647,21 @@ export default function MainPage() {
   const applyConfig = (config: Record<string, any>) => {
     const c = config || {};
     setMapPins(Array.isArray(c.mapPins) ? c.mapPins : []);
-    setSelectedLayers(Array.isArray(c.selectedLayers) ? c.selectedLayers : []);
+    setSelectedLayers(
+      migrateIncidentLayers(Array.isArray(c.selectedLayers) ? c.selectedLayers : [])
+    );
     setChoroplethMetric(c.choroplethMetric ?? "pct_white");
     setShowChoropleth(!!c.showChoropleth);
     setSelectedAgeGroupId(c.selectedAgeGroupId ?? null);
     setSelectedRaceCensusId(c.selectedRaceCensusId ?? "all");
     setSelectedSexId(c.selectedSexId ?? null);
     setShowPoliceKillingData(!!c.showPoliceKillingData);
-    setPoliceKillingQ(c.PoliceKillingQ ?? "Q1");
-    setPoliceKillingYear(c.PoliceKillingYear ?? 2026);
     setShowMurderData(!!c.showMurderData);
     setMurderCategory(c.murderCategory ?? "victim");
     setMurderAttribute(c.murderAttribute ?? "age");
     setArrestCategory(c.arrestCategory ?? "Arrestee Sex");
     setShowArrestData(!!c.showArrestData);
     setShowMissingPersonsData(!!c.showMissingPersonsData);
-    setMissingPersonQ(c.missingPersonQ ?? "Q1");
-    setMissingPersonYear(c.missingPersonYear ?? 2026);
     setShowConsentAgeData(!!c.showConsentAgeData);
     setPoliticalLayerIds(Array.isArray(c.politicalLayerIds) ? c.politicalLayerIds : []);
     setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
@@ -416,10 +680,8 @@ export default function MainPage() {
       try {
         const { user } = await fetchMe();
         if (cancelled || !user) return;
+        applyAccount(user);
         setIsLoggedIn(true);
-        setUserEmail(user.email);
-        setCurrentPlan(user.plan ?? null);
-        setIsVerified(!!user.verified);
       } catch {
         // Token invalid/expired — clear it so the UI reflects a logged-out state.
         setAuthToken(null);
@@ -567,9 +829,25 @@ export default function MainPage() {
                               alt="User"
                               src="/figmaAssets/user-head.svg"
                             />
-                            <span className="text-[10.5px] text-gray-200">{userEmail}</span>
+                            <div className="min-w-0">
+                              {userName && (
+                                <p className="text-[10.5px] text-white truncate">{userName}</p>
+                              )}
+                              <p className="text-[10.5px] text-gray-200 truncate">{userEmail}</p>
+                            </div>
                           </div>
-                          
+
+                          <div
+                            className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
+                            onClick={() => {
+                              setIsAccountOpen(true);
+                              setIsSignUpDropdownOpen(false);
+                            }}
+                          >
+                            <SettingsIcon className="w-[16px] h-[16px] text-white" />
+                            <span className="text-[10.5px] text-white">Account Settings</span>
+                          </div>
+
                           <div 
                             className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
@@ -660,7 +938,22 @@ export default function MainPage() {
             {isSearchOpen && (
               <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setIsSearchOpen(false)} />
             )}
-            <SearchPopup isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+            <SearchPopup
+              isOpen={isSearchOpen}
+              onClose={() => setIsSearchOpen(false)}
+              onLogin={(email, plan, verified) => {
+                handleUserLogin(email, plan ?? null, verified ?? false);
+                setIsSearchOpen(false);
+              }}
+              onSwitchToLogin={() => {
+                setIsSearchOpen(false);
+                setIsLoginOpen(true);
+              }}
+              onSwitchToSignUp={() => {
+                setIsSearchOpen(false);
+                setIsSignUpOpen(true);
+              }}
+            />
 
             {/* Landing logo / Share button */}
             {showLanding ? (
@@ -708,8 +1001,6 @@ export default function MainPage() {
                   showChoropleth={showChoropleth}
 
                   showPoliceKillingData={showPoliceKillingData}
-                  PoliceKillingQ={PoliceKillingQ}
-                  PoliceKillingYear={PoliceKillingYear}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -719,16 +1010,51 @@ export default function MainPage() {
                   showArrestData={showArrestData}
 
                   showMissingPersonsData={showMissingPersonsData}
-                  missingPersonQ={missingPersonQ}
-                  missingPersonYear={missingPersonYear}
+
+                  showMassShootings={selectedLayers.includes("mass-shootings")}
 
                   showConsentAgeData={showConsentAgeData}
+                  showAlprCameras={selectedLayers.includes("alpr-cameras")}
+                  alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
                   showNaturalDisasterIncidents={selectedLayers.some((id) => id.startsWith("nd-type:")) || selectedLayers.includes("natural-disaster-incidents")}
                   naturalDisasterIncidentTypes={selectedLayers
                     .filter((id) => id.startsWith("nd-type:"))
                     .map((id) => id.replace("nd-type:", ""))}
+                  showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
+                  nationalRiskIndexHazard={
+                    selectedLayers.find((l) => l.startsWith("nri-hz:"))?.slice("nri-hz:".length) ?? null
+                  }
+                  stormEventCategory={stormCategoryFromLayers(selectedLayers)}
+                  showTornadoes={selectedLayers.includes("ndi-tornado")}
+                  showDebrisFlow={selectedLayers.includes("ndi-debris-flow")}
+                  showLandslides={selectedLayers.includes("landslides")}
+                  showEarthquakes={selectedLayers.includes("earthquakes")}
+                  earthquakeMinMagnitude={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("eq-mag:"));
+                    return id ? Number(id.slice("eq-mag:".length)) : null;
+                  })()}
+                  showVolcanoes={selectedLayers.includes("volcanoes")}
+                  volcanoMinAlert={
+                    selectedLayers.find((l) => l.startsWith("vo-alert:"))?.slice("vo-alert:".length) ?? null
+                  }
+                  showTsunamis={selectedLayers.includes("tsunamis")}
+                  showWildfires={selectedLayers.includes("wildfires")}
+                  wildfireMinAcres={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("wf-acres:"));
+                    return id ? Number(id.slice("wf-acres:".length)) : null;
+                  })()}
+                  showDrought={selectedLayers.includes("drought")}
+                  droughtCategory={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("dr-cat:"));
+                    return id ? Number(id.slice("dr-cat:".length)) : null;
+                  })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showNoisePollution={selectedLayers.includes("noise-pollution")}
+                  showRuralAccess={selectedLayers.includes("rural-access") }
+                  ruralAccessYear={ruralAccessYear}
+                  onRuralAccessYearChange={setRuralAccessYear}
+                  
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
                   showDataCenters={selectedLayers.includes("data-centers")}
@@ -745,8 +1071,19 @@ export default function MainPage() {
                   povertyYear={povertyYear}
                   onPovertyDataMeta={handlePovertyDataMeta}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
+                  timelineRange={timelineRange}
+                  onDateRangeChange={handleDatasetDateRangeChange}
+                  timelineVisible={Boolean(availableDateRange && timelineRange)}
                 />
               </div>
+
+              {availableDateRange && timelineRange && (
+                <TimelineRangeControl
+                  availableDateRange={availableDateRange}
+                  selectedRange={timelineRange}
+                  onCommit={setTimelineRange}
+                />
+              )}
 
               {/* Landing content overlay (full screen) */}
               {showLanding && (
@@ -799,16 +1136,11 @@ export default function MainPage() {
                   className={[
                     "hidden lg:flex flex-col gap-4",
                     "absolute top-28 right-6 z-30",
-                    "w-[300px] max-h-[calc(100vh-160px)] overflow-y-auto",
+                    "w-[344px] max-h-[calc(100vh-160px)] overflow-y-auto",
                     "rounded-xl border border-white/15 bg-[#0c1022]/70 backdrop-blur-sm",
                     "p-3 shadow-2xl pointer-events-auto",
                   ].join(" ")}
                 >
-                  <BannerAd
-                    showLabel
-                    className="bg-white/5 rounded-md p-2"
-                    style={{ minHeight: 250 }}
-                  />
                   <VideoAd
                     showLabel
                     className="bg-white/5 rounded-md p-2"
@@ -842,10 +1174,6 @@ export default function MainPage() {
 
                   showPoliceKillingData={showPoliceKillingData}
                   onTogglePoliceKillingData={() => setShowPoliceKillingData((v) => !v)}
-                  PoliceKillingQ={PoliceKillingQ}
-                  onPoliceKillingQChange={setPoliceKillingQ}
-                  PoliceKillingYear={PoliceKillingYear}
-                  onPoliceKillingYearChange={setPoliceKillingYear}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -862,10 +1190,6 @@ export default function MainPage() {
 
                   showMissingPersonsData={showMissingPersonsData}
                   onToggleMissingPersonsData={() => setShowMissingPersonsData((v) => !v)}
-                  missingPersonQ={missingPersonQ}
-                  onMissingPersonQChange={setMissingPersonQ}
-                  missingPersonYear={missingPersonYear}
-                  onMissingPersonYearChange={setMissingPersonYear}
 
                   showConsentAgeData={showConsentAgeData}
                   onToggleConsentAgeData={() => setShowConsentAgeData((v) => !v)}
@@ -891,7 +1215,6 @@ export default function MainPage() {
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
                 {!isPremium && (
                   <div className="px-4 pt-4 pb-8 space-y-4 border-t border-white/10 mt-4">
-                    <BannerAd showLabel className="bg-white/5 rounded-md p-2" />
                     <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
                   </div>
                 )}
@@ -941,6 +1264,7 @@ export default function MainPage() {
           userEmail={userEmail}
           currentPlan={currentPlan}
           onRequireAuth={handleRequirePlanAuth}
+          onPlanChanged={setCurrentPlan}
           onFreeTrial={() => {
             setIsPricingOpen(false);
             setIsSignUpOpen(true);
@@ -982,13 +1306,33 @@ export default function MainPage() {
         />
       )}
 
+      {/* Account Settings */}
+      {isAccountOpen && (
+        <AccountSettings
+          isOpen={isAccountOpen}
+          onClose={() => setIsAccountOpen(false)}
+          onOpenPlans={() => setIsPricingOpen(true)}
+          onAccountUpdated={applyAccount}
+          onAccountDeleted={handleUserLogout}
+        />
+      )}
+
+      {/* Confirmation screen for the "change email" link */}
+      {isEmailChangeOpen && (
+        <EmailChangeVerification
+          isOpen={isEmailChangeOpen}
+          onClose={() => setIsEmailChangeOpen(false)}
+          onConfirmed={(email) => setUserEmail(email)}
+        />
+      )}
+
       {/* Sign Up Modal */}
       {isSignUpOpen && (
         <SignUp 
           isOpen={isSignUpOpen}
           onClose={() => setIsSignUpOpen(false)}
-          onLogin={(email) => {
-            handleUserLogin(email);
+          onLogin={(email, plan, verified) => {
+            handleUserLogin(email, plan ?? null, verified ?? false);
             setIsLoginOpen(false);
           }}
           onSwitchToLogin={() => setIsLoginOpen(true)}

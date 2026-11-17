@@ -12,23 +12,8 @@ import axios from "axios";
 // Import cheerio for web scraping
 import * as cheerio from "cheerio";
 
-// Import file stream and csv reader for missing person data
-import fs from "fs";
-import csvParser from "csv-parser";
-
-// Get coords for counties
-const countyCoords = {};
-fs.createReadStream("./data/USZipsWithLatLon_20231227.csv")
-  .pipe(csvParser())
-  .on("data", (data) => {
-    countyCoords[data["admin name2"]] = data;
-  })
-  .on("end", () => {
-    console.log("CSV file successfully processed");
-  })
-  .on("error", (error) => {
-    console.error("Error reading CSV file:", error);
-  });
+// County coordinates come from ../utils/zipData.js, which parses the shared
+// zip-code CSV once for the whole process. No route here needs it yet.
 
 
 // Test Command

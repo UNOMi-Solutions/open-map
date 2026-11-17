@@ -12,23 +12,20 @@ import axios from "axios";
 // Import cheerio for web scraping
 import * as cheerio from "cheerio";
 
-// Import file stream and csv reader for missing person data
-import fs from "fs";
-import csvParser from "csv-parser";
-
-// Get coords for counties
-const countyCoords = {};
-fs.createReadStream("./data/USZipsWithLatLon_20231227.csv")
-  .pipe(csvParser())
-  .on("data", (data) => {
-    countyCoords[data["admin name2"]] = data;
-  })
-  .on("end", () => {
-    console.log("CSV file successfully processed");
-  })
-  .on("error", (error) => {
-    console.error("Error reading CSV file:", error);
-  });
+import { getZipData } from "../utils/zipData.js";
+import { getCached, mapWithConcurrency } from "../utils/dataCache.js";
+import {
+    downloadGvaMassShootingsCsv,
+    getDataHubRequester,
+    normalizeGvaMassShooting,
+    parseGvaCsv,
+    readGvaSnapshot,
+} from "../lib/gvaMassShootings.js";
+import {
+    downloadNamusMissingPersons,
+    normalizeNamusMissingPerson,
+    readNamusSnapshot,
+} from "../lib/namusMissingPersons.js";
 
 // Test Command
 router.get('/test', (req, res) => {
@@ -51,26 +48,11 @@ const US_STATE_ABBREVIATIONS = [
 const DEFAULT_CRIME_YEAR = "2023";
 
 const FBI_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const FBI_STATE_DELAY_MS = 300;
-const murderCache = new Map();
-const arrestCache = new Map();
-const inFlightFetches = new Map();
+// The FBI API answers a full 50-state fan-out with 429s, but one-at-a-time made
+// an uncached request take most of a minute and the browser gave up first.
+const FBI_STATE_CONCURRENCY = 4;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function readCache(cache, key) {
-    const entry = cache.get(key);
-    if (!entry) return null;
-    if (Date.now() - entry.cachedAt > FBI_CACHE_TTL_MS) {
-        cache.delete(key);
-        return null;
-    }
-    return entry.data;
-}
-
-function writeCache(cache, key, data) {
-    cache.set(key, { data, cachedAt: Date.now() });
-}
 
 async function fetchFbiUrl(url, retries = 4) {
     for (let attempt = 0; attempt < retries; attempt++) {
@@ -88,37 +70,61 @@ async function fetchFbiUrl(url, retries = 4) {
     }
 }
 
-/** Fetch one state at a time to avoid FBI api.data.gov rate limits (429). */
-async function fetchAllStatesSequentially(buildUrl) {
-    const result = {};
-    for (const state of US_STATE_ABBREVIATIONS) {
-        result[state] = await fetchFbiUrl(buildUrl(state));
-        await sleep(FBI_STATE_DELAY_MS);
-    }
-    return result;
+/** Fetch states a few at a time, staying under FBI api.data.gov rate limits (429). */
+async function fetchAllStates(buildUrl) {
+    const entries = await mapWithConcurrency(
+        US_STATE_ABBREVIATIONS,
+        FBI_STATE_CONCURRENCY,
+        async (state) => [state, await fetchFbiUrl(buildUrl(state))]
+    );
+    return Object.fromEntries(entries);
 }
 
-async function getCachedFbiData(cacheKey, cache, fetchFn) {
-    const cached = readCache(cache, cacheKey);
-    if (cached) return cached;
+/** Open NamUs missing persons cases, refreshed from NamUs once per TTL. */
+function getMissingPersons() {
+    return getCached("crime:missingPersons", FBI_CACHE_TTL_MS, async () => {
+        const zipData = await getZipData();
 
-    if (inFlightFetches.has(cacheKey)) {
-        return inFlightFetches.get(cacheKey);
-    }
+        let rows;
+        try {
+            rows = await downloadNamusMissingPersons();
+        } catch (error) {
+            console.warn("[crime] NamUs unavailable, using bundled snapshot:", error.message);
+            rows = await readNamusSnapshot();
+        }
 
-    const promise = fetchFn()
-        .then((data) => {
-            writeCache(cache, cacheKey, data);
-            inFlightFetches.delete(cacheKey);
-            return data;
-        })
-        .catch((error) => {
-            inFlightFetches.delete(cacheKey);
-            throw error;
-        });
+        return rows
+            .map((row) => normalizeNamusMissingPerson(row, zipData))
+            .filter((r) => r.id && r.dateOfLastContact);
+    });
+}
 
-    inFlightFetches.set(cacheKey, promise);
-    return promise;
+/** Gun Violence Archive mass shootings, refreshed from The Trace's Data Hub once per TTL. */
+function getMassShootings() {
+    return getCached("crime:massShootings", FBI_CACHE_TTL_MS, async () => {
+        const zipData = await getZipData();
+
+        let rows = null;
+        if (getDataHubRequester()) {
+            try {
+                rows = await parseGvaCsv(await downloadGvaMassShootingsCsv());
+                if (!rows.length || !("victims_killed" in rows[0])) throw new Error("Unexpected Data Hub CSV format");
+            } catch (error) {
+                console.warn("[crime] GVA Data Hub unavailable, using bundled snapshot:", error.message);
+                rows = null;
+            }
+        }
+        rows ??= await readGvaSnapshot();
+
+        return rows
+            .map((row) => normalizeGvaMassShooting(row, zipData))
+            .filter((r) => r.id && r.date);
+    });
+}
+
+/** Fills the slowest caches so the first visitor of a cold instance isn't the one who pays. */
+export async function warmCrimeCache() {
+    await getMissingPersons();
 }
 
 function hasValidFbiKey() {
@@ -149,7 +155,7 @@ function handleFbiRouteError(res, error, label) {
     }
     return res.status(500).json({
         success: false,
-        message: `Failed to fetch ${label} from FBI API`,
+        message: `Failed to fetch ${label} from FBI API: ${error}`,
     });
 }
 
@@ -176,14 +182,14 @@ router.get('/murderByState', async (req, res) => {
     const cacheKey = requestedState ? `murder:${year}:${requestedState}` : `murder:${year}`;
 
     try {
-        const murderJSON = await getCachedFbiData(cacheKey, murderCache, () =>
+        const murderJSON = await getCached(cacheKey, FBI_CACHE_TTL_MS, () =>
             requestedState
                 ? fetchFbiUrl(`https://api.usa.gov/crime/fbi/cde/shr/state/${requestedState}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`)
-                : fetchAllStatesSequentially((state) =>
+                : fetchAllStates((state) =>
                     `https://api.usa.gov/crime/fbi/cde/shr/state/${state}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`,
                 ),
         );
-
+        
         res.json({
             success: true,
             source: "FBI Crime Data API",
@@ -274,10 +280,10 @@ router.get('/arrestsByState', async (req, res) => {
         : `arrests:${year}:${offenseCode}`;
 
     try {
-        const arrestsJSON = await getCachedFbiData(cacheKey, arrestCache, () =>
+        const arrestsJSON = await getCached(cacheKey, FBI_CACHE_TTL_MS, () =>
             requestedState
                 ? fetchFbiUrl(`https://api.usa.gov/crime/fbi/cde/arrest/state/${requestedState}/${offenseCode}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`)
-                : fetchAllStatesSequentially((state) =>
+                : fetchAllStates((state) =>
                     `https://api.usa.gov/crime/fbi/cde/arrest/state/${state}/${offenseCode}?type=totals&from=01-${year}&to=12-${year}&API_KEY=${process.env.FBI_CRIME_KEY}`,
                 ),
         );
@@ -297,34 +303,39 @@ router.get('/arrestsByState', async (req, res) => {
     }
 });
 
-// Get national missing person data
-// Taken from https://www.fbi.gov/wanted/kidnap
+// Get open US missing persons cases
+// Taken from NamUs: https://www.namus.gov/MissingPersons/Search
 router.get('/missingPersons', async (req, res) => {
-    let missingPersons = [];
-
     try {
-        fs.createReadStream("data/missingPersons.csv")
-        .pipe(csvParser())
-        .on("data", (row) => {
-            // Process each row of the CSV file here
-            // For example, you can push it to an array or directly send it as a response
-            // console.log(row); // This will log each row as an object
-            row["locationData"] = countyCoords[row["County"]];
-            missingPersons.push(row);
-        })
-        .on("end", () => {
-            //console.log("CSV file successfully processed");
-            //console.log(missingPersons); // This will log the entire array of missing persons
-            // You can send the processed data as a response here if needed
-            res.json(missingPersons);
-        })
-        .on("error", (error) => {
-            console.error("Error reading CSV file:", error);
-            res.status(500).json({ error: "Error reading CSV file" });
+        const cases = await getMissingPersons();
+        res.json({
+            success: true,
+            source: "NamUs (National Missing and Unidentified Persons System)",
+            sourceUrl: "https://www.namus.gov/MissingPersons/Search",
+            count: cases.length,
+            data: cases,
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error });
+        console.error("[crime] missingPersons failed:", error.message);
+        res.status(500).json({ success: false, message: "Failed to load missing persons data" });
+    }
+});
+
+// Get US mass shootings (4+ victims shot), 2014 to present
+// Taken from the Gun Violence Archive via The Trace: https://datahub.thetrace.org/dataset/mass-shootings/
+router.get('/massShootings', async (req, res) => {
+    try {
+        const incidents = await getMassShootings();
+        res.json({
+            success: true,
+            source: "Gun Violence Archive (via The Trace Gun Violence Data Hub)",
+            sourceUrl: "https://datahub.thetrace.org/dataset/mass-shootings/",
+            count: incidents.length,
+            data: incidents,
+        });
+    } catch (error) {
+        console.error("[crime] massShootings failed:", error.message);
+        res.status(500).json({ success: false, message: "Failed to load mass shooting data" });
     }
 });
 

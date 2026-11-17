@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { X, ArrowLeft } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/apiClient';
+import ContinueWithGoogle from '@/components/ContinueWithGoogle';
 
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin?: (email: string) => void;
+  onLogin?: (email: string, plan?: string | null, verified?: boolean) => void;
   onSwitchToLogin?: () => void;
 }
 
@@ -32,6 +33,23 @@ function validateEmailString(currentEmail: string): string {
 
   if (atIndex >= currentEmail.length - 3) {
     return "Email has no valid domain. Please enter valid email"
+  }
+
+  return '';
+}
+
+function validateNameString(currentName: string): string {
+  // Name validation rules
+
+  // Must not be blank
+  // Must be at most 80 characters (matches the User schema)
+
+  if (currentName.trim().length == 0) {
+    return "Please input your name";
+  }
+
+  if (currentName.trim().length > 80) {
+    return "Name must be 80 characters or fewer";
   }
 
   return '';
@@ -77,6 +95,7 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState('');
   const [input, setInput] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isEmail, setIsEmail] = useState(true);
@@ -93,6 +112,15 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
       2. Check if the email is in the database
     */
     if (isEmail) {
+      // The first step collects the name alongside the email, so the account
+      // has a display name from the moment it's created.
+      const nameError: string = validateNameString(name);
+      if (nameError != '') {
+        setIsError(true);
+        setError(nameError);
+        return;
+      }
+
       // Check for valid email
       const errorString: string = validateEmailString(input);
       if (errorString != '') {
@@ -137,14 +165,18 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          name: name.trim(),
           email: email,
           password: password
         }),
       });
 
       if (!response.ok) {
+        // Surface the server's reason (e.g. "email already exists") instead of
+        // a generic failure the user can't act on.
+        const failure = await response.json().catch(() => null);
         setIsError(true);
-        setError("Something went wrong. Please try again later");
+        setError(failure?.message || "Something went wrong. Please try again later");
         return;
       }
 
@@ -166,16 +198,6 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
     setIsError(false);
     setPassword('');
   }
-
-  const handleAppleSignUp = () => {
-    console.log('Continue with Apple');
-    // Handle Apple sign up logic here
-  };
-
-  const handleGoogleSignUp = () => {
-    console.log('Continue with Google');
-    // Handle Google sign up logic here
-  };
 
   const handleLogin = () => {
     onClose();
@@ -239,6 +261,20 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
           {error}
         </p>
         }
+
+        {/* Name Input */}
+        { isEmail && !isDone &&
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Full name"
+            value={name}
+            maxLength={80}
+            onChange={(e) => {setName(e.target.value); setIsError(false);}}
+            className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+          />
+        </div>
+}
 
         {/* Email Input */}
         { !isDone &&
@@ -314,31 +350,16 @@ export default function SignUpModal({ isOpen, onClose, onLogin, onSwitchToLogin 
           </div>
         </div>
 
-        {/* Apple Sign Up Button */}
-        <button
-          onClick={handleAppleSignUp}
-          className="w-full bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 mb-3 flex items-center justify-center gap-2"
-        >
-          <img
-              className="w-[17px] h-[21px] opacity-100"
-              alt="Apple"
-              src="/figmaAssets/Apple.svg"
-          />
-          Continue with Apple
-        </button>
-
-        {/* Google Sign Up Button */}
-        <button
-          onClick={handleGoogleSignUp}
-          className="w-full bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-        >
-          <img
-              className="w-[18px] h-[19px] opacity-100"
-              alt="Apple"
-              src="/figmaAssets/Google.svg"
-          />
-          Continue with Google
-        </button>
+        <ContinueWithGoogle
+          onSignedIn={(user) => {
+            onLogin?.(user.email, user.plan ?? null, user.verified ?? false);
+            onClose();
+          }}
+          onError={(message) => {
+            setIsError(true);
+            setError(message);
+          }}
+        />
       </div>
     </div>
   );

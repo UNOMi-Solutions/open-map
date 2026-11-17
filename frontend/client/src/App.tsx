@@ -17,6 +17,8 @@ function Router() {
       <Route path="/" component={MainPage} />
       {/* Verification page */}
       <Route path="/verify" component={MainPage} />
+      {/* Confirmation page for an email address change */}
+      <Route path="/verify-email" component={MainPage} />
       {/* Reset page */}
       <Route path="/reset" component={MainPage} />
       {/* Fallback to 404 */}

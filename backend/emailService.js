@@ -45,6 +45,37 @@ export async function sendVerificationEmail(to, token) {
   }
 }
 
+/**
+ * Sends a confirmation link to the *new* address a user wants to switch to.
+ * The address only becomes their login once this link is opened, which proves
+ * they can actually receive mail there.
+ */
+export async function sendEmailChangeVerification(to, token) {
+  const confirmLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+
+  const mailOptions = {
+    from: "OpenMap <noreply@getopenmap.com>",
+    to,
+    subject: "Confirm your new OpenMap email address",
+    html: `
+      <p>Hello,</p>
+      <p>You asked to change the email address on your OpenMap account to this one. Confirm the change by clicking the link below:</p>
+      <a href="${confirmLink}">Confirm new email</a>
+      <p>This link expires in 24 hours. Until you confirm, your account keeps using your old address.</p>
+      <p>If you didn't request this, you can safely ignore this email.</p>
+      <p>- The OpenMap Team</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Email change confirmation sent to ${to}`);
+  } catch (error) {
+    console.error("❌ Failed to send email change confirmation:", error);
+    throw error;
+  }
+}
+
 export async function sendPasswordResetEmail(to, token) {
   const resetLink = `${process.env.FRONTEND_URL}/reset?token=${token}`;
 
