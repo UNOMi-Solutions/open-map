@@ -244,12 +244,16 @@ export default function ArsonMap({ arrestCategory }: ArsonMapProps) {
             <h3 style="margin:0 0 6px;font-size:15px;font-weight:700;">Arson arrests in ${safeStateName} (${escapeHtml(response?.year ?? "2023")})</h3>
             ${breakdown ? `<div style="margin-top:8px;font-size:12px;">${breakdown}</div>` : ""}
           </div>`;
+        const tooltipContent = `${safeStateName}: ${count == null ? "No data" : `${count.toLocaleString()} arrests`}`;
 
         stateLayer.bindPopup(popupHtml, { maxWidth: 300 });
-        stateLayer.bindTooltip(
-          `${safeStateName}: ${count == null ? "No data" : `${count.toLocaleString()} arrests`}`,
-          { sticky: true, opacity: 0.9 },
-        );
+        stateLayer.bindTooltip(tooltipContent, { sticky: true, opacity: 0.9 });
+        stateLayer.on("popupopen", () => {
+          stateLayer.unbindTooltip();
+        });
+        stateLayer.on("popupclose", () => {
+          stateLayer.bindTooltip(tooltipContent, { sticky: true, opacity: 0.9 });
+        });
         stateLayer.on({
           mouseover: (event) => {
             const target = event.target as L.Path;
