@@ -203,7 +203,7 @@ const WasteTreatmentDisposalMarkers = ({ selectedStateCode, setLoading }: WasteT
   }, []);
 
   return (
-    <MarkerCompound>
+    <MarkerCompound maxClusterRadius="40">
       {siteData.map((site) => (
         <Marker key={site.id} position={[site.lat, site.lon]} icon={WASTE_TREATMENT_ICON}>
           {(

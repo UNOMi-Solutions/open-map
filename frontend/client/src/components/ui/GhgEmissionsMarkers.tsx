@@ -107,7 +107,7 @@ const GhgEmissionsMarkers = ({ selectedStateCode, setLoading }: GhgEmissionsMark
   }
 
   return (
-    <MarkerCompound>
+    <MarkerCompound maxClusterRadius="40">
       {facilities
         .filter(
           (facility) =>

@@ -103,7 +103,7 @@ const DataCenterMarkers = ({setLoading} : DataCenterMarkersProps) => {
 
   // Display markers and popups for data centers
   return (
-    <MarkerCompound>
+    <MarkerCompound maxClusterRadius="40">
       {centersWithCoords.map(({ center, index, coords: [lat, lng] }) => {
         const title =
           center.name ?? center.address ?? `Data Center #${index + 1}`;

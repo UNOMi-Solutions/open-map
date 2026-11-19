@@ -85,7 +85,7 @@ const PoliceKillings = ({
     if (!showPoliceKillingData) return null;
 
     return (
-        <MarkerCompound>
+        <MarkerCompound maxClusterRadius="40">
             {PDKillingData.map((incident: Incident, index: number) => {
                 const { locationData } = incident;
                 const incidentDate = getIncidentDate(incident);

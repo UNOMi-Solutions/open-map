@@ -116,7 +116,7 @@ const OilSpillMarkers = ({
         ),
     );
 
-  return (<MarkerCompound>
+  return (<MarkerCompound maxClusterRadius="40">
     {
       incidentsWithCoords.map(({ incident, index, coords: [lat, lng] }) => {
         const title = incident.name ?? incident.location ?? `Oil spill #${index + 1}`;
