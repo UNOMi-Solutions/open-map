@@ -87,6 +87,7 @@ import GerrymanderingMarkers from "./GerrymanderingMarkers";
 import PresidentMarker from "./PresidentMarker";
 import CongressionalDistrictsLayer from "./CongressionalDistrictsLayer";
 import HouseMarkers from "./HouseMarkers";
+import BillionaireMarkers from "./BillionaireMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
 import AlprCameraMarkers from "./AlprCameraMarkers";
@@ -1845,6 +1846,7 @@ export default function LeafletMap({
         {showDataCenters && <DataCenterMarkers setLoading={setLoading}/>}
 
         {politicalLayerIds.includes("senators") && <SenatorMarkers setLoading={setLoading}/>}
+        {politicalLayerIds.includes("billionaires") && <BillionaireMarkers setLoading={setLoading}/>}
         {politicalLayerIds.includes("governors") && <GovernorMarkers />}
         {(politicalLayerIds.includes("president") ||
           politicalLayerIds.includes("vice-president")) && (

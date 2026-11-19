@@ -411,6 +411,7 @@ export const NavigationMenuSection = ({
 
   const wiredPoliticalMapIds = new Set([
     "senators",
+    "billionaires",
     "governors",
     "president",
     "vice-president",
@@ -898,6 +899,37 @@ export const NavigationMenuSection = ({
                   </label>
                 </div>
               ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="economics" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Economics
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            <div className="ml-4 pb-2">
+              <div className="flex items-center mt-1.5">
+                <Checkbox
+                  id="economics-billionaires"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={politicalLayerIds.includes("billionaires")}
+                  onCheckedChange={(checked) =>
+                    onPoliticalLayerToggle("billionaires", checked === true)
+                  }
+                />
+                <label
+                  htmlFor="economics-billionaires"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                >
+                  Billionaires
+                </label>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>

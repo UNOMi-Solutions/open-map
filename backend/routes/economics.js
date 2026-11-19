@@ -1,11 +1,22 @@
 import axios from "axios";
 import { Router } from "express";
 import { requireEnv } from "../lib/requireEnv.js";
+import { getUsBillionaireProfiles } from "../lib/rtbBillionaires.js";
 
 const router = Router();
 
 router.get("/test", (req, res) => {
   res.json({ response: "Success: Viewing Economic Data" });
+});
+
+router.get("/billionaires", async (req, res) => {
+  try {
+    const profiles = await getUsBillionaireProfiles();
+    return res.json({ count: profiles.length, profiles });
+  } catch (error) {
+    console.error("GET /economics/billionaires error:", error.message);
+    return res.status(502).json({ error: "Failed to retrieve U.S. billionaire profiles" });
+  }
 });
 
 /**
