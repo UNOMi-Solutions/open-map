@@ -17,7 +17,13 @@ import SharePopup from "./sections/SharePopup";
 import Profiles from "./sections/Profiles";
 import AccountSettings from "./sections/AccountSettings";
 import EmailChangeVerification from "./sections/EmailChangeVerification";
-import { fetchMe, getAuthToken, setAuthToken, type AccountUser } from "@/lib/apiClient";
+import {
+  ApiError,
+  fetchMe,
+  getAuthToken,
+  setAuthToken,
+  type AccountUser,
+} from "@/lib/apiClient";
 import LeafletMap, {
   ChoroplethMetricKey,
   HouseDistrictPartyMode,
@@ -206,11 +212,16 @@ export default function MainPage() {
   // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
   // logged-in user, or null when they have no active subscription.
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [accountPlanResolved, setAccountPlanResolved] = useState(
+    () => !getAuthToken(),
+  );
   // Whether the logged-in user's email has been verified. Unverified users
   // cannot subscribe to a paid plan.
   const [isVerified, setIsVerified] = useState(false);
-  // Premium users see no ads. Wire this up to your real subscription flag.
-  const [isPremium] = useState(false);
+  const isPremium = ["premium", "enterprise", "agency"].includes(
+    currentPlan ?? "",
+  );
+  const shouldShowAds = accountPlanResolved && !isPremium;
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   // Remembers a plan a logged-out user tried to select so we can resume the
   // pricing flow after they log in / sign up.
@@ -410,6 +421,7 @@ export default function MainPage() {
     plan: string | null = null,
     verified: boolean = false
   ) => {
+    setAccountPlanResolved(false);
     setIsLoggedIn(true);
     setUserEmail(email);
     setCurrentPlan(plan);
@@ -418,9 +430,12 @@ export default function MainPage() {
     // The login/verify responses don't carry every account field (e.g. the
     // display name), so pull the full record once the token is stored.
     fetchMe()
-      .then(({ user }) => user && applyAccount(user))
-      .catch(() => {
-        /* Session restore already handles a bad token; nothing to do here. */
+      .then(({ user }) => {
+        if (user) applyAccount(user);
+        setAccountPlanResolved(true);
+      })
+      .catch((error) => {
+        console.error("[MainPage] Account refresh after login failed:", error);
       });
     // If the user was trying to pick a plan before authenticating, bring them
     // back to the pricing screen to finish choosing.
@@ -452,6 +467,7 @@ export default function MainPage() {
     setUserEmail("");
     setUserName("");
     setCurrentPlan(null);
+    setAccountPlanResolved(true);
     setIsVerified(false);
     setIsSignUpDropdownOpen(false);
     setIsAccountOpen(false);
@@ -640,7 +656,10 @@ export default function MainPage() {
 
   // Restore the logged-in session (and plan) on page load using the stored JWT.
   useEffect(() => {
-    if (!getAuthToken()) return;
+    if (!getAuthToken()) {
+      setAccountPlanResolved(true);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -648,9 +667,14 @@ export default function MainPage() {
         if (cancelled || !user) return;
         applyAccount(user);
         setIsLoggedIn(true);
-      } catch {
-        // Token invalid/expired — clear it so the UI reflects a logged-out state.
-        setAuthToken(null);
+        setAccountPlanResolved(true);
+      } catch (error) {
+        if (error instanceof ApiError && [401, 403].includes(error.status)) {
+          setAuthToken(null);
+          setAccountPlanResolved(true);
+          return;
+        }
+        console.error("[MainPage] Session restore failed:", error);
       }
     })();
     return () => {
@@ -1084,7 +1108,7 @@ export default function MainPage() {
               )}
 
               {/* RIGHT-SIDE AD RAIL (visible on landing + when sidebar closed). Hidden for premium. */}
-              {!isPremium && (showLanding || !sidebarOpen) && (
+              {shouldShowAds && (showLanding || !sidebarOpen) && (
                 <aside
                   aria-label="Sponsored"
                   className={[
@@ -1163,7 +1187,12 @@ export default function MainPage() {
                   onResetAllFilters={handleResetAllFilters}
                 />
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
-                {!isPremium }
+                {shouldShowAds && (
+                  <MonetagAd
+                    zoneId="12248955"
+                    scriptSrc="https://n6wxm.com/vignette.min.js"
+                  />
+                )}
               </aside>
 
               {/* TOGGLE BUTTON */}
@@ -1189,7 +1218,7 @@ export default function MainPage() {
             {/* ======= END HERO ======= */}
 
             {/* Fixed bottom banner ad (hidden on landing screen and for premium users). */}
-            {!showLanding && !isPremium && !sidebarOpen && (
+            {!showLanding && shouldShowAds && !sidebarOpen && (
               <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none flex justify-center pb-2 px-4">
                 <div className="pointer-events-auto bg-[#0c1022]/85 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl max-w-[900px] w-full p-2">
                   <BannerAd showLabel />
