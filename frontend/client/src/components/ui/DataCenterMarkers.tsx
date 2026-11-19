@@ -4,21 +4,13 @@ import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 import MarkerCompound from "./MarkerCompound";
 
-// Cyan/blue marker icon to distinguish data centers from other markers
+// Hollow marker icon for data centers.
 const DATA_CENTER_ICON = L.divIcon({
   className: "data-center-marker",
-  html: `<div style="
-    width: 28px;
-    height: 28px;
-    background: #0891b2;
-    border: 2px solid #0e7490;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  "></div>`,
-  iconSize: [28, 28],
-  iconAnchor: [14, 28],
-  popupAnchor: [0, -28],
+  html: `<div style="width:100%;height:100%;border-radius:50%;background:rgba(28, 128, 175, 0.45);"></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  popupAnchor: [0, -7],
 });
 
 // Returned properties from data centers api

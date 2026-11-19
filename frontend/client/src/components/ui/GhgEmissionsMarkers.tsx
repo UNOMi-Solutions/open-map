@@ -4,21 +4,13 @@ import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 import MarkerCompound from "./MarkerCompound";
 
-// Green marker icon to distinguish GHG emissions facilities from other markers 
+// Hollow marker icon for GHG emissions facilities.
 const GHG_EMISSIONS_ICON = L.divIcon({
   className: "ghg-emissions-marker",
-  html: `<div style="
-    width: 28px;
-    height: 28px;
-    background: #16a34a;
-    border: 2px solid #15803d;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  "></div>`,
-  iconSize: [28, 28],
-  iconAnchor: [14, 28],
-  popupAnchor: [0, -28],
+  html: `<div style="width:100%;height:100%;border-radius:50%;background:rgba(22, 152, 22, 0.45);"></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  popupAnchor: [0, -7],
 });
 
 // Returned properties from ghg emissions api 

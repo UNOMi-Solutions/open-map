@@ -67,7 +67,7 @@
 
 <section>
   <h2>/api/v1/economics</h2>
-  <p class="small">Requires <code>BEA_API_KEY</code> — <a href="https://apps.bea.gov/API/signup/">BEA API signup</a></p>
+  <p class="small">Economic data uses <code>BEA_API_KEY</code> for state GDP and <code>ECONOMY_KEY</code> for county income from the Census ACS API. <code>ECONOMY_KEY</code> must be a valid Census API key.</p>
   <article>
     <h3>GET /gdpByState</h3>
     <p class="small">State GDP (millions USD) from Bureau of Economic Analysis Regional accounts.</p>
@@ -76,6 +76,10 @@
       <tr><td><code>year</code></td><td>No</td><td>Four-digit year (default <code>2022</code>)</td></tr>
     </table>
     <p class="small"><strong>Response:</strong> <code>{ source, year, count, states: [{ geoFips, geoName, gdpMillions, unit }] }</code></p>
+  </article>
+  <article>
+    <h3>GET /incomeByCounty</h3>
+    <p class="small">County median household income from Census ACS 2024. Requires <code>ECONOMY_KEY</code> to contain a valid Census API key.</p>
   </article>
 </section>
 
@@ -212,7 +216,8 @@
     <tr><td><code>API_DEV_KEY</code></td><td>All protected data routes</td></tr>
     <tr><td><code>MONGODB_URI</code></td><td>Auth / user accounts</td></tr>
     <tr><td><code>CENSUS_API_KEY</code></td><td>Census routes</td></tr>
-    <tr><td><code>BEA_API_KEY</code></td><td>Economics routes</td></tr>
+    <tr><td><code>BEA_API_KEY</code></td><td>State GDP data</td></tr>
+    <tr><td><code>ECONOMY_KEY</code></td><td>County income (Census ACS API key)</td></tr>
     <tr><td><code>FBI_CRIME_KEY</code></td><td>Crime + law enforcement FBI routes</td></tr>
     <tr><td><code>EIA_API_KEY</code></td><td>Coal mines</td></tr>
     <tr><td><code>AQICN_API_TOKEN</code></td><td>Air quality</td></tr>
