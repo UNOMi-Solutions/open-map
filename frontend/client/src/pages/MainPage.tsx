@@ -51,12 +51,14 @@ interface TimelineRangeControlProps {
   availableDateRange: TimelineDateRange;
   selectedRange: TimelineDateRange;
   onCommit: (range: TimelineDateRange) => void;
+  singleDateMode?: boolean;
 }
 
 function TimelineRangeControl({
   availableDateRange,
   selectedRange,
   onCommit,
+  singleDateMode = false,
 }: TimelineRangeControlProps) {
   const [draftRange, setDraftRange] = useState(selectedRange);
   const [isUpdating, startTransition] = useTransition();
@@ -81,8 +83,11 @@ function TimelineRangeControl({
   };
 
   const resetRange = () => {
-    setDraftRange(availableDateRange);
-    commitRange(availableDateRange);
+    const resetValue = singleDateMode
+      ? { start: availableDateRange.end, end: availableDateRange.end }
+      : availableDateRange;
+    setDraftRange(resetValue);
+    commitRange(resetValue);
   };
 
   return (
@@ -105,80 +110,126 @@ function TimelineRangeControl({
           onClick={resetRange}
           className="text-xs text-sky-300 hover:text-sky-200 disabled:opacity-50"
           disabled={
-            selectedRange.start === availableDateRange.start &&
-            selectedRange.end === availableDateRange.end
+            singleDateMode
+              ? selectedRange.end === availableDateRange.end
+              : selectedRange.start === availableDateRange.start &&
+                selectedRange.end === availableDateRange.end
           }
         >
           Reset
         </button>
       </div>
       <div className="mb-1 flex justify-between gap-3 text-xs text-white/80">
-        <span>
-          From <strong>{formatTimelineDate(draftRange.start)}</strong>
-        </span>
-        <span>
-          Through <strong>{formatTimelineDate(draftRange.end)}</strong>
-        </span>
+        {singleDateMode ? (
+          <span>
+            Date <strong>{formatTimelineDate(draftRange.end)}</strong>
+          </span>
+        ) : (
+          <>
+            <span>
+              From <strong>{formatTimelineDate(draftRange.start)}</strong>
+            </span>
+            <span>
+              Through <strong>{formatTimelineDate(draftRange.end)}</strong>
+            </span>
+          </>
+        )}
       </div>
       <div className="relative my-2 h-6">
         <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/20" />
-        <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
-          style={{
-            left: `${((draftRange.start - availableDateRange.start) / dateSpan) * 100}%`,
-            right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
-          }}
-        />
-        <label className="sr-only" htmlFor="timeline-start">
-          Earliest displayed date
-        </label>
-        <input
-          id="timeline-start"
-          aria-label="Earliest displayed date"
-          type="range"
-          min={availableDateRange.start}
-          max={availableDateRange.end}
-          step={dayInMs}
-          value={draftRange.start}
-          disabled={availableDateRange.start === availableDateRange.end}
-          onChange={(event) => {
-            const start = Number(event.target.value);
-            setDraftRange((current) => ({
-              ...current,
-              start: Math.min(start, current.end),
-            }));
-          }}
-          onPointerUp={commitDraftRange}
-          onPointerCancel={commitDraftRange}
-          onKeyUp={commitDraftRange}
-          onBlur={commitDraftRange}
-          className="timeline-range-input"
-        />
-        <label className="sr-only" htmlFor="timeline-end">
-          Latest displayed date
-        </label>
-        <input
-          id="timeline-end"
-          aria-label="Latest displayed date"
-          type="range"
-          min={availableDateRange.start}
-          max={availableDateRange.end}
-          step={dayInMs}
-          value={draftRange.end}
-          disabled={availableDateRange.start === availableDateRange.end}
-          onChange={(event) => {
-            const end = Number(event.target.value);
-            setDraftRange((current) => ({
-              ...current,
-              end: Math.max(end, current.start),
-            }));
-          }}
-          onPointerUp={commitDraftRange}
-          onPointerCancel={commitDraftRange}
-          onKeyUp={commitDraftRange}
-          onBlur={commitDraftRange}
-          className="timeline-range-input"
-        />
+        {singleDateMode ? (
+          <>
+            <div
+              className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+              style={{
+                left: 0,
+                right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
+              }}
+            />
+            <label className="sr-only" htmlFor="timeline-date">
+              Selected data date
+            </label>
+            <input
+              id="timeline-date"
+              aria-label="Selected data date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.end}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const date = Number(event.target.value);
+                setDraftRange({ start: date, end: date });
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+          </>
+        ) : (
+          <>
+            <div
+              className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+              style={{
+                left: `${((draftRange.start - availableDateRange.start) / dateSpan) * 100}%`,
+                right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
+              }}
+            />
+            <label className="sr-only" htmlFor="timeline-start">
+              Earliest displayed date
+            </label>
+            <input
+              id="timeline-start"
+              aria-label="Earliest displayed date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.start}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const start = Number(event.target.value);
+                setDraftRange((current) => ({
+                  ...current,
+                  start: Math.min(start, current.end),
+                }));
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+            <label className="sr-only" htmlFor="timeline-end">
+              Latest displayed date
+            </label>
+            <input
+              id="timeline-end"
+              aria-label="Latest displayed date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.end}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const end = Number(event.target.value);
+                setDraftRange((current) => ({
+                  ...current,
+                  end: Math.max(end, current.start),
+                }));
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+          </>
+        )}
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-white/50">
         <span>{formatTimelineDate(availableDateRange.start)}</span>
@@ -241,14 +292,21 @@ export default function MainPage() {
   >({});
   const [timelineRange, setTimelineRange] = useState<TimelineDateRange | null>(null);
   const previousAvailableDateRange = useRef<TimelineDateRange | null>(null);
+  const economicTimelineMode = selectedLayers.some((layerId) =>
+    ECONOMICS_LAYER_IDS.has(layerId),
+  );
   const availableDateRange = useMemo(() => {
-    const ranges = Object.values(datasetDateRanges);
+    const ranges = economicTimelineMode
+      ? Object.entries(datasetDateRanges)
+          .filter(([datasetId]) => datasetId.startsWith("economics-"))
+          .map(([, range]) => range)
+      : Object.values(datasetDateRanges);
     if (ranges.length === 0) return null;
     return {
       start: Math.min(...ranges.map((range) => range.start)),
       end: Math.max(...ranges.map((range) => range.end)),
     };
-  }, [datasetDateRanges]);
+  }, [datasetDateRanges, economicTimelineMode]);
 
   const handleDatasetDateRangeChange = useCallback(
     (datasetId: string, range: TimelineDateRange | null) => {
@@ -278,6 +336,14 @@ export default function MainPage() {
       return;
     }
     setTimelineRange((current) => {
+      const clamp = (timestamp: number) =>
+        Math.min(availableDateRange.end, Math.max(availableDateRange.start, timestamp));
+      if (economicTimelineMode) {
+        const selectedDate = current && previous
+          ? clamp(current.end)
+          : availableDateRange.end;
+        return { start: selectedDate, end: selectedDate };
+      }
       if (
         !current ||
         !previous ||
@@ -285,15 +351,13 @@ export default function MainPage() {
       ) {
         return availableDateRange;
       }
-      const clamp = (timestamp: number) =>
-        Math.min(availableDateRange.end, Math.max(availableDateRange.start, timestamp));
       const start = clamp(current.start);
       return {
         start,
         end: Math.max(start, clamp(current.end)),
       };
     });
-  }, [availableDateRange]);
+  }, [availableDateRange, economicTimelineMode]);
   const SIDEBAR_WIDTH_OPEN = 430;
   // NEW: sidebar open/close
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -342,6 +406,12 @@ export default function MainPage() {
     },
     [],
   );
+  const handleTimelineRangeChange = useCallback((range: TimelineDateRange) => {
+    setPovertyYear(null);
+    setTimelineRange(economicTimelineMode
+      ? { start: range.end, end: range.end }
+      : range);
+  }, [economicTimelineMode]);
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
@@ -1069,6 +1139,7 @@ export default function MainPage() {
                   showUnemployment={selectedLayers.includes("unemployment")}
                   showPoverty={selectedLayers.includes("poverty-stricken-areas")}
                   povertyYear={povertyYear}
+                  povertyAvailableYears={povertyAvailableYears}
                   onPovertyDataMeta={handlePovertyDataMeta}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
                   timelineRange={timelineRange}
@@ -1081,7 +1152,8 @@ export default function MainPage() {
                 <TimelineRangeControl
                   availableDateRange={availableDateRange}
                   selectedRange={timelineRange}
-                  onCommit={setTimelineRange}
+                  onCommit={handleTimelineRangeChange}
+                  singleDateMode={economicTimelineMode}
                 />
               )}
 

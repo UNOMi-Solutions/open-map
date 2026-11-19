@@ -13,6 +13,12 @@ const COUNTY_LAUS_MAX_YEAR_SPAN = 20;
 const COUNTY_LAUS_CACHE_MAX_ENTRIES = 20;
 const countyUnemploymentCache = new Map();
 const countyUnemploymentRequests = new Map();
+const ACS_FIRST_YEAR = 2009;
+const ACS_LATEST_YEAR = 2024;
+const ACS_AVAILABLE_YEARS = Array.from(
+  { length: ACS_LATEST_YEAR - ACS_FIRST_YEAR + 1 },
+  (_, index) => ACS_FIRST_YEAR + index,
+);
 const SAIPE_CACHE_TTL = 24 * 60 * 60 * 1000;
 const SAIPE_CACHE_MAX_ENTRIES = 40;
 const SAIPE_FIRST_YEAR = 1989;
@@ -464,12 +470,27 @@ router.get("/povertyByCounty", async (req, res) => {
   }
 });
 
-router.get("/incomeByCounty", async (_req, res) => {
+router.get("/incomeByCounty", async (req, res) => {
   const apiKey = requireEnv(res, "ECONOMY_KEY", "Economy API key");
   if (!apiKey) return;
 
+  const requestedYear = req.query.year;
+  const year = requestedYear == null ? ACS_LATEST_YEAR : Number(requestedYear);
+  if (
+    requestedYear != null
+    && (
+      typeof requestedYear !== "string"
+      || !/^\d{4}$/.test(requestedYear)
+      || !ACS_AVAILABLE_YEARS.includes(year)
+    )
+  ) {
+    return res.status(400).json({
+      error: `year must be an ACS 5-year estimate year from ${ACS_FIRST_YEAR} to ${ACS_LATEST_YEAR}`,
+    });
+  }
+
   try {
-    const response = await axios.get("https://api.census.gov/data/2024/acs/acs5", {
+    const response = await axios.get(`https://api.census.gov/data/${year}/acs/acs5`, {
       params: {
         get: "NAME,B19013_001E",
         for: "county:*",
@@ -500,7 +521,12 @@ router.get("/incomeByCounty", async (_req, res) => {
       }];
     });
 
-    res.json({ year: 2024, count: counties.length, counties });
+    res.json({
+      year,
+      availableYears: ACS_AVAILABLE_YEARS,
+      count: counties.length,
+      counties,
+    });
   } catch (error) {
     console.error("Economics incomeByCounty error:", error.message);
     res.status(error.response?.status || 502).json({
@@ -509,12 +535,27 @@ router.get("/incomeByCounty", async (_req, res) => {
   }
 });
 
-router.get("/highIncomeHouseholdsByCounty", async (_req, res) => {
+router.get("/highIncomeHouseholdsByCounty", async (req, res) => {
   const apiKey = requireEnv(res, "ECONOMY_KEY", "Economy API key");
   if (!apiKey) return;
 
+  const requestedYear = req.query.year;
+  const year = requestedYear == null ? ACS_LATEST_YEAR : Number(requestedYear);
+  if (
+    requestedYear != null
+    && (
+      typeof requestedYear !== "string"
+      || !/^\d{4}$/.test(requestedYear)
+      || !ACS_AVAILABLE_YEARS.includes(year)
+    )
+  ) {
+    return res.status(400).json({
+      error: `year must be an ACS 5-year estimate year from ${ACS_FIRST_YEAR} to ${ACS_LATEST_YEAR}`,
+    });
+  }
+
   try {
-    const response = await axios.get("https://api.census.gov/data/2024/acs/acs5", {
+    const response = await axios.get(`https://api.census.gov/data/${year}/acs/acs5`, {
       params: {
         get: "NAME,B19001_001E,B19001_017E",
         for: "county:*",
@@ -563,8 +604,9 @@ router.get("/highIncomeHouseholdsByCounty", async (_req, res) => {
     });
 
     return res.json({
-      source: "U.S. Census Bureau — 2024 American Community Survey 5-Year Estimates, Table B19001",
-      year: 2024,
+      source: `U.S. Census Bureau — ${year} American Community Survey 5-Year Estimates, Table B19001`,
+      year,
+      availableYears: ACS_AVAILABLE_YEARS,
       incomeThreshold: 200000,
       count: counties.length,
       counties,
