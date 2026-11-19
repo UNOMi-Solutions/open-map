@@ -1163,9 +1163,7 @@ export default function MainPage() {
                   onResetAllFilters={handleResetAllFilters}
                 />
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
-                {!isPremium && (
-                  <MonetagAd zoneId="12248955" scriptSrc="https://n6wxm.com/vignette.min.js" />
-                )}
+                {!isPremium }
               </aside>
 
               {/* TOGGLE BUTTON */}
