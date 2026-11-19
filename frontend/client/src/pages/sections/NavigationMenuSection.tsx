@@ -121,7 +121,6 @@ export const NavigationMenuSection = ({
     { id: "data-centers", label: "Data Centers" },
     { id: "national-risk-index", label: "Disaster Risk (FEMA NRI)" },
     { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },
-    { id: "air-quality", label: "Air Quality" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
     { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
@@ -402,8 +401,8 @@ export const NavigationMenuSection = ({
     // { id: "mayors", label: "Mayors" },
     { id: "house", label: "House of Representatives" },
     // { id: "supreme-court", label: "Supreme Court" },
-    { id: "president", label: "President" },
-    { id: "vice-president", label: "Vice President" },
+    // { id: "president", label: "President" },
+    // { id: "vice-president", label: "Vice President" },
     // { id: "governors", label: "Governors" },
     { id: "gerrymandering", label: "Jerry Mandering" },
     { id: "red-blue-district", label: "Red/Blue district (House of Representatives)" },
@@ -979,65 +978,44 @@ export const NavigationMenuSection = ({
                   </div>
                 )
               )}
-              {politicalLayerIds.includes("senators") && (
-                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  Two pins per state (current senators). Refresh data:{" "}
-                  <code className="text-white/80">npm run data:senators</code>
-                </p>
-              )}
               {politicalLayerIds.includes("governors") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per state (current governor); green ring on the map. Refresh:{" "}
                   <code className="text-white/80">npm run data:governors</code>
                 </p>
               )}
-              {(politicalLayerIds.includes("president") ||
-                politicalLayerIds.includes("vice-president")) && (
-                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  President — gold ring (White House). Vice President — silver-blue ring
-                  (Observatory Circle). Turn each on separately or together; president pin
-                  stacks above when they overlap. Refresh:{" "}
-                  <code className="text-white/80">npm run data:president</code>
-                </p>
-              )}
               {politicalLayerIds.includes("red-blue-district") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   119th district shapes (Census); party from current voting members where
                   listed. Vacant seats and non‑R/D members appear slate when &quot;Both&quot;
-                  is selected. Refresh:{" "}
-                  <code className="text-white/80">npm run data:congressional</code>
+                  is selected.
                 </p>
               )}
               {politicalLayerIds.includes("house") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per voting district (50 states only; 435 apportioned seats).
                   Non-voting delegates (D.C., territories) are excluded. Pin count can
-                  be under 435 when seats are vacant. Refresh:{" "}
-                  <code className="text-white/80">npm run data:congressional</code>
+                  be under 435 when seats are vacant.
                 </p>
               )}
               {politicalLayerIds.includes("supreme-court") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Nine current justices; pins use birth/home-state anchors (spread when
                   multiple share a state). Chief Justice stacks above when overlapping.
-                  Refresh roster:{" "}
-                  <code className="text-white/80">npm run data:scotus</code>
                 </p>
               )}
               {politicalLayerIds.includes("gerrymandering") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Every current U.S. House district (119th Congress) is drawn from Census shapes
                   so you can see full boundaries—not counties. Violet pins mark educational case
-                  spots; tap a district or pin for details. Cases:{" "}
-                  <code className="text-white/80">client/public/data/gerrymandering.json</code>
+                  spots; tap a district or pin for details.
                 </p>
               )}
               {politicalLayerIds.includes("electoral-college") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   2024 presidential results by state: red/blue by statewide winner, darker =
                   larger margin (CNN-style). Contiguous 48 + DC; Alaska &amp; Hawaii same
-                  data in corner insets. Data:{" "}
-                  <code className="text-white/80">client/public/data/electoral-college-2024.json</code>
+                  data in corner insets.
                 </p>
               )}
               {unwiredPoliticalSelections.length > 0 && (
