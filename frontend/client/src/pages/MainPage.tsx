@@ -46,7 +46,6 @@ import {
   formatTimelineDate,
   type TimelineDateRange,
 } from "@/lib/timeline";
-import MonetagAd from "@/components/ads/MonetagAd";
 
 interface TimelineRangeControlProps {
   availableDateRange: TimelineDateRange;
@@ -1164,7 +1163,9 @@ export default function MainPage() {
                 />
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
                 {!isPremium && (
-                  <MonetagAd zoneId="12248955" scriptSrc="https://n6wxm.com/vignette.min.js" />
+                  <div className="px-4 pt-4 pb-8 space-y-4 border-t border-white/10 mt-4">
+                    <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
+                  </div>
                 )}
               </aside>
 
