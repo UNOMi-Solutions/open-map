@@ -123,8 +123,6 @@ function handleCensusRouteError(res, error, label) {
     });
 }
 
-// this is all the basic setup, now for the hard part
-// router.get functions for each data point
-// need to get API key and look into gov site for router endpoints to get needed points
-
+// this is all the basic setup, now for router.get functions for each data point
+// NavigationMenuSection.tsx, MainPage.tsx, LeafletMap.tsx, and census-age-group are main frontend census files
 export default router;

@@ -17,7 +17,13 @@ import SharePopup from "./sections/SharePopup";
 import Profiles from "./sections/Profiles";
 import AccountSettings from "./sections/AccountSettings";
 import EmailChangeVerification from "./sections/EmailChangeVerification";
-import { fetchMe, getAuthToken, setAuthToken, type AccountUser } from "@/lib/apiClient";
+import {
+  ApiError,
+  fetchMe,
+  getAuthToken,
+  setAuthToken,
+  type AccountUser,
+} from "@/lib/apiClient";
 import LeafletMap, {
   ChoroplethMetricKey,
   HouseDistrictPartyMode,
@@ -46,17 +52,20 @@ import {
   formatTimelineDate,
   type TimelineDateRange,
 } from "@/lib/timeline";
+import MonetagAd from "@/components/ads/MonetagAd";
 
 interface TimelineRangeControlProps {
   availableDateRange: TimelineDateRange;
   selectedRange: TimelineDateRange;
   onCommit: (range: TimelineDateRange) => void;
+  singleDateMode?: boolean;
 }
 
 function TimelineRangeControl({
   availableDateRange,
   selectedRange,
   onCommit,
+  singleDateMode = false,
 }: TimelineRangeControlProps) {
   const [draftRange, setDraftRange] = useState(selectedRange);
   const [isUpdating, startTransition] = useTransition();
@@ -81,8 +90,11 @@ function TimelineRangeControl({
   };
 
   const resetRange = () => {
-    setDraftRange(availableDateRange);
-    commitRange(availableDateRange);
+    const resetValue = singleDateMode
+      ? { start: availableDateRange.end, end: availableDateRange.end }
+      : availableDateRange;
+    setDraftRange(resetValue);
+    commitRange(resetValue);
   };
 
   return (
@@ -105,80 +117,126 @@ function TimelineRangeControl({
           onClick={resetRange}
           className="text-xs text-sky-300 hover:text-sky-200 disabled:opacity-50"
           disabled={
-            selectedRange.start === availableDateRange.start &&
-            selectedRange.end === availableDateRange.end
+            singleDateMode
+              ? selectedRange.end === availableDateRange.end
+              : selectedRange.start === availableDateRange.start &&
+                selectedRange.end === availableDateRange.end
           }
         >
           Reset
         </button>
       </div>
       <div className="mb-1 flex justify-between gap-3 text-xs text-white/80">
-        <span>
-          From <strong>{formatTimelineDate(draftRange.start)}</strong>
-        </span>
-        <span>
-          Through <strong>{formatTimelineDate(draftRange.end)}</strong>
-        </span>
+        {singleDateMode ? (
+          <span>
+            Date <strong>{formatTimelineDate(draftRange.end)}</strong>
+          </span>
+        ) : (
+          <>
+            <span>
+              From <strong>{formatTimelineDate(draftRange.start)}</strong>
+            </span>
+            <span>
+              Through <strong>{formatTimelineDate(draftRange.end)}</strong>
+            </span>
+          </>
+        )}
       </div>
       <div className="relative my-2 h-6">
         <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/20" />
-        <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
-          style={{
-            left: `${((draftRange.start - availableDateRange.start) / dateSpan) * 100}%`,
-            right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
-          }}
-        />
-        <label className="sr-only" htmlFor="timeline-start">
-          Earliest displayed date
-        </label>
-        <input
-          id="timeline-start"
-          aria-label="Earliest displayed date"
-          type="range"
-          min={availableDateRange.start}
-          max={availableDateRange.end}
-          step={dayInMs}
-          value={draftRange.start}
-          disabled={availableDateRange.start === availableDateRange.end}
-          onChange={(event) => {
-            const start = Number(event.target.value);
-            setDraftRange((current) => ({
-              ...current,
-              start: Math.min(start, current.end),
-            }));
-          }}
-          onPointerUp={commitDraftRange}
-          onPointerCancel={commitDraftRange}
-          onKeyUp={commitDraftRange}
-          onBlur={commitDraftRange}
-          className="timeline-range-input"
-        />
-        <label className="sr-only" htmlFor="timeline-end">
-          Latest displayed date
-        </label>
-        <input
-          id="timeline-end"
-          aria-label="Latest displayed date"
-          type="range"
-          min={availableDateRange.start}
-          max={availableDateRange.end}
-          step={dayInMs}
-          value={draftRange.end}
-          disabled={availableDateRange.start === availableDateRange.end}
-          onChange={(event) => {
-            const end = Number(event.target.value);
-            setDraftRange((current) => ({
-              ...current,
-              end: Math.max(end, current.start),
-            }));
-          }}
-          onPointerUp={commitDraftRange}
-          onPointerCancel={commitDraftRange}
-          onKeyUp={commitDraftRange}
-          onBlur={commitDraftRange}
-          className="timeline-range-input"
-        />
+        {singleDateMode ? (
+          <>
+            <div
+              className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+              style={{
+                left: 0,
+                right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
+              }}
+            />
+            <label className="sr-only" htmlFor="timeline-date">
+              Selected data date
+            </label>
+            <input
+              id="timeline-date"
+              aria-label="Selected data date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.end}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const date = Number(event.target.value);
+                setDraftRange({ start: date, end: date });
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+          </>
+        ) : (
+          <>
+            <div
+              className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+              style={{
+                left: `${((draftRange.start - availableDateRange.start) / dateSpan) * 100}%`,
+                right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
+              }}
+            />
+            <label className="sr-only" htmlFor="timeline-start">
+              Earliest displayed date
+            </label>
+            <input
+              id="timeline-start"
+              aria-label="Earliest displayed date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.start}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const start = Number(event.target.value);
+                setDraftRange((current) => ({
+                  ...current,
+                  start: Math.min(start, current.end),
+                }));
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+            <label className="sr-only" htmlFor="timeline-end">
+              Latest displayed date
+            </label>
+            <input
+              id="timeline-end"
+              aria-label="Latest displayed date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.end}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const end = Number(event.target.value);
+                setDraftRange((current) => ({
+                  ...current,
+                  end: Math.max(end, current.start),
+                }));
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+          </>
+        )}
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-white/50">
         <span>{formatTimelineDate(availableDateRange.start)}</span>
@@ -187,6 +245,13 @@ function TimelineRangeControl({
     </aside>
   );
 }
+
+const ECONOMICS_LAYER_IDS = new Set([
+  "income",
+  "high-income-households",
+  "unemployment",
+  "poverty-stricken-areas",
+]);
 
 export default function MainPage() {
   const [progress, setProgress] = useState(0);
@@ -205,11 +270,16 @@ export default function MainPage() {
   // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
   // logged-in user, or null when they have no active subscription.
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [accountPlanResolved, setAccountPlanResolved] = useState(
+    () => !getAuthToken(),
+  );
   // Whether the logged-in user's email has been verified. Unverified users
   // cannot subscribe to a paid plan.
   const [isVerified, setIsVerified] = useState(false);
-  // Premium users see no ads. Wire this up to your real subscription flag.
-  const [isPremium] = useState(false);
+  const isPremium = ["premium", "enterprise", "agency"].includes(
+    currentPlan ?? "",
+  );
+  const shouldShowAds = accountPlanResolved && !isPremium;
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   // Remembers a plan a logged-out user tried to select so we can resume the
   // pricing flow after they log in / sign up.
@@ -226,19 +296,29 @@ export default function MainPage() {
     { id: string; lat: number; lng: number; stateName?: string }[]
   >([]);
   const [selectedLayers, setSelectedLayers] = useState<string[]>([]);
+  const [povertyYear, setPovertyYear] = useState<number | null>(null);
+  const [povertyLatestYear, setPovertyLatestYear] = useState<number | null>(null);
+  const [povertyAvailableYears, setPovertyAvailableYears] = useState<number[]>([]);
   const [datasetDateRanges, setDatasetDateRanges] = useState<
     Record<string, TimelineDateRange>
   >({});
   const [timelineRange, setTimelineRange] = useState<TimelineDateRange | null>(null);
   const previousAvailableDateRange = useRef<TimelineDateRange | null>(null);
+  const economicTimelineMode = selectedLayers.some((layerId) =>
+    ECONOMICS_LAYER_IDS.has(layerId),
+  );
   const availableDateRange = useMemo(() => {
-    const ranges = Object.values(datasetDateRanges);
+    const ranges = economicTimelineMode
+      ? Object.entries(datasetDateRanges)
+          .filter(([datasetId]) => datasetId.startsWith("economics-"))
+          .map(([, range]) => range)
+      : Object.values(datasetDateRanges);
     if (ranges.length === 0) return null;
     return {
       start: Math.min(...ranges.map((range) => range.start)),
       end: Math.max(...ranges.map((range) => range.end)),
     };
-  }, [datasetDateRanges]);
+  }, [datasetDateRanges, economicTimelineMode]);
 
   const handleDatasetDateRangeChange = useCallback(
     (datasetId: string, range: TimelineDateRange | null) => {
@@ -268,6 +348,14 @@ export default function MainPage() {
       return;
     }
     setTimelineRange((current) => {
+      const clamp = (timestamp: number) =>
+        Math.min(availableDateRange.end, Math.max(availableDateRange.start, timestamp));
+      if (economicTimelineMode) {
+        const selectedDate = current && previous
+          ? clamp(current.end)
+          : availableDateRange.end;
+        return { start: selectedDate, end: selectedDate };
+      }
       if (
         !current ||
         !previous ||
@@ -275,16 +363,13 @@ export default function MainPage() {
       ) {
         return availableDateRange;
       }
-      const clamp = (timestamp: number) =>
-        Math.min(availableDateRange.end, Math.max(availableDateRange.start, timestamp));
       const start = clamp(current.start);
       return {
         start,
         end: Math.max(start, clamp(current.end)),
       };
     });
-  }, [availableDateRange]);
-
+  }, [availableDateRange, economicTimelineMode]);
   const SIDEBAR_WIDTH_OPEN = 430;
   // NEW: sidebar open/close
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -325,6 +410,20 @@ export default function MainPage() {
     useState<HouseDistrictPartyMode>("both");
   /** CDC PLACES county choropleth; exclusive with census race/age/sex selection */
   const [healthMetricId, setHealthMetricId] = useState<string | null>(null);
+
+  const handlePovertyDataMeta = useCallback(
+    (latestYear: number, availableYears: number[]) => {
+      setPovertyLatestYear(latestYear);
+      setPovertyAvailableYears(availableYears);
+    },
+    [],
+  );
+  const handleTimelineRangeChange = useCallback((range: TimelineDateRange) => {
+    setPovertyYear(null);
+    setTimelineRange(economicTimelineMode
+      ? { start: range.end, end: range.end }
+      : range);
+  }, [economicTimelineMode]);
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
@@ -409,6 +508,7 @@ export default function MainPage() {
     plan: string | null = null,
     verified: boolean = false
   ) => {
+    setAccountPlanResolved(false);
     setIsLoggedIn(true);
     setUserEmail(email);
     setCurrentPlan(plan);
@@ -417,9 +517,12 @@ export default function MainPage() {
     // The login/verify responses don't carry every account field (e.g. the
     // display name), so pull the full record once the token is stored.
     fetchMe()
-      .then(({ user }) => user && applyAccount(user))
-      .catch(() => {
-        /* Session restore already handles a bad token; nothing to do here. */
+      .then(({ user }) => {
+        if (user) applyAccount(user);
+        setAccountPlanResolved(true);
+      })
+      .catch((error) => {
+        console.error("[MainPage] Account refresh after login failed:", error);
       });
     // If the user was trying to pick a plan before authenticating, bring them
     // back to the pricing screen to finish choosing.
@@ -451,6 +554,7 @@ export default function MainPage() {
     setUserEmail("");
     setUserName("");
     setCurrentPlan(null);
+    setAccountPlanResolved(true);
     setIsVerified(false);
     setIsSignUpDropdownOpen(false);
     setIsAccountOpen(false);
@@ -478,7 +582,25 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
+          ),
+          layerId,
+        ]);
+        setHealthMetricId(null);
+        setSelectedRaceCensusId("all");
+        setSelectedAgeGroupId(null);
+        setSelectedSexId(null);
+        setShowChoropleth(false);
+      } else {
+        setSelectedLayers((prev) => prev.filter((id) => id !== layerId));
+      }
+      return;
+    }
+    if (ECONOMICS_LAYER_IDS.has(layerId)) {
+      if (checked) {
+        setSelectedLayers((prev) => [
+          ...prev.filter(
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
           ),
           layerId,
         ]);
@@ -496,7 +618,7 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
           ),
           layerId,
         ]);
@@ -639,7 +761,10 @@ export default function MainPage() {
 
   // Restore the logged-in session (and plan) on page load using the stored JWT.
   useEffect(() => {
-    if (!getAuthToken()) return;
+    if (!getAuthToken()) {
+      setAccountPlanResolved(true);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -647,9 +772,14 @@ export default function MainPage() {
         if (cancelled || !user) return;
         applyAccount(user);
         setIsLoggedIn(true);
-      } catch {
-        // Token invalid/expired — clear it so the UI reflects a logged-out state.
-        setAuthToken(null);
+        setAccountPlanResolved(true);
+      } catch (error) {
+        if (error instanceof ApiError && [401, 403].includes(error.status)) {
+          setAuthToken(null);
+          setAccountPlanResolved(true);
+          return;
+        }
+        console.error("[MainPage] Session restore failed:", error);
       }
     })();
     return () => {
@@ -676,7 +806,9 @@ export default function MainPage() {
         prev.filter((id) => !HEALTH_ALL_LAYER_IDS.has(id))
       );
     }
-    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id)));
+    setSelectedLayers((prev) =>
+      prev.filter((id) => !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id))
+    );
   }, [selectedRaceCensusId, selectedAgeGroupId, selectedSexId, healthMetricId]);
 
   /** Population choropleth and SPLC are mutually exclusive for the colored layer */
@@ -685,7 +817,7 @@ export default function MainPage() {
       const next = !v;
       if (next) {
         setSelectedLayers((prev) =>
-          prev.filter((id) => !SPLC_LAYER_IDS.has(id))
+          prev.filter((id) => !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id))
         );
       }
       return next;
@@ -980,6 +1112,10 @@ export default function MainPage() {
                   showAlprCameras={selectedLayers.includes("alpr-cameras")}
                   alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
+                  showNaturalDisasterIncidents={selectedLayers.some((id) => id.startsWith("nd-type:")) || selectedLayers.includes("natural-disaster-incidents")}
+                  naturalDisasterIncidentTypes={selectedLayers
+                    .filter((id) => id.startsWith("nd-type:"))
+                    .map((id) => id.replace("nd-type:", ""))}
                   showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
                   nationalRiskIndexHazard={
                     selectedLayers.find((l) => l.startsWith("nri-hz:"))?.slice("nri-hz:".length) ?? null
@@ -1023,6 +1159,13 @@ export default function MainPage() {
                   politicalLayerIds={politicalLayerIds}
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
+                  showIncome={selectedLayers.includes("income")}
+                  showHighIncomeHouseholds={selectedLayers.includes("high-income-households")}
+                  showUnemployment={selectedLayers.includes("unemployment")}
+                  showPoverty={selectedLayers.includes("poverty-stricken-areas")}
+                  povertyYear={povertyYear}
+                  povertyAvailableYears={povertyAvailableYears}
+                  onPovertyDataMeta={handlePovertyDataMeta}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
                   timelineRange={timelineRange}
                   onDateRangeChange={handleDatasetDateRangeChange}
@@ -1034,7 +1177,8 @@ export default function MainPage() {
                 <TimelineRangeControl
                   availableDateRange={availableDateRange}
                   selectedRange={timelineRange}
-                  onCommit={setTimelineRange}
+                  onCommit={handleTimelineRangeChange}
+                  singleDateMode={economicTimelineMode}
                 />
               )}
 
@@ -1083,7 +1227,7 @@ export default function MainPage() {
               )}
 
               {/* RIGHT-SIDE AD RAIL (visible on landing + when sidebar closed). Hidden for premium. */}
-              {!isPremium && (showLanding || !sidebarOpen) && (
+              {shouldShowAds && (showLanding || !sidebarOpen) && (
                 <aside
                   aria-label="Sponsored"
                   className={[
@@ -1155,6 +1299,10 @@ export default function MainPage() {
                   
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
+                  povertyYear={povertyYear}
+                  povertyLatestYear={povertyLatestYear}
+                  povertyAvailableYears={povertyAvailableYears}
+                  onPovertyYearChange={setPovertyYear}
                   politicalLayerIds={politicalLayerIds}
                   onPoliticalLayerToggle={handlePoliticalLayerToggle}
                   houseDistrictPartyMode={houseDistrictPartyMode}
@@ -1162,10 +1310,11 @@ export default function MainPage() {
                   onResetAllFilters={handleResetAllFilters}
                 />
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
-                {!isPremium && (
-                  <div className="px-4 pt-4 pb-8 space-y-4 border-t border-white/10 mt-4">
-                    <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
-                  </div>
+                {shouldShowAds && (
+                  <MonetagAd
+                    zoneId="12248955"
+                    scriptSrc="https://n6wxm.com/vignette.min.js"
+                  />
                 )}
               </aside>
 
@@ -1192,7 +1341,7 @@ export default function MainPage() {
             {/* ======= END HERO ======= */}
 
             {/* Fixed bottom banner ad (hidden on landing screen and for premium users). */}
-            {!showLanding && !isPremium && !sidebarOpen && (
+            {!showLanding && shouldShowAds && !sidebarOpen && (
               <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none flex justify-center pb-2 px-4">
                 <div className="pointer-events-auto bg-[#0c1022]/85 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl max-w-[900px] w-full p-2">
                   <BannerAd showLabel />

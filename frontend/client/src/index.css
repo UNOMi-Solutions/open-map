@@ -85,10 +85,16 @@ body {
 }
 
 
-/* Oil spill markers: teal-blue pin, no default marker background */
+/* Custom data-point icons are displayed as circular markers. */
+.leaflet-marker-icon.ghg-emissions-marker,
+.leaflet-marker-icon.data-center-marker,
+.leaflet-marker-icon.air-quality-marker,
+.leaflet-marker-icon.waste-treatment-marker,
 .leaflet-marker-icon.oil-spill-marker {
   background: transparent !important;
   border: none !important;
+  border-radius: 50% !important;
+  box-sizing: border-box;
 }
 
 /* Any component classes */
