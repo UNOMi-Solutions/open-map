@@ -80,6 +80,10 @@ PORT=8080
 MONGODB_URI=mongodb+srv://...
 OPENAI_API_KEY=...
 FBI_CRIME_KEY=...
+CENSUS_API_KEY=...
+BEA_API_KEY=...
+ECONOMY_KEY=...                    # Census API key used for county income and county GEOIDs
+BLS_API_KEY=...                    # Registered BLS API key used for county unemployment
 API_DEV_KEY=...
 EIA_API_KEY=...
 AQICN_API_TOKEN=...
@@ -167,14 +171,31 @@ All data routes require an `x-api-key` header matching `API_DEV_KEY`.
 |---|---|
 | `GET /api/v1/crime/murderByState` | Murder data by state |
 | `GET /api/v1/crime/arrestsByState` | Arrest data by state and offense |
-| `GET /api/v1/crime/missingPersons` | FBI missing persons data |
+| `GET /api/v1/crime/missingPersons` | NamUs open missing persons cases (`npm run seed:missing-persons` refreshes the bundled snapshot) |
 | `GET /api/v1/environment/*` | Environmental data (disasters, emissions, air quality) |
 | `GET /api/v1/lawEnforcement/*` | Law enforcement statistics |
 | `GET /api/v1/census/*` | Census data |
 | `GET /api/v1/economics/*` | Economic data |
+| `GET /api/v1/economics/unemploymentByCounty` | Latest county unemployment rates from BLS LAUS; optional `start=YYYY-MM&end=YYYY-MM` returns each month in the inclusive range |
+| `GET /api/v1/economics/highIncomeHouseholdsByCounty` | County share and count of households with income of $200,000 or more from ACS table B19001 |
 | `GET /api/v1/health/*` | Health data |
 | `GET /api/v1/politics/*` | Political data |
 | `GET /api/v1/social/*` | Social data |
+
+The county unemployment layer uses BLS Local Area Unemployment Statistics
+(LAUS). Configure `BLS_API_KEY` from the [BLS Public Data API documentation
+and registration page](https://www.bls.gov/developers/api_signature_v2.htm). Without
+date parameters, the endpoint returns the latest month. Supplying both `start`
+and `end` (for example, `?start=2024-01&end=2024-12`) returns a `months` array
+with county rates for each available month in the inclusive range. Ranges must
+be ordered, start in 1990 or later, end no later than the current year, and span
+no more than 20 calendar years. The backend requests county series in batches
+of 50 and caches successful results for 24 hours.
+
+The high-income households layer uses the 2024 ACS 5-year estimates.
+`B19001_017E` counts households with income of $200,000 or more, and
+`B19001_001E` is the total-household denominator used to calculate each
+county's percentage. It uses the existing `ECONOMY_KEY` Census API key.
 
 Auth routes (no API key needed):
 
