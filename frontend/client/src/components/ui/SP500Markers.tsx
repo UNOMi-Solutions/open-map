@@ -7,22 +7,22 @@ import MarkerCompound from "./MarkerCompound";
 const SP500_ICON = L.divIcon({
   className: "sp500-marker",
   html: `<div style="
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #fff;
+    border: none;
     border-radius: 50%;
-    background: #2563eb;
+    background: #0d9488;
+    opacity: 0.85;
     color: #fff;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-  ">S</div>`,
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
-  popupAnchor: [0, -11],
+  "></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+  popupAnchor: [0, -9],
 });
 
 type SP500Company = {
@@ -56,6 +56,10 @@ function formatEquity(value: number | null | undefined): string | null {
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function clusterCircleDiameter(count: number): number {
+  return Math.min(64, 18 + 6 * Math.sqrt(Math.max(1, count) - 1));
 }
 
 export default function SP500Markers({
@@ -116,7 +120,31 @@ export default function SP500Markers({
   });
 
   return (
-    <MarkerCompound>
+    <MarkerCompound
+      iconCreateFunction={(cluster: { getChildCount: () => number }) => {
+        const count = cluster.getChildCount();
+        const diameter = clusterCircleDiameter(count);
+        return L.divIcon({
+          className: "",
+          html: `<div style="
+            width: ${diameter}px;
+            height: ${diameter}px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 50%;
+            background: #0d9488;
+            opacity: 0.85;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+          ">${count}</div>`,
+          iconSize: [diameter, diameter],
+          iconAnchor: [diameter / 2, diameter / 2],
+        });
+      }}
+    >
       {companiesWithLocations.map(({ company, index, latitude, longitude }) => {
         const name = company.Security ?? company.Symbol ?? `S&P 500 company ${index + 1}`;
         const location = [
