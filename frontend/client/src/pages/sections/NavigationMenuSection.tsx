@@ -60,6 +60,10 @@ interface NavigationMenuSectionProps {
   onToggleConsentAgeData: () => void;
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
+  povertyYear: number | null;
+  povertyLatestYear: number | null;
+  povertyAvailableYears: number[];
+  onPovertyYearChange: (year: number | null) => void;
   selectedAgeGroupId: string | null;
   onSelectedAgeGroupChange: (ageGroupId: string | null) => void;
   selectedRaceCensusId: string;
@@ -111,6 +115,10 @@ export const NavigationMenuSection = ({
   onToggleConsentAgeData,
   selectedLayers = [],
   onLayerToggle,
+  povertyYear,
+  povertyLatestYear,
+  povertyAvailableYears,
+  onPovertyYearChange,
   selectedAgeGroupId,
   onSelectedAgeGroupChange,
   selectedRaceCensusId,
@@ -131,7 +139,6 @@ export const NavigationMenuSection = ({
     { id: "data-centers", label: "Data Centers" },
     { id: "national-risk-index", label: "Disaster Risk (FEMA NRI)" },
     { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },
-    { id: "air-quality", label: "Air Quality" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
     // Superfund is the EPA-backed subset of the requested Toxic Area datapoint.
@@ -436,8 +443,8 @@ export const NavigationMenuSection = ({
     // { id: "mayors", label: "Mayors" },
     { id: "house", label: "House of Representatives" },
     // { id: "supreme-court", label: "Supreme Court" },
-    { id: "president", label: "President" },
-    { id: "vice-president", label: "Vice President" },
+    // { id: "president", label: "President" },
+    // { id: "vice-president", label: "Vice President" },
     // { id: "governors", label: "Governors" },
     { id: "gerrymandering", label: "Jerry Mandering" },
     { id: "red-blue-district", label: "Red/Blue district (House of Representatives)" },
@@ -899,6 +906,79 @@ export const NavigationMenuSection = ({
           </AccordionContent>
         </AccordionItem>
 
+        <AccordionItem value="economy" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Economic
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            <div className="ml-4">
+              {[
+                { id: "income", label: "Annual Income" },
+                { id: "high-income-households", label: "High-income households ($200k+)" },
+                { id: "unemployment", label: "Unemployment Rate" },
+                { id: "poverty-stricken-areas", label: "Poverty-Stricken Areas" },
+              ].map((item) => (
+                <div key={item.id} className="mt-1.5">
+                  <div className="flex items-center">
+                    <Checkbox
+                      id={`economy-${item.id}`}
+                      className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                      checked={selectedLayers.includes(item.id)}
+                      onCheckedChange={(checked) =>
+                        onLayerToggle?.(item.id, checked === true)
+                      }
+                    />
+                    <label
+                      htmlFor={`economy-${item.id}`}
+                      className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                    >
+                      {item.label}
+                    </label>
+                  </div>
+                  {item.id === "poverty-stricken-areas"
+                    && selectedLayers.includes(item.id) && (
+                      <label className="ml-[31px] mt-2 flex items-center gap-2 text-[11px] text-white/80">
+                        Estimate year
+                        <select
+                          aria-label="Poverty estimate year"
+                          className="rounded-md border border-white/70 bg-[#0c1022] text-white text-[11px] px-2 py-1 outline-none focus:ring-1 focus:ring-white/40"
+                          value={povertyYear == null ? "latest" : String(povertyYear)}
+                          onChange={(event) => {
+                            onPovertyYearChange(
+                              event.target.value === "latest"
+                                ? null
+                                : Number(event.target.value),
+                            );
+                          }}
+                        >
+                          <option value="latest">
+                            {povertyLatestYear == null
+                              ? "Most recent"
+                              : `Most recent (${povertyLatestYear})`}
+                          </option>
+                          {povertyAvailableYears
+                            .filter((year) => year !== povertyLatestYear)
+                            .slice()
+                            .sort((a, b) => b - a)
+                            .map((year) => (
+                              <option className="text-black" key={year} value={year}>
+                                {year}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                    )}
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
         <AccordionItem value="social" className="border-0">
           <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
             <div className="flex items-center">
@@ -1056,65 +1136,44 @@ export const NavigationMenuSection = ({
                   </div>
                 )
               )}
-              {politicalLayerIds.includes("senators") && (
-                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  Two pins per state (current senators). Refresh data:{" "}
-                  <code className="text-white/80">npm run data:senators</code>
-                </p>
-              )}
               {politicalLayerIds.includes("governors") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per state (current governor); green ring on the map. Refresh:{" "}
                   <code className="text-white/80">npm run data:governors</code>
                 </p>
               )}
-              {(politicalLayerIds.includes("president") ||
-                politicalLayerIds.includes("vice-president")) && (
-                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  President — gold ring (White House). Vice President — silver-blue ring
-                  (Observatory Circle). Turn each on separately or together; president pin
-                  stacks above when they overlap. Refresh:{" "}
-                  <code className="text-white/80">npm run data:president</code>
-                </p>
-              )}
               {politicalLayerIds.includes("red-blue-district") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   119th district shapes (Census); party from current voting members where
                   listed. Vacant seats and non‑R/D members appear slate when &quot;Both&quot;
-                  is selected. Refresh:{" "}
-                  <code className="text-white/80">npm run data:congressional</code>
+                  is selected.
                 </p>
               )}
               {politicalLayerIds.includes("house") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per voting district (50 states only; 435 apportioned seats).
                   Non-voting delegates (D.C., territories) are excluded. Pin count can
-                  be under 435 when seats are vacant. Refresh:{" "}
-                  <code className="text-white/80">npm run data:congressional</code>
+                  be under 435 when seats are vacant.
                 </p>
               )}
               {politicalLayerIds.includes("supreme-court") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Nine current justices; pins use birth/home-state anchors (spread when
                   multiple share a state). Chief Justice stacks above when overlapping.
-                  Refresh roster:{" "}
-                  <code className="text-white/80">npm run data:scotus</code>
                 </p>
               )}
               {politicalLayerIds.includes("gerrymandering") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Every current U.S. House district (119th Congress) is drawn from Census shapes
                   so you can see full boundaries—not counties. Violet pins mark educational case
-                  spots; tap a district or pin for details. Cases:{" "}
-                  <code className="text-white/80">client/public/data/gerrymandering.json</code>
+                  spots; tap a district or pin for details.
                 </p>
               )}
               {politicalLayerIds.includes("electoral-college") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   2024 presidential results by state: red/blue by statewide winner, darker =
                   larger margin (CNN-style). Contiguous 48 + DC; Alaska &amp; Hawaii same
-                  data in corner insets. Data:{" "}
-                  <code className="text-white/80">client/public/data/electoral-college-2024.json</code>
+                  data in corner insets.
                 </p>
               )}
               {unwiredPoliticalSelections.length > 0 && (

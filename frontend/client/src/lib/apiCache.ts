@@ -27,6 +27,8 @@ export const CACHE_TTL = {
   AIR_QUALITY: 2 * 60 * 60 * 1000,
   /** Politics - refreshes infrequently */
   POLITICS: 24 * 60 * 60 * 1000,
+  /** Census ACS economic estimates. */
+  ECONOMICS: 24 * 60 * 60 * 1000,
   TEST: 24 * 60,
   /** NOISE POLLUTION - refreshes infrequently on a multi-year cycle */
   /** NOISE POLLUTION - infrequently on a multi-year cycle */

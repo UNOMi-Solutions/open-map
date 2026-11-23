@@ -157,6 +157,7 @@ router.get("/status", (req, res) => {
       MONGODB_URI: Boolean(process.env.MONGODB_URI),
       CENSUS_API_KEY: Boolean(process.env.CENSUS_API_KEY),
       BEA_API_KEY: Boolean(process.env.BEA_API_KEY),
+      ECONOMY_KEY: Boolean(process.env.ECONOMY_KEY),
       HEALTHDATA_API_KEY: Boolean(process.env.HEALTHDATA_API_KEY),
       FBI_CRIME_KEY: Boolean(process.env.FBI_CRIME_KEY),
       EIA_API_KEY: Boolean(process.env.EIA_API_KEY),
