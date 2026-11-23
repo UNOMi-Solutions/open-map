@@ -114,48 +114,26 @@ export async function fetchUsBillionaireProfiles(
         `${RTB_BASE_URL}/profile/` +
         `${uri}/info`;
 
-      try {
-        const profile = await getJson(
-          client,
-          profileUrl
+      const profile = await getJson(
+        client,
+        profileUrl
+      );
+
+      if (
+        !profile ||
+        typeof profile !== "object" ||
+        Array.isArray(profile)
+      ) {
+        throw new Error(
+          "RTB profile response was not an object"
         );
-
-        if (
-          !profile ||
-          typeof profile !== "object" ||
-          Array.isArray(profile)
-        ) {
-          throw new Error(
-            "RTB profile response was not an object"
-          );
-        }
-
-        return profile;
-      } catch (error) {
-        console.warn(
-          `[rtbBillionaires] Failed profile ${uri}:`,
-          error.message
-        );
-
-        return null;
       }
+
+      return profile;
     }
   );
 
-  const successfulProfiles = profiles.filter(
-    (profile) => profile !== null
-  );
-
-  if (
-    eligiblePeople.length > 0 &&
-    successfulProfiles.length === 0
-  ) {
-    throw new Error(
-      "RTB did not return any billionaire profiles successfully"
-    );
-  }
-
-  return successfulProfiles;
+  return profiles;
 }
 
 export function getUsBillionaireProfiles(

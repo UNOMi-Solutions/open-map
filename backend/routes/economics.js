@@ -372,7 +372,10 @@ router.get("/billionaires", async (req, res) => {
     return res.json({ count: profiles.length, profiles });
   } catch (error) {
     console.error("GET /economics/billionaires error:", error.message);
-    return res.status(502).json({ error: "Failed to retrieve U.S. billionaire profiles" });
+    return res.status(502).json({
+      error: "Failed to retrieve U.S. billionaire profiles",
+      code: "RTB_UPSTREAM_FAILURE",
+    });
   }
 });
 
