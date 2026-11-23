@@ -549,6 +549,86 @@ router.get("/incomeByCounty", async (req, res) => {
   }
 });
 
+router.get("/medianHomeValueByCounty", async (req, res) => {
+  const apiKey = requireEnv(res, "ECONOMY_KEY", "Economy API key");
+  if (!apiKey) return;
+
+  const requestedYear = req.query.year;
+  const year = requestedYear == null ? ACS_LATEST_YEAR : Number(requestedYear);
+  if (
+    requestedYear != null
+    && (
+      typeof requestedYear !== "string"
+      || !/^\d{4}$/.test(requestedYear)
+      || !ACS_AVAILABLE_YEARS.includes(year)
+    )
+  ) {
+    return res.status(400).json({
+      error: `year must be an ACS 5-year estimate year from ${ACS_FIRST_YEAR} to ${ACS_LATEST_YEAR}`,
+    });
+  }
+
+  try {
+    const response = await axios.get(`https://api.census.gov/data/${year}/acs/acs5`, {
+      params: {
+        get: "NAME,B25077_001E",
+        for: "county:*",
+        in: "state:*",
+        key: apiKey,
+      },
+      timeout: 30000,
+    });
+
+    const rows = response.data;
+    if (!Array.isArray(rows) || !Array.isArray(rows[0])) {
+      return res.status(502).json({ error: "Unexpected response from Census API" });
+    }
+
+    const columns = Object.fromEntries(rows[0].map((name, index) => [name, index]));
+    const requiredColumns = ["NAME", "B25077_001E", "state", "county"];
+    if (requiredColumns.some((name) => columns[name] == null)) {
+      return res.status(502).json({
+        error: "Census API response is missing required median home value columns",
+      });
+    }
+
+    const counties = rows.slice(1).flatMap((row) => {
+      const medianHomeValue = Number(row[columns.B25077_001E]);
+      const stateFips = row[columns.state];
+      const countyFips = row[columns.county];
+      if (
+        !Number.isFinite(medianHomeValue)
+        || medianHomeValue <= 0
+        || !/^\d{2}$/.test(stateFips)
+        || !/^\d{3}$/.test(countyFips)
+      ) {
+        return [];
+      }
+
+      return [{
+        geoid: `${stateFips}${countyFips}`,
+        name: row[columns.NAME],
+        medianHomeValue,
+      }];
+    });
+
+    return res.json({
+      source: `U.S. Census Bureau — ${year} American Community Survey 5-Year Estimates, Table B25077`,
+      year,
+      availableYears: ACS_AVAILABLE_YEARS,
+      count: counties.length,
+      counties,
+    });
+  } catch (error) {
+    console.error("Economics medianHomeValueByCounty error:", error.message);
+    return res.status(error.response?.status || 502).json({
+      error: error.response?.data?.error
+        || error.message
+        || "Failed to fetch Census median home value data",
+    });
+  }
+});
+
 router.get("/highIncomeHouseholdsByCounty", async (req, res) => {
   const apiKey = requireEnv(res, "ECONOMY_KEY", "Economy API key");
   if (!apiKey) return;

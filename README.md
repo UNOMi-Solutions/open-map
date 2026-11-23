@@ -178,6 +178,7 @@ All data routes require an `x-api-key` header matching `API_DEV_KEY`.
 | `GET /api/v1/economics/*` | Economic data |
 | `GET /api/v1/economics/unemploymentByCounty` | Latest county unemployment rates from BLS LAUS; optional `start=YYYY-MM&end=YYYY-MM` returns each month in the inclusive range |
 | `GET /api/v1/economics/highIncomeHouseholdsByCounty` | County share and count of households with income of $200,000 or more from ACS table B19001 |
+| `GET /api/v1/economics/medianHomeValueByCounty` | County median home value from ACS table B25077; optional `year=YYYY` |
 | `GET /api/v1/health/*` | Health data |
 | `GET /api/v1/politics/*` | Political data |
 | `GET /api/v1/social/*` | Social data |
