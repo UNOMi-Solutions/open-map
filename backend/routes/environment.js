@@ -11,6 +11,10 @@ import { response, Router } from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import superfundRoutes from "./superfund.js";
+import energyPlantRoutes from "./energyPlants.js";
+import sewageDischargeRoutes from "./sewageDischarge.js";
+import environmentalRiskRoutes from "./environmentalRisks.js";
 import { getStormEventsSummary, getTornadoes, getDebrisFlows } from "../lib/stormEvents.js";
 import { getNationalRiskIndexSummary } from "../lib/nationalRiskIndex.js";
 import { getWildfires } from "../lib/wildfires.js";
@@ -23,6 +27,13 @@ import { getCached } from "../utils/dataCache.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
+
+// Adds EPA Superfund sites to the already-mounted environment data routes.
+router.use("/superfundSites", superfundRoutes);
+// Solar, wind, and hydro generators share one complete EIA reporting snapshot.
+router.use("/energyPlants", energyPlantRoutes);
+router.use("/sewageDischarge", sewageDischargeRoutes);
+router.use(environmentalRiskRoutes);
 
 // Cache for GHG emissions data
 let ghgEmissionsCache = null;
