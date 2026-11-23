@@ -432,6 +432,7 @@ export default function LeafletMap({
   healthMetricId = null,
   showIncome = false,
   showHighIncomeHouseholds = false,
+  showMedianHomeValue = false,
   showUnemployment = false,
   showPoverty = false,
   povertyYear = null,
@@ -513,6 +514,7 @@ export default function LeafletMap({
   healthMetricId?: string | null;
   showIncome?: boolean;
   showHighIncomeHouseholds?: boolean;
+  showMedianHomeValue?: boolean;
   showUnemployment?: boolean;
   showPoverty?: boolean;
   povertyYear?: number | null;
@@ -534,6 +536,7 @@ export default function LeafletMap({
       Boolean(healthMetricId) ||
       showIncome ||
       showHighIncomeHouseholds ||
+      showMedianHomeValue ||
       showUnemployment ||
       showPoverty ||
       showSplcHateMap) &&
@@ -590,6 +593,10 @@ export default function LeafletMap({
     Record<string, number> | null
   >(null);
   const [highIncomeDataYear, setHighIncomeDataYear] = useState<number | null>(null);
+  const [medianHomeValueByGeoid, setMedianHomeValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [medianHomeValueDataYear, setMedianHomeValueDataYear] = useState<number | null>(null);
   const [unemploymentValueByGeoid, setUnemploymentValueByGeoid] = useState<
     Record<string, number> | null
   >(null);
@@ -615,7 +622,7 @@ export default function LeafletMap({
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
   const markerTimelineRange =
-    showIncome || showHighIncomeHouseholds || showUnemployment || showPoverty
+    showIncome || showHighIncomeHouseholds || showMedianHomeValue || showUnemployment || showPoverty
     ? null
     : timelineRange;
 
@@ -1013,6 +1020,68 @@ export default function LeafletMap({
       setLoading(false);
     };
   }, [showIncome, timelineRange, onDateRangeChange]);
+
+  /** ACS median home value by county GEOID for the selected timeline year */
+  useEffect(() => {
+    if (!showMedianHomeValue) {
+      setMedianHomeValueByGeoid(null);
+      setMedianHomeValueDataYear(null);
+      onDateRangeChange("economics-median-home-value", null);
+      return;
+    }
+    onDateRangeChange("economics-median-home-value", {
+      start: Date.UTC(ACS_ECONOMIC_FIRST_YEAR, 0, 1),
+      end: Date.UTC(ACS_ECONOMIC_LATEST_YEAR, 11, 31),
+    });
+    const timelineYear = timelineRange
+      ? new Date(timelineRange.end).getUTCFullYear()
+      : ACS_ECONOMIC_LATEST_YEAR;
+    const year = Math.min(timelineYear, ACS_ECONOMIC_LATEST_YEAR);
+    const timelineStartYear = timelineRange
+      ? new Date(timelineRange.start).getUTCFullYear()
+      : ACS_ECONOMIC_FIRST_YEAR;
+    if (year < ACS_ECONOMIC_FIRST_YEAR || timelineStartYear > year) {
+      setMedianHomeValueByGeoid(null);
+      setMedianHomeValueDataYear(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    cachedApiGet<{
+      year: number;
+      counties: Array<{ geoid: string; medianHomeValue: number }>;
+    }>(
+      `economics:medianHomeValueByCounty:${year}`,
+      `/api/v1/economics/medianHomeValueByCounty?year=${year}`,
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const values: Record<string, number> = {};
+        for (const county of response.counties ?? []) {
+          if (Number.isFinite(county.medianHomeValue)) {
+            values[String(county.geoid).padStart(5, "0")] = county.medianHomeValue;
+          }
+        }
+        setMedianHomeValueByGeoid(values);
+        setMedianHomeValueDataYear(response.year);
+      })
+      .catch((error) => {
+        console.error("County median home value data load failed:", error);
+        if (!cancelled) {
+          setMedianHomeValueByGeoid(null);
+          setMedianHomeValueDataYear(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [showMedianHomeValue, timelineRange, onDateRangeChange]);
 
   /** ACS share of households earning $200,000 or more for the selected year */
   useEffect(() => {
@@ -1419,6 +1488,7 @@ export default function LeafletMap({
       return {};
     }
     if (showHighIncomeHouseholds) return highIncomeHouseholdValueByGeoid ?? {};
+    if (showMedianHomeValue) return medianHomeValueByGeoid ?? {};
     if (showUnemployment) return unemploymentValueByGeoid ?? {};
     if (showPoverty) return povertyValueByGeoid ?? {};
     if (showIncome) return incomeValueByGeoid ?? {};
@@ -1475,6 +1545,8 @@ export default function LeafletMap({
     povertyValueByGeoid,
     showHighIncomeHouseholds,
     highIncomeHouseholdValueByGeoid,
+    showMedianHomeValue,
+    medianHomeValueByGeoid,
     showIncome,
     incomeValueByGeoid,
     showSplcHateMap,
@@ -1488,9 +1560,9 @@ export default function LeafletMap({
   const activeChoroplethColors = useMemo(() => {
     if (showSplcHateMap) return [...HEALTH_CHOROPLETH_COLORS_NEGATIVE];
     if (healthMetricId) return getHealthChoroplethColors(healthMetricId);
-    if (showIncome || showHighIncomeHouseholds) return INCOME_CHOROPLETH_COLORS;
+    if (showIncome || showHighIncomeHouseholds || showMedianHomeValue) return INCOME_CHOROPLETH_COLORS;
     return CHOROPLETH_COLORS;
-  }, [healthMetricId, showHighIncomeHouseholds, showIncome, showSplcHateMap]);
+  }, [healthMetricId, showHighIncomeHouseholds, showMedianHomeValue, showIncome, showSplcHateMap]);
 
   const choroplethBreaks = useMemo(() => {
     const values = Array.from(choroplethValueByGeoid.values()).sort(
@@ -1525,6 +1597,7 @@ export default function LeafletMap({
       if (showUnemployment) return `${value.toFixed(1)}%`;
       if (showPoverty) return `${value.toFixed(1)}%`;
       if (showIncome) return `$${Math.round(value).toLocaleString("en-US")}`;
+      if (showMedianHomeValue) return `$${Math.round(value).toLocaleString("en-US")}`;
       if (healthMetricId) return `${value.toFixed(1)}%`;
       const unit = CHOROPLETH_METRICS[choroplethMetric].unit;
       if (unit === "%") return `${value.toFixed(1)}%`;
@@ -1535,6 +1608,7 @@ export default function LeafletMap({
       healthMetricId,
       showHighIncomeHouseholds,
       showIncome,
+      showMedianHomeValue,
       showPoverty,
       showSplcHateMap,
       showUnemployment,
@@ -1563,7 +1637,7 @@ export default function LeafletMap({
       ? (n: number) => String(Math.round(n))
       : showHighIncomeHouseholds || showUnemployment || showPoverty
         ? (n: number) => n.toFixed(1)
-        : showIncome
+        : showIncome || showMedianHomeValue
           ? (n: number) => `$${Math.round(n).toLocaleString("en-US")}`
           : (n: number) => n.toFixed(1);
     const items: Array<{ color: string; label: string }> = [];
@@ -1582,6 +1656,7 @@ export default function LeafletMap({
     activeChoroplethColors,
     showHighIncomeHouseholds,
     showIncome,
+    showMedianHomeValue,
     showPoverty,
     showSplcHateMap,
     showUnemployment,
@@ -1597,7 +1672,7 @@ export default function LeafletMap({
       const total = values.reduce((a, b) => a + b, 0);
       return { splcTotal: total, isSplc: true as const };
     }
-    if (showIncome || showHighIncomeHouseholds || showUnemployment || showPoverty) return null;
+    if (showIncome || showHighIncomeHouseholds || showMedianHomeValue || showUnemployment || showPoverty) return null;
     if (healthMetricId) {
       const values = Array.from(choroplethValueByGeoid.values()).filter(
         (v) => typeof v === "number" && !Number.isNaN(v)
@@ -1635,6 +1710,7 @@ export default function LeafletMap({
     choroplethValueByGeoid,
     healthMetricId,
     showIncome,
+    showMedianHomeValue,
     showPoverty,
     showUnemployment,
     showSplcHateMap,
@@ -1724,6 +1800,8 @@ export default function LeafletMap({
         ? SPLC_HATE_MAP_LABEL
         : showHighIncomeHouseholds
           ? `Households earning $200,000 or more (${highIncomeDataYear ?? "most recent"})`
+          : showMedianHomeValue
+            ? `Median Home Value (${medianHomeValueDataYear ?? "most recent"})`
           : showUnemployment
             ? `County Unemployment Rate${unemploymentPeriod ? ` (${unemploymentPeriod})` : ""}`
           : showPoverty
@@ -1761,6 +1839,8 @@ export default function LeafletMap({
       showIncome,
       incomeDataYear,
       highIncomeDataYear,
+      showMedianHomeValue,
+      medianHomeValueDataYear,
       showPoverty,
       povertyYear,
       povertyDataYear,
@@ -1903,7 +1983,7 @@ export default function LeafletMap({
       ? ""
       : showUnemployment || showHighIncomeHouseholds || showPoverty
         ? "%"
-      : showIncome
+      : showIncome || showMedianHomeValue
         ? ""
       : healthMetricId
         ? "%"
@@ -1929,7 +2009,7 @@ export default function LeafletMap({
       if (showHighIncomeHouseholds || showUnemployment || showPoverty) {
         return `${value.toFixed(1)}%`;
       }
-      if (showIncome) return `$${Math.round(value).toLocaleString("en-US")}`;
+      if (showIncome || showMedianHomeValue) return `$${Math.round(value).toLocaleString("en-US")}`;
       return `${value.toFixed(1)}${unit === "%" ? "%" : ""}`;
     };
     const rangeBounds = choroplethBreaks.length
@@ -1974,6 +2054,8 @@ export default function LeafletMap({
             ? "Census SAIPE county estimates"
             : showHighIncomeHouseholds
             ? "ACS 5-year estimates"
+            : showMedianHomeValue
+            ? "ACS 5-year estimates"
             : showIncome
             ? "County estimates"
             : healthMetricId
@@ -1996,6 +2078,8 @@ export default function LeafletMap({
     healthMetricId,
     showHighIncomeHouseholds,
     highIncomeDataYear,
+    showMedianHomeValue,
+    medianHomeValueDataYear,
     showIncome,
     incomeDataYear,
     showPoverty,

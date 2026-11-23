@@ -843,6 +843,7 @@ export const NavigationMenuSection = ({
               {[
                 { id: "income", label: "Annual Income" },
                 { id: "high-income-households", label: "High-income households ($200k+)" },
+                { id: "median-home-value", label: "Median Home Value" },
                 { id: "unemployment", label: "Unemployment Rate" },
                 { id: "poverty-stricken-areas", label: "Poverty-Stricken Areas" },
               ].map((item) => (

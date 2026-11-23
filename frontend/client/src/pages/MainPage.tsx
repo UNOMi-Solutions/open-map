@@ -249,6 +249,7 @@ function TimelineRangeControl({
 const ECONOMICS_LAYER_IDS = new Set([
   "income",
   "high-income-households",
+  "median-home-value",
   "unemployment",
   "poverty-stricken-areas",
 ]);
@@ -1161,6 +1162,7 @@ export default function MainPage() {
                   healthMetricId={healthMetricId}
                   showIncome={selectedLayers.includes("income")}
                   showHighIncomeHouseholds={selectedLayers.includes("high-income-households")}
+                  showMedianHomeValue={selectedLayers.includes("median-home-value")}
                   showUnemployment={selectedLayers.includes("unemployment")}
                   showPoverty={selectedLayers.includes("poverty-stricken-areas")}
                   povertyYear={povertyYear}
