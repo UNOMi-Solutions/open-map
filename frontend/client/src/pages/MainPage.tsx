@@ -386,6 +386,7 @@ export default function MainPage() {
 
   // Props for Displaying Police Killing Data
   const [showPoliceKillingData, setShowPoliceKillingData] = useState(false);
+  const [showPoliceShootings, setShowPoliceShootings] = useState(false);
 
   // Props for displaying homicide data
   const [showMurderData, setShowMurderData] = useState(false);
@@ -693,6 +694,7 @@ export default function MainPage() {
     setSelectedRaceCensusId("all");
     setSelectedSexId(null);
     setShowPoliceKillingData(false);
+    setShowPoliceShootings(false);
     setShowMurderData(false);
     setMurderCategory("victim");
     setMurderAttribute("age");
@@ -716,6 +718,7 @@ export default function MainPage() {
     selectedRaceCensusId,
     selectedSexId,
     showPoliceKillingData,
+    showPoliceShootings,
     showMurderData,
     murderCategory,
     murderAttribute,
@@ -743,6 +746,7 @@ export default function MainPage() {
     setSelectedRaceCensusId(c.selectedRaceCensusId ?? "all");
     setSelectedSexId(c.selectedSexId ?? null);
     setShowPoliceKillingData(!!c.showPoliceKillingData);
+    setShowPoliceShootings(!!c.showPoliceShootings);
     setShowMurderData(!!c.showMurderData);
     setMurderCategory(c.murderCategory ?? "victim");
     setMurderAttribute(c.murderAttribute ?? "age");
@@ -1096,6 +1100,7 @@ export default function MainPage() {
                   showChoropleth={showChoropleth}
 
                   showPoliceKillingData={showPoliceKillingData}
+                  showPoliceShootings={showPoliceShootings}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -1271,6 +1276,8 @@ export default function MainPage() {
 
                   showPoliceKillingData={showPoliceKillingData}
                   onTogglePoliceKillingData={() => setShowPoliceKillingData((v) => !v)}
+                  showPoliceShootings={showPoliceShootings}
+                  onTogglePoliceShootings={() => setShowPoliceShootings((v) => !v)}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}

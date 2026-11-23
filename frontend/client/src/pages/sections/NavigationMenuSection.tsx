@@ -34,6 +34,8 @@ interface NavigationMenuSectionProps {
 
   showPoliceKillingData: boolean;
   onTogglePoliceKillingData: () => void;
+  showPoliceShootings: boolean;
+  onTogglePoliceShootings: () => void;
 
   showMurderData: boolean;
   murderCategory: string;
@@ -84,6 +86,8 @@ export const NavigationMenuSection = ({
 
   showPoliceKillingData,
   onTogglePoliceKillingData,
+  showPoliceShootings,
+  onTogglePoliceShootings,
 
   showMurderData,
   murderCategory,
@@ -786,7 +790,17 @@ export const NavigationMenuSection = ({
                   Police Killings
                 </span>
               </div>
-              
+              <div className="mt-2 flex items-center">
+                <Checkbox
+                  id="fatal-police-shootings"
+                  checked={showPoliceShootings}
+                  onCheckedChange={onTogglePoliceShootings}
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                />
+                <label htmlFor="fatal-police-shootings" className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
+                  Fatal Police Shootings
+                </label>
+              </div>
             </div>
 
             <div className="ml-4">

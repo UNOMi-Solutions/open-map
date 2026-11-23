@@ -61,6 +61,7 @@ import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
 // Police Killing Data
 import PoliceKillings from "./PoliceKillings";
+import PoliceShootings from "./PoliceShootings";
 
 // State markers with arrest data
 import ArrestMarkers from "./ArrestMarkers";
@@ -382,6 +383,7 @@ export default function LeafletMap({
   showChoropleth = true,
 
   showPoliceKillingData = false,
+  showPoliceShootings = false,
 
   showMurderData = false,
   murderCategory = "victim",
@@ -456,6 +458,7 @@ export default function LeafletMap({
   showChoropleth?: boolean;
 
   showPoliceKillingData?: boolean;
+  showPoliceShootings?: boolean;
   
   showMurderData?: boolean;
   murderCategory?: string;
@@ -2341,6 +2344,7 @@ export default function LeafletMap({
           timelineRange={markerTimelineRange}
           onDateRangeChange={onDateRangeChange}
         />
+        <PoliceShootings show={showPoliceShootings} setLoading={setLoading} />
 
         {showAlprCameras && (
           <AlprCameraMarkers flockOnly={alprFlockOnly} setLoading={setLoading} />
