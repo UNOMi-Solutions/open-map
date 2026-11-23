@@ -51,6 +51,8 @@ import AirQualityMarkers from "./AirQualityMarkers";
 // Noise pollution data
 import NoisePollutionLayer from "./NoisePollutionLayer";
 
+import DamMarkers from "./DamMarkers";
+
 // Rural access to intercity transportation (BTS)
 import RuralAccessChoropleth from "./RuralAccessChoropleth";
 
@@ -387,6 +389,9 @@ export default function LeafletMap({
   /*toggle environmental information */
   showOilSpills = false,  
   showAirQuality = false,
+  showDams = false,
+  selectedDamHazard = "all",
+  selectedDamYear = "all",
   showNoisePollution = false,
   showRuralAccess = false,
   ruralAccessYear = 2021,
@@ -449,16 +454,17 @@ export default function LeafletMap({
   showMissingPersonsData?: boolean;
   missingPersonQ?: string;
   missingPersonYear?: any;
-
   showConsentAgeData?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
+  showDams?: boolean;
+  selectedDamHazard?: string;
+  selectedDamYear?: string;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
   showRuralAccess?: boolean;  
   ruralAccessYear?: number;
   onRuralAccessYearChange?: (year: number) => void;
-  
   showWasteTreatmentDisposal?: boolean;
   showEarthquakes?: boolean;
   earthquakeMinMagnitude?: number | null;
@@ -1817,6 +1823,15 @@ export default function LeafletMap({
             setLoading={setLoading}
             timelineRange={timelineRange}
             onDateRangeChange={onDateRangeChange}
+          />
+        )}
+
+        {/* Dams */}
+        {showDams && (
+          <DamMarkers
+            setLoading={setLoading}
+            selectedHazard={selectedDamHazard}
+            selectedYear={selectedDamYear}
           />
         )}
 
