@@ -18,6 +18,7 @@ import { getVolcanoes } from "../lib/volcanoes.js";
 import { getTsunamis } from "../lib/tsunamis.js";
 import { getDroughtSummary } from "../lib/drought.js";
 import { getLandslides } from "../lib/landslides.js";
+import { getNasaLayers } from "../lib/nasaGibs.js";
 
 import { getCached } from "../utils/dataCache.js";
 
@@ -914,6 +915,20 @@ router.get("/noiseTransportation", async (req, res) => {
   } catch (err) {
     console.error("[environment/noiseTransportation]", err.message);
     res.status(502).json({ error: "Failed to fetch noise map metadata" });
+  }
+});
+
+// NASA GIBS satellite layers: 
+// tile template, available dates and legend for each requested GIBS identifier Read from NASA's WMTS capabilities (cached 6 h). 
+// Tiles are loaded by browser from gibs.earthdata.nasa.gov, no key
+router.get("/nasaLayers", async (req, res) => {
+  try {
+    const ids = String(req.query.ids ?? "").split(",").map((id) => id.trim()).filter(Boolean);
+    if (!ids.length) return res.status(400).json({ error: "ids query parameter is required" });
+    res.json(await getNasaLayers(ids));
+  } catch (err) {
+    console.error("[environment/nasaLayers]", err.message);
+    res.status(502).json({ error: "Failed to fetch NASA GIBS layer metadata" });
   }
 });
 

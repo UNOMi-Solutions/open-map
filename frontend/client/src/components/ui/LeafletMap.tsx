@@ -56,6 +56,9 @@ import NoisePollutionLayer from "./NoisePollutionLayer";
 // Rural access to intercity transportation (BTS)
 import RuralAccessChoropleth from "./RuralAccessChoropleth";
 
+// NASA satellite layers (GIBS) – one component for every NASA layer
+import NasaLayers from "./NasaLayers";
+
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
@@ -405,6 +408,9 @@ export default function LeafletMap({
   showRuralAccess = false,
   ruralAccessYear = 2021,
   onRuralAccessYearChange,
+  nasaLayerIds = [],
+  nasaDate = null,
+  onNasaDateChange,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showEarthquakes = false,
@@ -469,6 +475,9 @@ export default function LeafletMap({
   /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
   showMassShootings?: boolean;
 
+  showNaturalDisasterIncidents?: boolean;
+  naturalDisasterIncidentTypes?: string[];
+
   showConsentAgeData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
   showAlprCameras?: boolean;
@@ -480,6 +489,11 @@ export default function LeafletMap({
   showRuralAccess?: boolean;  
   ruralAccessYear?: number;
   onRuralAccessYearChange?: (year: number) => void;
+  /** Sidebar ids of the selected NASA satellite layers ("nasa:<id>") */
+  nasaLayerIds?: string[];
+  /** Picked NASA data date (YYYY-MM-DD); null shows the newest complete data */
+  nasaDate?: string | null;
+  onNasaDateChange?: (date: string | null) => void;
   
   showWasteTreatmentDisposal?: boolean;
   showEarthquakes?: boolean;
@@ -2298,6 +2312,16 @@ export default function LeafletMap({
 
         {/* Noise pollution - loads image tile map for selected area */}
         {showNoisePollution && <NoisePollutionLayer/>}
+
+        {/* NASA satellite layers – raster tiles straight from NASA GIBS */}
+        {nasaLayerIds.length > 0 && (
+          <NasaLayers
+            layerIds={nasaLayerIds}
+            date={nasaDate}
+            onDateChange={onNasaDateChange}
+            setLoading={setLoading}
+          />
+        )}
 
         {/* Rural access to intercity transportation – county choropleth */}
         {showRuralAccess && (

@@ -37,6 +37,7 @@ import {
   HEALTH_WIRED_LAYER_IDS,
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
+import { NASA_PREFIX } from "@/lib/nasaLayers";
 import {
   INCIDENT_FILTER_PREFIXES,
   INCIDENT_MENU_ID,
@@ -404,6 +405,8 @@ export default function MainPage() {
 
   // props for rural access
   const [ruralAccessYear, setRuralAccessYear] = useState(2021);
+  // NASA satellite layers share one data date; null = newest complete data
+  const [nasaDate, setNasaDate] = useState<string | null>(null);
 
   const [politicalLayerIds, setPoliticalLayerIds] = useState<string[]>([]);
   const [houseDistrictPartyMode, setHouseDistrictPartyMode] =
@@ -704,6 +707,7 @@ export default function MainPage() {
     setHouseDistrictPartyMode("both");
     setSearchQuery("");
     setHealthMetricId(null);
+    setNasaDate(null);
   };
 
   /** Snapshot of the full map setup, saved as a profile's `config`. */
@@ -727,6 +731,7 @@ export default function MainPage() {
     houseDistrictPartyMode,
     healthMetricId,
     searchQuery,
+    nasaDate,
   });
 
   /** Applies a saved profile's config back onto the map, falling back to
@@ -754,6 +759,7 @@ export default function MainPage() {
     setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
     setHealthMetricId(c.healthMetricId ?? null);
     setSearchQuery(c.searchQuery ?? "");
+    setNasaDate(typeof c.nasaDate === "string" ? c.nasaDate : null);
     // Make sure the loaded configuration is actually visible.
     setShowLanding(false);
     setSidebarOpen(true);
@@ -1149,6 +1155,9 @@ export default function MainPage() {
                   showRuralAccess={selectedLayers.includes("rural-access") }
                   ruralAccessYear={ruralAccessYear}
                   onRuralAccessYearChange={setRuralAccessYear}
+                  nasaLayerIds={selectedLayers.filter((id) => id.startsWith(NASA_PREFIX))}
+                  nasaDate={nasaDate}
+                  onNasaDateChange={setNasaDate}
                   
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}

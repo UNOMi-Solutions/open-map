@@ -29,10 +29,11 @@ export const CACHE_TTL = {
   ECONOMICS: 24 * 60 * 60 * 1000,
   TEST: 24 * 60,
   /** NOISE POLLUTION - refreshes infrequently on a multi-year cycle */
-  /** NOISE POLLUTION - infrequently on a multi-year cycle */
   NOISE_TRANSPORTATION: 7 * 24 * 60 * 60 * 1000,
   /** BTS rural access to intercity transportation — multi-year release cycle. */
   RURAL_ACCESS: 30 * 24 * 60 * 60 * 1000,
+  /** NASA GIBS layer metadata — NASA publishes a new day of imagery roughly daily. */
+  NASA_LAYERS: 6 * 60 * 60 * 1000,
 } as const;
 
 function storageKey(key: string): string {

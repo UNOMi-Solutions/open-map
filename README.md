@@ -173,6 +173,7 @@ All data routes require an `x-api-key` header matching `API_DEV_KEY`.
 | `GET /api/v1/crime/arrestsByState` | Arrest data by state and offense |
 | `GET /api/v1/crime/missingPersons` | NamUs open missing persons cases (`npm run seed:missing-persons` refreshes the bundled snapshot) |
 | `GET /api/v1/environment/*` | Environmental data (disasters, emissions, air quality) |
+| `GET /api/v1/environment/nasaLayers?ids=...` | NASA GIBS satellite layer metadata (tile template, available dates, legend) for the given GIBS identifiers |
 | `GET /api/v1/lawEnforcement/*` | Law enforcement statistics |
 | `GET /api/v1/census/*` | Census data |
 | `GET /api/v1/economics/*` | Economic data |
@@ -251,3 +252,25 @@ Auth routes (no API key needed):
 - **MongoDB Atlas** network access is set to `0.0.0.0/0` because Cloud Run uses dynamic IPs. This is intentional.
 - **API keys** should be rotated periodically. Priority: Stripe, OpenAI, MongoDB password, Mailchimp.
 - The `frontend/server/` directory is legacy code from the original Replit setup and is not used in production. Do not delete it without auditing imports first.
+
+---
+
+## NASA Satellite Layers
+
+The "Satellite (NASA)" sidebar section shows raster layers from NASA GIBS (Global Imagery Browse Services). No API key is needed; the browser loads tiles directly from `gibs.earthdata.nasa.gov`.
+
+| File | Role |
+|---|---|
+| `frontend/client/src/lib/nasaLayers.ts` | The list of layers (data only) and the date rules |
+| `frontend/client/src/components/ui/NasaLayers.tsx` | Renders every selected NASA layer and one shared legend with the date control |
+| `backend/lib/nasaGibs.js` | Reads NASA's WMTS capabilities and returns tile template, native zoom, available dates and legend per layer (cached 6 h) |
+
+**Adding a layer:** add one line to `NASA_LAYERS` with the exact GIBS identifier. Nothing else changes. If NASA retires an identifier the backend lists it under `missing` and the layer is skipped instead of drawing blank tiles.
+
+**Modeling choices**
+- Only layers that returned data over at least 95% of US land in the 2026-11-14 audit are listed (amphibian richness, 94%, is the one exception). Single-orbit swath products and event layers (daily AIRS L2, AMSR2, TEMPO, dust score, SO2 index) are left out because they render as scattered strips. Monthly gridded products are used in their place.
+- GIBS returns a transparent tile, not an error, for a date it does not hold. Every requested date is therefore snapped to a value the layer declares (first of the month for monthly layers, the year for yearly ones).
+- "Latest" is NASA's newest date stepped back one period (one day for daily layers, one month for monthly), because the newest period is often still being filled in.
+- The date picker applies to all NASA layers at once; each layer shows its closest earlier data and the legend states the date actually shown. Layers without a time dimension are labelled "Fixed dataset".
+- Data layers draw at 70% opacity; photo imagery is opaque and sits below them. Layers cover the whole globe and repeat across the date line like the base map; only tiles in view are requested.
+- These are satellite retrievals and model estimates, not ground measurements; the legend says so.

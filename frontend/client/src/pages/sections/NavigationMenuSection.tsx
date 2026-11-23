@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/LeafletMap";
 
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
+import { NASA_GROUPS, NASA_LAYERS, NASA_PREFIX } from "@/lib/nasaLayers";
 import {
   INCIDENT_MENU_ID,
   INCIDENT_TYPE_IDS,
@@ -563,6 +564,32 @@ export const NavigationMenuSection = ({
           </AccordionTrigger>
           <AccordionContent className="pt-0 pb-0">
             {renderLayerList(environmentItems, environmentSubFilters)}
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="satellite" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Satellite (NASA)
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            {NASA_GROUPS.map((group) => (
+              <div key={group} className="mb-2">
+                <span className="ml-4 text-white/70 text-[11px] block mt-2 [font-family:'Futura PT']">
+                  {group}
+                </span>
+                {renderLayerList(
+                  NASA_LAYERS.filter((l) => l.group === group).map((l) => ({
+                    id: NASA_PREFIX + l.id,
+                    label: l.title,
+                  })),
+                  {},
+                )}
+              </div>
+            ))}
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="transportation" className="border-0">
