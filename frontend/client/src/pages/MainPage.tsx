@@ -1122,6 +1122,7 @@ export default function MainPage() {
                   showMassShootings={selectedLayers.includes("mass-shootings")}
 
                   showConsentAgeData={showConsentAgeData}
+                  showArsonData={selectedLayers.includes("arson")}
                   showAlprCameras={selectedLayers.includes("alpr-cameras")}
                   alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
