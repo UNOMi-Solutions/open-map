@@ -1943,4 +1943,86 @@ router.get("/oilDrillingLocations", async (_req, res) => {
     }
 });
 
+// Retreive Dam Data
+router.get("/dams", async (req, res) => {
+    try {
+        const hazard = (req.query.hazard || "all").toString().trim();
+
+        const allowedHazards = ["all", "High", "Significant", "Low"];
+        const selectedHazard = allowedHazards.includes(hazard) ? hazard : "all";
+
+        const yearRaw = (req.query.year || "all").toString().trim();
+        const parsedYear = Number.parseInt(yearRaw, 10);
+
+        const selectedYear =
+            yearRaw === "all" || !Number.isInteger(parsedYear)
+                ? "all"
+                : parsedYear;
+
+        let where =
+            selectedHazard === "all"
+                ? "HAZARD_POTENTIAL IN ('High','Significant','Low')"
+                : `HAZARD_POTENTIAL='${selectedHazard}'`;
+
+        if (selectedYear !== "all") {
+            where += ` AND YEAR_COMPLETED=${selectedYear}`;
+        }
+
+        const response = await axios.get(
+            "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query",
+            {
+                params: {
+                    where,
+                    outFields:
+                        "NIDID,NAME,LATITUDE,LONGITUDE,STATE,CITY,RIVER_OR_STREAM,PRIMARY_PURPOSE,DAM_HEIGHT,YEAR_COMPLETED,HAZARD_POTENTIAL,CONDITION_ASSESSMENT,OPERATIONAL_STATUS",
+                    returnGeometry: true,
+                    f: "geojson",
+                    resultRecordCount: 2000,
+                },
+            }
+        );
+
+        const damData = (response.data.features || [])
+            .map((feature) => {
+                const props = feature.properties || {};
+                const coords = feature.geometry?.coordinates || [];
+
+                return {
+                    id: props.NIDID,
+                    name: props.NAME,
+                    latitude: props.LATITUDE ?? coords[1],
+                    longitude: props.LONGITUDE ?? coords[0],
+                    state: props.STATE,
+                    city: props.CITY,
+                    river: props.RIVER_OR_STREAM,
+                    primaryPurpose: props.PRIMARY_PURPOSE,
+                    damHeight: props.DAM_HEIGHT,
+                    yearCompleted: props.YEAR_COMPLETED,
+                    hazardPotential: props.HAZARD_POTENTIAL,
+                    conditionAssessment: props.CONDITION_ASSESSMENT,
+                    operationalStatus: props.OPERATIONAL_STATUS,
+                };
+            })
+            .filter(
+                (item) =>
+                    Number.isFinite(item.latitude) &&
+                    Number.isFinite(item.longitude)
+            );
+
+        res.json({
+            description: "USACE National Inventory of Dams",
+            hazard: selectedHazard,
+            year: selectedYear,
+            count: damData.length,
+            data: damData,
+        });
+    } catch (error) {
+        console.error("Dam API error:", error.message);
+
+        res.status(500).json({
+            error: "Failed to fetch dam data",
+        });
+    }
+});
+
 export default router;

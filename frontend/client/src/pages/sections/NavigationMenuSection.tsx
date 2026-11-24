@@ -57,6 +57,12 @@ interface NavigationMenuSectionProps {
   onToggleConsentAgeData: () => void;
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
+
+  selectedDamHazard: string;
+  onSelectedDamHazardChange: (hazard: string) => void;
+  selectedDamYear: string;
+  onSelectedDamYearChange: (year: string) => void;
+
   selectedGroundwaterYear: string;
   onSelectedGroundwaterYearChange: (year: string) => void;
   selectedInvasiveYear: string;
@@ -65,6 +71,7 @@ interface NavigationMenuSectionProps {
   povertyLatestYear: number | null;
   povertyAvailableYears: number[];
   onPovertyYearChange: (year: number | null) => void;
+
   selectedAgeGroupId: string | null;
   onSelectedAgeGroupChange: (ageGroupId: string | null) => void;
   selectedRaceCensusId: string;
@@ -113,6 +120,12 @@ export const NavigationMenuSection = ({
   onToggleConsentAgeData,
   selectedLayers = [],
   onLayerToggle,
+
+  selectedDamHazard,
+  onSelectedDamHazardChange,
+  selectedDamYear,
+  onSelectedDamYearChange,
+
   selectedGroundwaterYear,
   onSelectedGroundwaterYearChange,
   selectedInvasiveYear,
@@ -121,6 +134,7 @@ export const NavigationMenuSection = ({
   povertyLatestYear,
   povertyAvailableYears,
   onPovertyYearChange,
+
   selectedAgeGroupId,
   onSelectedAgeGroupChange,
   selectedRaceCensusId,
@@ -142,6 +156,8 @@ export const NavigationMenuSection = ({
     { id: "data-centers", label: "Data Centers" },
     { id: "national-risk-index", label: "Disaster Risk (FEMA NRI)" },
     { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },
+    { id: "air-quality", label: "Air Quality" },
+    { id: "dams", label: "Dams" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
     { id: "groundwater-levels", label: "Groundwater Levels" },
@@ -335,6 +351,49 @@ export const NavigationMenuSection = ({
                 {item.label}
               </label>
             </div>
+
+                        {/* Dams filters */}
+                        {item.id === "dams" && selectedLayers.includes("dams") && (
+              <div className="ml-8 mt-2 mb-2 space-y-2">
+                <div>
+                  <label className="text-white text-[12px] font-normal [font-family:'Futura PT'] mr-2">
+                    Hazard:
+                  </label>
+                  <select
+                    value={selectedDamHazard}
+                    onChange={(e) => onSelectedDamHazardChange(e.target.value)}
+                    className="bg-white text-black text-[12px] rounded px-2 py-1"
+                  >
+                    <option value="all">All Hazards</option>
+                    <option value="High">High</option>
+                    <option value="Significant">Significant</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+
+                  <div>
+                    <label className="text-white text-[12px] font-normal [font-family:'Futura PT'] mr-2">
+                      Year:
+                    </label>
+                    <select
+                      value={selectedDamYear}
+                      onChange={(e) => onSelectedDamYearChange(e.target.value)}
+                      className="bg-white text-black text-[12px] rounded px-2 py-1"
+                    >
+                      <option value="all">All Years</option>
+                      {Array.from(
+                        { length: new Date().getFullYear() - 1800 + 1 },
+                        (_, i) => new Date().getFullYear() - i
+                      ).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
             {item.id === "groundwater-levels" &&
               selectedLayers.includes("groundwater-levels") && (
                 <div className="ml-6 mt-2 mb-2">

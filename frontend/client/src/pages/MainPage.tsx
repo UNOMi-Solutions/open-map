@@ -263,6 +263,9 @@ export default function MainPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  // Dams filters
+  const [selectedDamHazard, setSelectedDamHazard] = useState<string>("all");
+  const [selectedDamYear, setSelectedDamYear] = useState<string>("all");
   const [selectedInvasiveYear, setSelectedInvasiveYear] = useState<string>("all");
   const [selectedGroundwaterYear, setSelectedGroundwaterYear] =
     useState<string>("all");
@@ -1155,6 +1158,9 @@ export default function MainPage() {
                     return id ? Number(id.slice("dr-cat:".length)) : null;
                   })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showDams={selectedLayers.includes("dams")}
+                  selectedDamHazard={selectedDamHazard}
+                  selectedDamYear={selectedDamYear}
                   showGroundwaterLevels={selectedLayers.includes("groundwater-levels")}
                   selectedGroundwaterYear={selectedGroundwaterYear}
                   showInvasiveSpecies={selectedLayers.includes("invasive-species")}
@@ -1322,6 +1328,11 @@ export default function MainPage() {
 
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
+                  selectedDamHazard={selectedDamHazard}
+                  onSelectedDamHazardChange={setSelectedDamHazard}
+                  selectedDamYear={selectedDamYear}
+                  onSelectedDamYearChange={setSelectedDamYear}
+
                   selectedInvasiveYear={selectedInvasiveYear}
                   onSelectedInvasiveYearChange={setSelectedInvasiveYear}
                   selectedGroundwaterYear={selectedGroundwaterYear}

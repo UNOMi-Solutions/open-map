@@ -60,6 +60,8 @@ import InvasiveSpeciesMarkers from "./InvasiveSpeciesMarkers";
 // Noise pollution data
 import NoisePollutionLayer from "./NoisePollutionLayer";
 
+import DamMarkers from "./DamMarkers";
+
 // Rural access to intercity transportation (BTS)
 import RuralAccessChoropleth from "./RuralAccessChoropleth";
 
@@ -430,6 +432,9 @@ export default function LeafletMap({
   showOilDrillingLocations = false,
   showHeartDiseaseMortality = false,
   showAirQuality = false,
+  showDams = false,
+  selectedDamHazard = "all",
+  selectedDamYear = "all",
   showGroundwaterLevels = false,
   selectedGroundwaterYear = "all",
   showInvasiveSpecies = false,
@@ -506,10 +511,11 @@ export default function LeafletMap({
   showArrestData?: boolean;
 
   showMissingPersonsData?: boolean;
+  missingPersonQ?: string;
+  missingPersonYear?: any;
 
   /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
   showMassShootings?: boolean;
-
   showConsentAgeData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
   showAlprCameras?: boolean;
@@ -518,6 +524,9 @@ export default function LeafletMap({
   showOilDrillingLocations?: boolean;
   showHeartDiseaseMortality?: boolean;
   showAirQuality?: boolean;
+  showDams?: boolean;
+  selectedDamHazard?: string;
+  selectedDamYear?: string;
   showGroundwaterLevels?: boolean;
   selectedGroundwaterYear: string;
   showInvasiveSpecies?: boolean;
@@ -2358,6 +2367,15 @@ export default function LeafletMap({
             setLoading={setLoading}
             timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
+          />
+        )}
+
+        {/* Dams */}
+        {showDams && (
+          <DamMarkers
+            setLoading={setLoading}
+            selectedHazard={selectedDamHazard}
+            selectedYear={selectedDamYear}
           />
         )}
 
