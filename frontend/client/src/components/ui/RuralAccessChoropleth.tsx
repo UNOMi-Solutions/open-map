@@ -205,7 +205,7 @@ const RuralAccessChoropleth = ({
     const legend = new L.Control({ position: "bottomright" });
     legend.onAdd = () => {
       const div = L.DomUtil.create("div", "choropleth-info choropleth-legend");
-      // keeps clicks and scrolls on the dropdown from moving the map 
+      // keeps clicks and scrolls on the dropdown from moving the map
       L.DomEvent.disableClickPropagation(div);
       L.DomEvent.disableScrollPropagation(div);
 

@@ -130,6 +130,7 @@ export const NavigationMenuSection = ({
 
   const environmentItems: LayerOption[] = [
     { id: "oil-spills", label: "Oil Spills" },
+    { id: "oil-drilling-locations", label: "Oil Drilling Locations" },
     { id: "data-centers", label: "Data Centers" },
     { id: "national-risk-index", label: "Disaster Risk (FEMA NRI)" },
     { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },

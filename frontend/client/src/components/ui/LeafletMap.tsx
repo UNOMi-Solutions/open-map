@@ -46,6 +46,7 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
+import OilDrillingMarkers from "./OilDrillingMarkers";
 import MassShootingMarkers from "./MassShootingMarkers";
 import HeartDiseaseMortalityMarkers from "./HeartDiseaseMortalityMarkers";
 // Air quality data
@@ -139,7 +140,7 @@ function isState(
 }
 
 /*This object is utilized by getStateCode function.  When a user clicks on a state
-on the map, the function gets the state code so the backend route can fetch the 
+on the map, the function gets the state code so the backend route can fetch the
 corresponding data for that state*/
 const STATE_NAME_TO_CODE: Record<string, string> = {
   Alabama: "AL", Alaska: "AK", Arizona: "AZ", Arkansas: "AR", California: "CA", Colorado: "CO",
@@ -322,14 +323,14 @@ function geometryContainsPoint(
   point: [number, number]
 ): boolean {
   if (!geometry) return false;
-  
+
   // Turf expects [lng, lat] format for points
   const turfPoint = turf.point([point[0], point[1]]);
-  
+
   try {
     // Convert geometry to Turf feature
     const feature = turf.feature(geometry);
-    
+
     // Use Turf's booleanPointInPolygon for accurate point-in-polygon testing
     // Cast to any to handle all geometry types (Turf handles this internally)
     return turf.booleanPointInPolygon(turfPoint, feature as any, {
@@ -403,6 +404,7 @@ export default function LeafletMap({
 
   /*toggle environmental information */
   showOilSpills = false,
+  showOilDrillingLocations = false,
   showHeartDiseaseMortality = false,
   showAirQuality = false,
   showNoisePollution = false,
@@ -462,7 +464,7 @@ export default function LeafletMap({
 
   showPoliceKillingData?: boolean;
   showPoliceShootings?: boolean;
-  
+
   showMurderData?: boolean;
   murderCategory?: string;
   murderAttribute?: string;
@@ -480,6 +482,7 @@ export default function LeafletMap({
   showAlprCameras?: boolean;
   alprFlockOnly?: boolean;
   showOilSpills?: boolean;
+  showOilDrillingLocations?: boolean;
   showHeartDiseaseMortality?: boolean;
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
@@ -488,7 +491,7 @@ export default function LeafletMap({
   showBreastCancerIncidence?: boolean;
   ruralAccessYear?: number;
   onRuralAccessYearChange?: (year: number) => void;
-  
+
   showWasteTreatmentDisposal?: boolean;
   showEarthquakes?: boolean;
   earthquakeMinMagnitude?: number | null;
@@ -2111,7 +2114,7 @@ export default function LeafletMap({
       });
     });
   };
-  
+
   return (
     <div
       ref={mapSectionRef}
@@ -2222,6 +2225,9 @@ export default function LeafletMap({
             onDateRangeChange={onDateRangeChange}
           />
         )}
+        {showOilDrillingLocations && (
+          <OilDrillingMarkers setLoading={setLoading} />
+        )}
         {showHeartDiseaseMortality && (
           <HeartDiseaseMortalityMarkers setLoading={setLoading} />
        )}
@@ -2322,7 +2328,7 @@ export default function LeafletMap({
             onYearChange={onRuralAccessYearChange}
             setLoading={setLoading}
           />
-        )}        
+        )}
         {showBreastCancerIncidence && (
         <BreastCancerIncidenceChoropleth />
         )}
@@ -2368,7 +2374,7 @@ export default function LeafletMap({
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
 
-        <MissingPersons 
+        <MissingPersons
           showMissingPersonsData={showMissingPersonsData}
           timelineRange={markerTimelineRange}
           onDateRangeChange={onDateRangeChange}
