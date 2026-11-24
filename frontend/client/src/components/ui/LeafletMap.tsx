@@ -53,6 +53,8 @@ import HeartDiseaseMortalityMarkers from "./HeartDiseaseMortalityMarkers";
 import AirQualityMarkers from "./AirQualityMarkers";
 
 //Groundwater levels data
+import PovertyRateLayer from "./PovertyRateLayer";
+import MedianIncomeLayer from "./MedianIncomeLayer";
 import GroundwaterMarkers from "./GroundwaterMarkers";
 
 //Invasive Species data
@@ -435,6 +437,10 @@ export default function LeafletMap({
   showDams = false,
   selectedDamHazard = "all",
   selectedDamYear = "all",
+  showPovertyRate = false,
+  socialPovertyYear = 2024,
+  showMedianIncome = false,
+  medianIncomeYear = 2024,
   showGroundwaterLevels = false,
   selectedGroundwaterYear = "all",
   showInvasiveSpecies = false,
@@ -527,6 +533,10 @@ export default function LeafletMap({
   showDams?: boolean;
   selectedDamHazard?: string;
   selectedDamYear?: string;
+  showPovertyRate?: boolean;
+  socialPovertyYear?: number;
+  showMedianIncome?: boolean;
+  medianIncomeYear?: number;
   showGroundwaterLevels?: boolean;
   selectedGroundwaterYear: string;
   showInvasiveSpecies?: boolean;
@@ -2396,6 +2406,22 @@ export default function LeafletMap({
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
+        )}
+
+        {/* Social: Poverty Rate */}
+        {showPovertyRate && (
+          <PovertyRateLayer
+            year={socialPovertyYear}
+            setLoading={setLoading}
+          />
+        )}
+
+        {/* Social: Median Household Income */}
+        {showMedianIncome && (
+          <MedianIncomeLayer
+            year={medianIncomeYear}
+            setLoading={setLoading}
+          />
         )}
 
         {/* Groundwater levels */}

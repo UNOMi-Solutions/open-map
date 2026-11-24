@@ -58,6 +58,10 @@ interface NavigationMenuSectionProps {
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
 
+  socialPovertyYear: number;
+  onSocialPovertyYearChange: (year: number) => void;
+  medianIncomeYear: number;
+  onMedianIncomeYearChange: (year: number) => void;
   selectedDamHazard: string;
   onSelectedDamHazardChange: (hazard: string) => void;
   selectedDamYear: string;
@@ -121,6 +125,10 @@ export const NavigationMenuSection = ({
   selectedLayers = [],
   onLayerToggle,
 
+  socialPovertyYear,
+  onSocialPovertyYearChange,
+  medianIncomeYear,
+  onMedianIncomeYearChange,
   selectedDamHazard,
   onSelectedDamHazardChange,
   selectedDamYear,
@@ -533,6 +541,8 @@ export const NavigationMenuSection = ({
       id: "most-racist",
       label: "SPLC hate & antigovernment groups (by state HQ)",
     },
+    { id: "poverty-rate", label: "Poverty Rate" },
+    { id: "median-income", label: "Median Household Income" },
   ];
 
   // Census category items
@@ -1093,7 +1103,8 @@ export const NavigationMenuSection = ({
               </div>
 
               {socialMapItems.map((item) => (
-                <div key={item.id} className="mt-2 flex items-center">
+                <div key={item.id} className="mt-2">
+                  <div className="flex items-center">
                   <Checkbox
                     id={`social-${item.id}`}
                     checked={selectedLayers.includes(item.id)}
@@ -1108,6 +1119,45 @@ export const NavigationMenuSection = ({
                   >
                     {item.label}
                   </label>
+                </div>
+
+                  {item.id === "poverty-rate" &&
+                    selectedLayers.includes("poverty-rate") && (
+                      <div className="ml-8 mt-2">
+                        <label htmlFor="social-poverty-year" className="text-white text-xs mr-2">
+                          Year:
+                        </label>
+                        <select
+                          id="social-poverty-year"
+                          value={socialPovertyYear}
+                          onChange={(e) => onSocialPovertyYearChange(Number(e.target.value))}
+                          className="bg-slate-800 text-white rounded p-1 text-xs"
+                        >
+                          {[2025, ...Array.from({ length: 25 }, (_, i) => 2024 - i), 1999, 1998, 1997, 1995, 1993, 1989].map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                  {item.id === "median-income" &&
+                    selectedLayers.includes("median-income") && (
+                      <div className="ml-8 mt-2">
+                        <label htmlFor="median-income-year" className="text-white text-xs mr-2">
+                          Year:
+                        </label>
+                        <select
+                          id="median-income-year"
+                          value={medianIncomeYear}
+                          onChange={(e) => onMedianIncomeYearChange(Number(e.target.value))}
+                          className="bg-slate-800 text-white rounded p-1 text-xs"
+                        >
+                          {[2025, ...Array.from({length: 25}, (_, i) => 2024 - i), 1999, 1998, 1997, 1995, 1993, 1989].map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                 </div>
               ))}
             </div>

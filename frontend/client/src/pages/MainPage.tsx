@@ -264,6 +264,8 @@ export default function MainPage() {
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   // Dams filters
+  const [socialPovertyYear, setSocialPovertyYear] = useState<number>(2024);
+  const [medianIncomeYear, setMedianIncomeYear] = useState<number>(2024);
   const [selectedDamHazard, setSelectedDamHazard] = useState<string>("all");
   const [selectedDamYear, setSelectedDamYear] = useState<string>("all");
   const [selectedInvasiveYear, setSelectedInvasiveYear] = useState<string>("all");
@@ -1158,6 +1160,10 @@ export default function MainPage() {
                     return id ? Number(id.slice("dr-cat:".length)) : null;
                   })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showPovertyRate={selectedLayers.includes("poverty-rate")}
+                  socialPovertyYear={socialPovertyYear}
+                  showMedianIncome={selectedLayers.includes("median-income")}
+                  medianIncomeYear={medianIncomeYear}
                   showDams={selectedLayers.includes("dams")}
                   selectedDamHazard={selectedDamHazard}
                   selectedDamYear={selectedDamYear}
@@ -1329,6 +1335,10 @@ export default function MainPage() {
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
                   selectedDamHazard={selectedDamHazard}
+                  socialPovertyYear={socialPovertyYear}
+                  onSocialPovertyYearChange={setSocialPovertyYear}
+                  medianIncomeYear={medianIncomeYear}
+                  onMedianIncomeYearChange={setMedianIncomeYear}
                   onSelectedDamHazardChange={setSelectedDamHazard}
                   selectedDamYear={selectedDamYear}
                   onSelectedDamYearChange={setSelectedDamYear}
