@@ -14,8 +14,14 @@ import {
   HouseDistrictPartyMode,
 } from "@/components/ui/LeafletMap";
 
-import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
+import {
+  INCIDENT_MENU_ID,
+  INCIDENT_TYPE_IDS,
+  PATH_INCIDENT_LAYERS,
+  POINT_INCIDENT_LAYERS,
+  STORM_INCIDENT_LAYERS,
+} from "@/lib/disaster-incidents";
 
 interface NavigationMenuSectionProps {
   searchQuery: string;
@@ -28,10 +34,6 @@ interface NavigationMenuSectionProps {
 
   showPoliceKillingData: boolean;
   onTogglePoliceKillingData: () => void;
-  PoliceKillingQ: PoliceKillingQKey;
-  onPoliceKillingQChange: (value: PoliceKillingQKey) => void;
-  PoliceKillingYear: number;
-  onPoliceKillingYearChange: (value: number) => void;
 
   showMurderData: boolean;
   murderCategory: string;
@@ -48,10 +50,6 @@ interface NavigationMenuSectionProps {
 
   showMissingPersonsData: boolean;
   onToggleMissingPersonsData: () => void;
-  missingPersonQ: string;
-  onMissingPersonQChange: (value: string) => void;
-  missingPersonYear: number;
-  onMissingPersonYearChange: (value: number) => void;
 
   showConsentAgeData: boolean;
   onToggleConsentAgeData: () => void;
@@ -61,6 +59,10 @@ interface NavigationMenuSectionProps {
   onSelectedGroundwaterYearChange: (year: string) => void;
   selectedInvasiveYear: string;
   onSelectedInvasiveYearChange: (year: string) => void;
+  povertyYear: number | null;
+  povertyLatestYear: number | null;
+  povertyAvailableYears: number[];
+  onPovertyYearChange: (year: number | null) => void;
   selectedAgeGroupId: string | null;
   onSelectedAgeGroupChange: (ageGroupId: string | null) => void;
   selectedRaceCensusId: string;
@@ -86,10 +88,6 @@ export const NavigationMenuSection = ({
 
   showPoliceKillingData,
   onTogglePoliceKillingData,
-  PoliceKillingQ,
-  onPoliceKillingQChange,
-  PoliceKillingYear,
-  onPoliceKillingYearChange,
 
   showMurderData,
   murderCategory,
@@ -106,10 +104,6 @@ export const NavigationMenuSection = ({
 
   showMissingPersonsData,
   onToggleMissingPersonsData,
-  missingPersonQ,
-  onMissingPersonQChange,
-  missingPersonYear,
-  onMissingPersonYearChange,
 
   showConsentAgeData,
   onToggleConsentAgeData,
@@ -119,6 +113,10 @@ export const NavigationMenuSection = ({
   onSelectedGroundwaterYearChange,
   selectedInvasiveYear,
   onSelectedInvasiveYearChange,
+  povertyYear,
+  povertyLatestYear,
+  povertyAvailableYears,
+  onPovertyYearChange,
   selectedAgeGroupId,
   onSelectedAgeGroupChange,
   selectedRaceCensusId,
@@ -131,18 +129,36 @@ export const NavigationMenuSection = ({
   onHouseDistrictPartyModeChange,
   onResetAllFilters,
 }: NavigationMenuSectionProps): JSX.Element => {
-  // Category data for Environment section
-  const environmentItems = [
+  type LayerOption = { id: string; label: string };
+  type SubFilter = { heading: string; options: LayerOption[] };
+
+  const environmentItems: LayerOption[] = [
     { id: "oil-spills", label: "Oil Spills" },
     { id: "data-centers", label: "Data Centers" },
-    { id: "natural-disaster-incidents", label: "Natural Disaster Incidents" },
-    { id: "air-quality", label: "Air Quality" },
-    { id: "pollen-risk", label: "Pollen Risk"},
-    { id: "groundwater-levels", label: "Groundwater Levels" },
+    { id: "national-risk-index", label: "Disaster Risk (FEMA NRI)" },
+    { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    { id: "groundwater-levels", label: "Groundwater Levels" },
+    { id: "invasive-species-group", label: "Invasive Species" },
+    { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
+    
     // { id: "toxic-spills", label: "Toxic Spills" },
     // { id: "toxic-area", label: "Toxic Area" },
+  ];
+
+  const incidentTypeItems: LayerOption[] = [
+    ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
+    
+    // { id: "toxic-spills", label: "Toxic Spills" },
+    // { id: "toxic-area", label: "Toxic Area" },
+  ];
+
+  // Category data for Transportation section
+  const transportationItems = [
+    { id: "rural-access", label: "Rural Access to Intercity Transportation" },
   ];
 
   // Sub-filters for Natural Disaster Incidents (matches backend incident types)
@@ -165,6 +181,241 @@ export const NavigationMenuSection = ({
     { id: "nd-type:Biological", label: "Biological" },
     { id: "nd-type:Other", label: "Other" },
   ];
+
+  const incidentMenuOpen =
+    selectedLayers.includes(INCIDENT_MENU_ID) ||
+    selectedLayers.some((id) => INCIDENT_TYPE_IDS.has(id));
+
+  const nationalRiskIndexHazards: LayerOption[] = [
+    { id: "nri-hz:AVLN", label: "Avalanche" },
+    { id: "nri-hz:CFLD", label: "Coastal Flooding" },
+    { id: "nri-hz:CWAV", label: "Cold Wave" },
+    { id: "nri-hz:DRGT", label: "Drought" },
+    { id: "nri-hz:ERQK", label: "Earthquake" },
+    { id: "nri-hz:HAIL", label: "Hail" },
+    { id: "nri-hz:HWAV", label: "Heat Wave" },
+    { id: "nri-hz:HRCN", label: "Hurricane" },
+    { id: "nri-hz:ISTM", label: "Ice Storm" },
+    { id: "nri-hz:IFLD", label: "Inland Flooding" },
+    { id: "nri-hz:LNDS", label: "Landslide" },
+    { id: "nri-hz:LTNG", label: "Lightning" },
+    { id: "nri-hz:SWND", label: "Strong Wind" },
+    { id: "nri-hz:TRND", label: "Tornado" },
+    { id: "nri-hz:TSUN", label: "Tsunami" },
+    { id: "nri-hz:VLCN", label: "Volcanic Activity" },
+    { id: "nri-hz:WFIR", label: "Wildfire" },
+    { id: "nri-hz:WNTW", label: "Winter Weather" },
+  ];
+
+  const earthquakeMagnitudeFilters: LayerOption[] = [
+    { id: "eq-mag:3", label: "M3+" },
+    { id: "eq-mag:4", label: "M4+" },
+    { id: "eq-mag:5", label: "M5+" },
+  ];
+
+  const volcanoAlertFilters: LayerOption[] = [
+    { id: "vo-alert:ADVISORY", label: "Advisory+" },
+    { id: "vo-alert:WATCH", label: "Watch+" },
+    { id: "vo-alert:WARNING", label: "Warning" },
+  ];
+
+  const wildfireAcreFilters: LayerOption[] = [
+    { id: "wf-acres:1000", label: "1K+ acres" },
+    { id: "wf-acres:10000", label: "10K+ acres" },
+    { id: "wf-acres:100000", label: "100K+ acres" },
+  ];
+
+  const droughtCategoryFilters: LayerOption[] = [
+    { id: "dr-cat:0", label: "D0 Abnormally Dry+" },
+    { id: "dr-cat:1", label: "D1 Moderate+" },
+    { id: "dr-cat:2", label: "D2 Severe+" },
+    { id: "dr-cat:3", label: "D3 Extreme+" },
+    { id: "dr-cat:4", label: "D4 Exceptional" },
+  ];
+
+  const environmentSubFilters: Record<string, SubFilter> = {
+    "national-risk-index": { heading: "Filter by hazard:", options: nationalRiskIndexHazards },
+    earthquakes: { heading: "Minimum magnitude:", options: earthquakeMagnitudeFilters },
+    volcanoes: { heading: "Minimum alert:", options: volcanoAlertFilters },
+    wildfires: { heading: "Minimum size:", options: wildfireAcreFilters },
+    drought: { heading: "Drought category:", options: droughtCategoryFilters },
+  };
+
+  const renderSubFilters = (itemId: string, subFilters: Record<string, SubFilter>) =>
+    subFilters[itemId] && selectedLayers.includes(itemId) ? (
+      <div className="ml-6 mt-2 mb-2">
+        <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+          {subFilters[itemId].heading}
+        </span>
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
+          {subFilters[itemId].options.map((sub) => (
+            <div key={sub.id} className="flex items-center mt-0.5">
+              <Checkbox
+                id={sub.id}
+                className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                checked={selectedLayers.includes(sub.id)}
+                onCheckedChange={(checked) => onLayerToggle?.(sub.id, checked === true)}
+              />
+              <label
+                htmlFor={sub.id}
+                className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+              >
+                {sub.label}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null;
+
+  const renderLayerList = (items: LayerOption[], subFilters: Record<string, SubFilter>) => (
+    <div className="ml-4">
+      {items.map((item) =>
+        item.id === INCIDENT_MENU_ID ? (
+          <div key={item.id}>
+            <div className="flex items-center mt-1.5">
+              <Checkbox
+                id={item.id}
+                className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                checked={incidentMenuOpen}
+                onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
+              />
+              <label
+                htmlFor={item.id}
+                className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+              >
+                {item.label}
+              </label>
+            </div>
+            {incidentMenuOpen && (
+              <div className="ml-6 mt-2 mb-2">
+                <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                  Choose a type to show on the map:
+                </span>
+                {incidentTypeItems.map((type) => (
+                  <div key={type.id}>
+                    <div className="flex items-center mt-1">
+                      <Checkbox
+                        id={type.id}
+                        className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                        checked={selectedLayers.includes(type.id)}
+                        onCheckedChange={(checked) => onLayerToggle?.(type.id, checked === true)}
+                      />
+                      <label
+                        htmlFor={type.id}
+                        className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+                      >
+                        {type.label}
+                      </label>
+                    </div>
+                    {renderSubFilters(type.id, subFilters)}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div key={item.id}>
+            <div className="flex items-center mt-1.5">
+              <Checkbox
+                id={item.id}
+                className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                checked={selectedLayers.includes(item.id)}
+                onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
+              />
+              <label
+                htmlFor={item.id}
+                className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+              >
+                {item.label}
+              </label>
+            </div>
+            {item.id === "groundwater-levels" &&
+              selectedLayers.includes("groundwater-levels") && (
+                <div className="ml-6 mt-2 mb-2">
+                  <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                    Year:
+                  </span>
+                  <select
+                    value={selectedGroundwaterYear}
+                    onChange={(e) =>
+                      onSelectedGroundwaterYearChange(e.target.value)
+                    }
+                    className="bg-white text-black text-[11px] rounded px-2 py-1"
+                  >
+                    <option value="all">All Years</option>
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1970 + 1 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+            {item.id === "invasive-species-group" &&
+              selectedLayers.includes("invasive-species-group") && (
+                <div className="ml-6 mt-2 mb-2">
+                  <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                    Year:
+                  </span>
+
+                  <select
+                    value={selectedInvasiveYear}
+                    onChange={(e) =>
+                      onSelectedInvasiveYearChange(e.target.value)
+                    }
+                    className="bg-white text-black text-[11px] rounded px-2 py-1 mb-2"
+                  >
+                    <option value="all">All Years</option>
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1970 + 1 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+
+                  {[
+                    ["invasive-species", "Aquatic"],
+                    ["invasive-plants", "Plants"],
+                    ["invasive-insects", "Insects"],
+                    ["invasive-reptiles", "Reptiles"],
+                    ["invasive-birds", "Birds"],
+                    ["invasive-amphibians", "Amphibians"],
+                    ["invasive-mammals", "Mammals"],
+                  ].map(([id, label]) => (
+                    <div key={id} className="flex items-center mt-1.5">
+                      <Checkbox
+                        id={id}
+                        className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                        checked={selectedLayers.includes(id)}
+                        onCheckedChange={(checked) =>
+                          onLayerToggle?.(id, checked === true)
+                        }
+                      />
+                      <label
+                        htmlFor={id}
+                        className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+                      >
+                        {label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            {renderSubFilters(item.id, subFilters)}
+          </div>
+        ),
+      )}
+    </div>
+  );
 
   // Health category items (checkbox state via selectedLayers; map layers not wired yet)
   const healthItems = [
@@ -248,8 +499,8 @@ export const NavigationMenuSection = ({
     // { id: "mayors", label: "Mayors" },
     { id: "house", label: "House of Representatives" },
     // { id: "supreme-court", label: "Supreme Court" },
-    { id: "president", label: "President" },
-    { id: "vice-president", label: "Vice President" },
+    // { id: "president", label: "President" },
+    // { id: "vice-president", label: "Vice President" },
     // { id: "governors", label: "Governors" },
     { id: "gerrymandering", label: "Jerry Mandering" },
     { id: "red-blue-district", label: "Red/Blue district (House of Representatives)" },
@@ -274,7 +525,6 @@ export const NavigationMenuSection = ({
   // Collapsed categories
   const collapsedCategories = [
     // { id: "crime", label: "Crime" },
-    { id: "police", label: "Police" },
     { id: "health", label: "Health" },
     { id: "economics", label: "Economics" },
     { id: "social", label: "Social" },
@@ -402,255 +652,39 @@ export const NavigationMenuSection = ({
             </div>
           </AccordionTrigger>
           <AccordionContent className="pt-0 pb-0">
+            {renderLayerList(environmentItems, environmentSubFilters)}
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="transportation" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Transportation
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
             <div className="ml-4">
-              {environmentItems.map((item) => (
-                <div key={item.id}>
-                  <div className="flex items-center mt-1.5">
-                    <Checkbox
-                      id={item.id}
-                      className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                      checked={selectedLayers.includes(item.id)}
-                      onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
-                    />
-                    <label
-                      htmlFor={item.id}
-                      className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
-                    >
-                      {item.label}
-                    </label>
-                  </div>
-
-                  {item.id === "groundwater-levels" &&
-                    selectedLayers.includes("groundwater-levels") && (
-                      <div className="ml-8 mt-2 mb-2">
-                        <label className="text-white text-[12px] font-normal [font-family:'Futura PT'] mr-2">
-                          Year:
-                        </label>
-
-                        <select
-                          value={selectedGroundwaterYear}
-                          onChange={(e) =>
-                            onSelectedGroundwaterYearChange(e.target.value)
-                          }
-                          className="bg-white text-black text-[12px] rounded px-2 py-1"
-                        >
-                          <option value="all">All Years</option>
-
-                          {Array.from(
-                            { length: new Date().getFullYear() - 1970 + 1 },
-                            (_, i) => new Date().getFullYear() - i
-                          ).map((year) => (
-                            <option key={year} value={year}>
-                              {year}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )} 
-
-                  {/* Sub-filters for Natural Disaster Incidents – show only when layer is enabled */}
-                  {item.id === "natural-disaster-incidents" && selectedLayers.includes("natural-disaster-incidents") && (
-                    <div className="ml-6 mt-2 mb-2">
-                      <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
-                        Filter by type:
-                      </span>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1">
-                        {naturalDisasterIncidentTypes.map((sub) => (
-                          <div key={sub.id} className="flex items-center mt-0.5">
-                            <Checkbox
-                              id={sub.id}
-                              className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
-                              checked={selectedLayers.includes(sub.id)}
-                              onCheckedChange={(checked) => onLayerToggle?.(sub.id, checked === true)}
-                            />
-                            <label
-                              htmlFor={sub.id}
-                              className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
-                            >
-                              {sub.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+              {transportationItems.map((item) => (
+                <div key={item.id} className="flex items-center mt-1.5">
+                  <Checkbox
+                    id={item.id}
+                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                    checked={selectedLayers.includes(item.id)}
+                    onCheckedChange={(checked) => onLayerToggle?.(item.id, checked === true)}
+                  />
+                  <label
+                    htmlFor={item.id}
+                    className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                  >
+                    {item.label}
+                  </label>
                 </div>
               ))}
-
-                    
-                    {/* new Invasive Species block here */}
-                    <div className="mt-3">
-                      <div className="flex items-center mt-1.5">
-                        <Checkbox
-                          id="invasive-species-group"
-                          className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                          checked={selectedLayers.includes("invasive-species-group")}
-                          onCheckedChange={(checked) =>
-                            onLayerToggle?.("invasive-species-group", checked === true)
-                          }
-                        />
-
-                        <label
-                          htmlFor="invasive-species-group"
-                          className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
-                        >
-                          Invasive Species
-                        </label>
-                      </div>
-                      {selectedLayers.includes("invasive-species-group") && (
-                        <div className="ml-4 mt-1.5">
-
-                          <div className="ml-8 mt-2 mb-2">
-                            <label className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
-                              Year:
-                            </label>
-
-                            <select
-                              value={selectedInvasiveYear}
-                              onChange={(e) =>
-                                onSelectedInvasiveYearChange(e.target.value)
-                              }
-                              className="bg-white text-black text-[11px] rounded px-2 py-1"
-                            >
-                              <option value="all">All Years</option>
-
-                              {Array.from(
-                                { length: new Date().getFullYear() - 1970 + 1 },
-                                (_, i) => new Date().getFullYear() - i
-                              ).map((year) => (
-                                <option key={year} value={year}>
-                                  {year}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                        <div className="flex items-center">
-                          <Checkbox
-                            id="invasive-species"
-                            className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                            checked={selectedLayers.includes("invasive-species")}
-                            onCheckedChange={(checked) =>
-                              onLayerToggle?.("invasive-species", checked === true)
-                            }
-                          />
-                          <label
-                            htmlFor="invasive-species"
-                            className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
-                          >
-                            Aquatic
-                          </label>
-                        </div>
-
-                        <div className="flex items-center mt-1.5">
-                          <Checkbox
-                            id="invasive-plants"
-                            className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                            checked={selectedLayers.includes("invasive-plants")}
-                            onCheckedChange={(checked) =>
-                              onLayerToggle?.("invasive-plants", checked === true)
-                            }
-                          />
-                          <label
-                            htmlFor="invasive-plants"
-                            className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
-                          >
-                            Plants
-                          </label>
-                        </div>
-
-                          <div className="flex items-center mt-1.5">
-                            <Checkbox
-                              id="invasive-insects"
-                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                              checked={selectedLayers.includes("invasive-insects")}
-                              onCheckedChange={(checked) =>
-                                onLayerToggle?.("invasive-insects", checked === true)
-                              }
-                            />
-                            <label
-                              htmlFor="invasive-insects"
-                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
-                            >
-                              Insects
-                            </label>
-                          </div>
-
-                          <div className="flex items-center mt-1.5">
-                            <Checkbox
-                              id="invasive-reptiles"
-                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                              checked={selectedLayers.includes("invasive-reptiles")}
-                              onCheckedChange={(checked) =>
-                                onLayerToggle?.("invasive-reptiles", checked === true)
-                              }
-                            />
-                            <label
-                              htmlFor="invasive-reptiles"
-                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
-                            >
-                              Reptiles
-                            </label>
-                          </div>
-
-                          <div className="flex items-center mt-1.5">
-                            <Checkbox
-                              id="invasive-birds"
-                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                              checked={selectedLayers.includes("invasive-birds")}
-                              onCheckedChange={(checked) =>
-                                onLayerToggle?.("invasive-birds", checked === true)
-                              }
-                            />
-                            <label
-                              htmlFor="invasive-birds"
-                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
-                            >
-                              Birds
-                            </label>
-                          </div>
-
-                          <div className="flex items-center mt-1.5">
-                            <Checkbox
-                              id="invasive-amphibians"
-                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                              checked={selectedLayers.includes("invasive-amphibians")}
-                              onCheckedChange={(checked) =>
-                                onLayerToggle?.("invasive-amphibians", checked === true)
-                              }
-                            />
-                            <label
-                              htmlFor="invasive-amphibians"
-                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
-                            >
-                              Amphibians
-                            </label>
-                          </div>
-
-                          <div className="flex items-center mt-1.5">
-                            <Checkbox
-                              id="invasive-mammals"
-                              className="h-4 w-4 border border-white/70 bg-white/10 text-white"
-                              checked={selectedLayers.includes("invasive-mammals")}
-                              onCheckedChange={(checked) =>
-                                onLayerToggle?.("invasive-mammals", checked === true)
-                              }
-                            />
-                            <label
-                              htmlFor="invasive-mammals"
-                              className="ml-[15px] text-white text-[12px] font-normal [font-family:'Futura PT']"
-                            >
-                              Mammals
-                            </label>
-                          </div>
-
-                      </div>
-                      )}
-                    </div>
             </div>
           </AccordionContent>
         </AccordionItem>
-
         <AccordionItem value="crime" className="border-0">
           <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
             <div className="flex items-center">
@@ -803,72 +837,30 @@ export const NavigationMenuSection = ({
                   Missing Persons
                 </label>
               </div>
-
-              {
-                (showMissingPersonsData) ? <>
-                  <label className="mt-2 block text-[11px] text-white/80">
-                    Year
-                  </label>
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) => {
-                      onMissingPersonYearChange(
-                        parseInt(e.target.value)
-                      )
-                    }}
-                  >
-                    {Array.from(
-                      { length: new Date().getFullYear() - 2013 + 1 },
-                      (_, i) => {
-                        const year = 2013 + i;
-                        return (
-                          <option className="text-black" key={year} value={year}>
-                            {year}
-                          </option>
-                        );
-                      }
-                    ).reverse()}
-                  </select>
-              
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) =>
-                      onMissingPersonQChange(
-                        e.target.value as unknown as string
-                      )
-                    }
-                  >
-                      <option className="text-black" value="Q1">
-                        Q1
-                      </option>
-                      <option className="text-black" value="Q2">
-                        Q2
-                      </option>
-                      <option className="text-black" value="Q3">
-                        Q3
-                      </option>
-                      <option className="text-black" value="Q4">
-                        Q4
-                      </option>
-                  </select>
-                </> : null
-                
-              }    
-
             </div>
-          </AccordionContent>
-        </AccordionItem>
 
-        <AccordionItem value="police" className="border-0">
-          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
-            <div className="flex items-center">
-              <ChevronRight className="accordion-arrow" />
-              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
-                Police
-              </span>
+            <div className="ml-4">
+              <div className="mt-2 flex items-center">
+                <Checkbox
+                  id="mass-shootings"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={selectedLayers.includes("mass-shootings")}
+                  onCheckedChange={(checked) => onLayerToggle?.("mass-shootings", checked === true)}
+                />
+                <label
+                  htmlFor="mass-shootings"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]"
+                >
+                  Mass Shootings
+                </label>
+              </div>
+              {selectedLayers.includes("mass-shootings") && (
+                <p className="ml-[31px] mt-1 text-[11px] text-white/60 leading-snug [font-family:'Futura PT']">
+                  Gun Violence Archive, 2014–present. 4+ victims shot. Circle size = total victims.
+                </p>
+              )}
             </div>
-          </AccordionTrigger>
-          <AccordionContent className="pt-0 pb-0">
+
             <div className="ml-4">
               <div className="mt-2 flex items-center left">
                 <Checkbox
@@ -876,7 +868,7 @@ export const NavigationMenuSection = ({
                   checked={showPoliceKillingData}
                   onCheckedChange={() =>
                     onTogglePoliceKillingData()
-                  }                  
+                  }
                   className="h-4 w-4 border border-white/70 bg-white/10 text-white"
                 />
 
@@ -884,56 +876,118 @@ export const NavigationMenuSection = ({
                   Police Killings
                 </span>
               </div>
-              {
-                (showPoliceKillingData) ? <>
-                  <label className="mt-2 block text-[11px] text-white/80">
-                    Year
-                  </label>
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) => {
-                      onPoliceKillingYearChange(
-                        e.target.value as unknown as number
-                      )
-                    }}
-                  >
-                    {Array.from(
-                      { length: new Date().getFullYear() - 2013 + 1 },
-                      (_, i) => {
-                        const year = 2013 + i;
-                        return (
-                          <option className="text-black" key={year} value={year}>
-                            {year}
-                          </option>
-                        );
-                      }
-                    ).reverse()}
-                  </select>
               
-                  <select
-                    className="w-full max-w-[240px] rounded-md border border-white/70 bg-white/10 text-white text-[11px] px-2 py-1 mt-2 outline-none focus:ring-1 focus:ring-white/40 focus:border-white"
-                    onChange={(e) =>
-                      onPoliceKillingQChange(
-                        e.target.value as PoliceKillingQKey
-                      )
-                    }
+            </div>
+
+            <div className="ml-4">
+              <div className="mt-2 flex items-center">
+                <Checkbox
+                  id="alpr-cameras"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={selectedLayers.includes("alpr-cameras")}
+                  onCheckedChange={(checked) => onLayerToggle?.("alpr-cameras", checked === true)}
+                />
+                <label
+                  htmlFor="alpr-cameras"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]"
+                >
+                  ALPR Cameras
+                </label>
+              </div>
+              {selectedLayers.includes("alpr-cameras") && (
+                <p className="ml-[31px] mt-1 text-[11px] text-white/60 leading-snug [font-family:'Futura PT']">
+                  OpenStreetMap. Visible at any zoom.
+                </p>
+              )}
+              {selectedLayers.includes("alpr-cameras") && (
+                <div className="ml-6 mt-2 mb-1 flex items-center">
+                  <Checkbox
+                    id="alpr-flock-only"
+                    className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                    checked={selectedLayers.includes("alpr-flock-only")}
+                    onCheckedChange={(checked) => onLayerToggle?.("alpr-flock-only", checked === true)}
+                  />
+                  <label
+                    htmlFor="alpr-flock-only"
+                    className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
                   >
-                      <option className="text-black" value="Q1">
-                        Q1
-                      </option>
-                      <option className="text-black" value="Q2">
-                        Q2
-                      </option>
-                      <option className="text-black" value="Q3">
-                        Q3
-                      </option>
-                      <option className="text-black" value="Q4">
-                        Q4
-                      </option>
-                  </select>
-                </> : null
-                
-              }
+                    Flock Safety only
+                  </label>
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="economy" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Economic
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            <div className="ml-4">
+              {[
+                { id: "income", label: "Annual Income" },
+                { id: "high-income-households", label: "High-income households ($200k+)" },
+                { id: "unemployment", label: "Unemployment Rate" },
+                { id: "poverty-stricken-areas", label: "Poverty-Stricken Areas" },
+              ].map((item) => (
+                <div key={item.id} className="mt-1.5">
+                  <div className="flex items-center">
+                    <Checkbox
+                      id={`economy-${item.id}`}
+                      className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                      checked={selectedLayers.includes(item.id)}
+                      onCheckedChange={(checked) =>
+                        onLayerToggle?.(item.id, checked === true)
+                      }
+                    />
+                    <label
+                      htmlFor={`economy-${item.id}`}
+                      className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                    >
+                      {item.label}
+                    </label>
+                  </div>
+                  {item.id === "poverty-stricken-areas"
+                    && selectedLayers.includes(item.id) && (
+                      <label className="ml-[31px] mt-2 flex items-center gap-2 text-[11px] text-white/80">
+                        Estimate year
+                        <select
+                          aria-label="Poverty estimate year"
+                          className="rounded-md border border-white/70 bg-[#0c1022] text-white text-[11px] px-2 py-1 outline-none focus:ring-1 focus:ring-white/40"
+                          value={povertyYear == null ? "latest" : String(povertyYear)}
+                          onChange={(event) => {
+                            onPovertyYearChange(
+                              event.target.value === "latest"
+                                ? null
+                                : Number(event.target.value),
+                            );
+                          }}
+                        >
+                          <option value="latest">
+                            {povertyLatestYear == null
+                              ? "Most recent"
+                              : `Most recent (${povertyLatestYear})`}
+                          </option>
+                          {povertyAvailableYears
+                            .filter((year) => year !== povertyLatestYear)
+                            .slice()
+                            .sort((a, b) => b - a)
+                            .map((year) => (
+                              <option className="text-black" key={year} value={year}>
+                                {year}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                    )}
+                </div>
+              ))}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1095,65 +1149,44 @@ export const NavigationMenuSection = ({
                   </div>
                 )
               )}
-              {politicalLayerIds.includes("senators") && (
-                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  Two pins per state (current senators). Refresh data:{" "}
-                  <code className="text-white/80">npm run data:senators</code>
-                </p>
-              )}
               {politicalLayerIds.includes("governors") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per state (current governor); green ring on the map. Refresh:{" "}
                   <code className="text-white/80">npm run data:governors</code>
                 </p>
               )}
-              {(politicalLayerIds.includes("president") ||
-                politicalLayerIds.includes("vice-president")) && (
-                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  President — gold ring (White House). Vice President — silver-blue ring
-                  (Observatory Circle). Turn each on separately or together; president pin
-                  stacks above when they overlap. Refresh:{" "}
-                  <code className="text-white/80">npm run data:president</code>
-                </p>
-              )}
               {politicalLayerIds.includes("red-blue-district") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   119th district shapes (Census); party from current voting members where
                   listed. Vacant seats and non‑R/D members appear slate when &quot;Both&quot;
-                  is selected. Refresh:{" "}
-                  <code className="text-white/80">npm run data:congressional</code>
+                  is selected.
                 </p>
               )}
               {politicalLayerIds.includes("house") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per voting district (50 states only; 435 apportioned seats).
                   Non-voting delegates (D.C., territories) are excluded. Pin count can
-                  be under 435 when seats are vacant. Refresh:{" "}
-                  <code className="text-white/80">npm run data:congressional</code>
+                  be under 435 when seats are vacant.
                 </p>
               )}
               {politicalLayerIds.includes("supreme-court") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Nine current justices; pins use birth/home-state anchors (spread when
                   multiple share a state). Chief Justice stacks above when overlapping.
-                  Refresh roster:{" "}
-                  <code className="text-white/80">npm run data:scotus</code>
                 </p>
               )}
               {politicalLayerIds.includes("gerrymandering") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Every current U.S. House district (119th Congress) is drawn from Census shapes
                   so you can see full boundaries—not counties. Violet pins mark educational case
-                  spots; tap a district or pin for details. Cases:{" "}
-                  <code className="text-white/80">client/public/data/gerrymandering.json</code>
+                  spots; tap a district or pin for details.
                 </p>
               )}
               {politicalLayerIds.includes("electoral-college") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   2024 presidential results by state: red/blue by statewide winner, darker =
                   larger margin (CNN-style). Contiguous 48 + DC; Alaska &amp; Hawaii same
-                  data in corner insets. Data:{" "}
-                  <code className="text-white/80">client/public/data/electoral-college-2024.json</code>
+                  data in corner insets.
                 </p>
               )}
               {unwiredPoliticalSelections.length > 0 && (

@@ -123,6 +123,7 @@ const RuralAccessChoropleth = ({
   }, []);
 
   // BTS attributes through caching system
+  // BTS attributes through caching system (one-shot, so the global loading bar fits)
   useEffect(() => {
     let cancelled = false;
     setLoading?.(true);

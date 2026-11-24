@@ -24,6 +24,7 @@ import type {
 import type { Topology } from "topojson-specification";
 import { feature as topojsonFeature } from "topojson-client";
 import { patchLeafletIcons } from "@/lib/leaflet-icons";
+import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
 import type { TimelineDateRange } from "@/lib/timeline";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
 import {
@@ -44,6 +45,7 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
+import MassShootingMarkers from "./MassShootingMarkers";
 
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
@@ -81,7 +83,7 @@ import InvasiveBirdMarkers from "./InvasiveBirdMarkers";
 import InvasiveAmphibianMarkers from "./InvasiveAmphibianMarkers";
 
 // Police Killing Data
-import PoliceKillings, { PoliceKillingQKey } from "./PoliceKillings";
+import PoliceKillings from "./PoliceKillings";
 
 // State markers with arrest data
 import ArrestMarkers from "./ArrestMarkers";
@@ -111,9 +113,7 @@ import CongressionalDistrictsLayer from "./CongressionalDistrictsLayer";
 import HouseMarkers from "./HouseMarkers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
-
-// Flock cameras
-import FlockMarkers from "./FlockMarkers";
+import AlprCameraMarkers from "./AlprCameraMarkers";
 
 /** Fixed bounds for the contiguous 48 states (CONUS) */
 const CONUS_BOUNDS: LatLngBoundsExpression = [
@@ -253,6 +253,20 @@ const CHOROPLETH_COLORS = [
   "#ed8936", // lighter orange
 ];
 
+const INCOME_CHOROPLETH_COLORS = [
+  "#93c5fd", // lowest: blue
+  "#60a5fa",
+  "#38bdf8",
+  "#2dd4bf",
+  "#34d399",
+  "#22c55e",
+  "#166534", // highest: green
+];
+
+const ACS_ECONOMIC_FIRST_YEAR = 2009;
+const ACS_ECONOMIC_LATEST_YEAR = 2024;
+const UNEMPLOYMENT_FIRST_YEAR = 1990;
+
 /** Approximate US national totals (2020 Census) for choropleth summary popup */
 const US_TOTAL_POPULATION = 331_900_000;
 const US_NATIONAL_CHOROPLETH_TOTALS: Partial<
@@ -391,8 +405,6 @@ export default function LeafletMap({
   showChoropleth = true,
 
   showPoliceKillingData = false,
-  PoliceKillingQ = "Q1",
-  PoliceKillingYear = 2026,
 
   showMurderData = false,
   murderCategory = "victim",
@@ -402,10 +414,12 @@ export default function LeafletMap({
   showArrestData = false,
 
   showMissingPersonsData = false,
-  missingPersonQ = "Q1",
-  missingPersonYear = 2026,
+
+  showMassShootings = false,
 
   showConsentAgeData = false,
+  showAlprCameras = false,
+  alprFlockOnly = false,
 
   /*toggle environmental information */
   showOilSpills = false,  
@@ -448,9 +462,15 @@ export default function LeafletMap({
   politicalLayerIds = [],
   houseDistrictPartyMode = "both",
   healthMetricId = null,
+  showIncome = false,
+  showHighIncomeHouseholds = false,
+  showUnemployment = false,
+  showPoverty = false,
+  povertyYear = null,
+  povertyAvailableYears = [],
+  onPovertyDataMeta,
   showSplcHateMap = false,
 
-  showFlockData = false,
   timelineRange = null,
   onDateRangeChange,
   timelineVisible = false,
@@ -469,8 +489,6 @@ export default function LeafletMap({
   showChoropleth?: boolean;
 
   showPoliceKillingData?: boolean;
-  PoliceKillingQ?: PoliceKillingQKey;
-  PoliceKillingYear?: any;
   
   showMurderData?: boolean;
   murderCategory?: string;
@@ -480,10 +498,14 @@ export default function LeafletMap({
   showArrestData?: boolean;
 
   showMissingPersonsData?: boolean;
-  missingPersonQ?: string;
-  missingPersonYear?: any;
+
+  /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
+  showMassShootings?: boolean;
 
   showConsentAgeData?: boolean;
+  /** OpenStreetMap ALPR cameras, including Flock Safety */
+  showAlprCameras?: boolean;
+  alprFlockOnly?: boolean;
   showOilSpills?: boolean;
   showAirQuality?: boolean;
   showGroundwaterLevels?: boolean;
@@ -531,10 +553,16 @@ export default function LeafletMap({
   houseDistrictPartyMode?: HouseDistrictPartyMode;
   /** CDC PLACES county health layer id from sidebar */
   healthMetricId?: string | null;
+  showIncome?: boolean;
+  showHighIncomeHouseholds?: boolean;
+  showUnemployment?: boolean;
+  showPoverty?: boolean;
+  povertyYear?: number | null;
+  povertyAvailableYears?: number[];
+  onPovertyDataMeta?: (latestYear: number, availableYears: number[]) => void;
   /** SPLC Hate Map-derived group counts by state GEOID (/data/splc/by-state-geoid.json) */
   showSplcHateMap?: boolean;
 
-  showFlockData?: boolean;
   timelineRange?: TimelineDateRange | null;
   onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
   timelineVisible?: boolean;
@@ -546,11 +574,16 @@ export default function LeafletMap({
   const choroplethVisible =
     (showChoropleth ||
       Boolean(healthMetricId) ||
+      showIncome ||
+      showHighIncomeHouseholds ||
+      showUnemployment ||
+      showPoverty ||
       showSplcHateMap) &&
     !politicalDistrictsActive;
 
   const mapRef = useRef<LeafletMapType | null>(null);
   const choroplethLayerRef = useRef<L.GeoJSON | null>(null);
+  const choroplethRendererRef = useRef<L.Renderer | null>(null);
   const choroplethLegendRef = useRef<L.Control | null>(null);
   const choroplethLegendElRef = useRef<HTMLDivElement | null>(null);
   const suppressClear = useRef(false);
@@ -591,6 +624,22 @@ export default function LeafletMap({
   const [healthValueByGeoid, setHealthValueByGeoid] = useState<
     Record<string, number> | null
   >(null);
+  const [incomeValueByGeoid, setIncomeValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [incomeDataYear, setIncomeDataYear] = useState<number | null>(null);
+  const [highIncomeHouseholdValueByGeoid, setHighIncomeHouseholdValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [highIncomeDataYear, setHighIncomeDataYear] = useState<number | null>(null);
+  const [unemploymentValueByGeoid, setUnemploymentValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [povertyValueByGeoid, setPovertyValueByGeoid] = useState<
+    Record<string, number> | null
+  >(null);
+  const [povertyDataYear, setPovertyDataYear] = useState<number | null>(null);
+  const [unemploymentPeriod, setUnemploymentPeriod] = useState<string | null>(null);
   const [splcByStateGeoid, setSplcByStateGeoid] = useState<
     Record<string, number> | null
   >(null);
@@ -607,6 +656,10 @@ export default function LeafletMap({
   const [zoom, setZoom] = useState<number | null>(null);
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
+  const markerTimelineRange =
+    showIncome || showHighIncomeHouseholds || showUnemployment || showPoverty
+    ? null
+    : timelineRange;
 
   // Bradyn, again this line is breaking my pins
   // Please let me know if it is required but I will comment
@@ -941,6 +994,316 @@ export default function LeafletMap({
     };
   }, [healthMetricId]);
 
+  /** ACS median household income by county GEOID for the selected timeline year */
+  useEffect(() => {
+    if (!showIncome) {
+      setIncomeValueByGeoid(null);
+      setIncomeDataYear(null);
+      onDateRangeChange("economics-income", null);
+      return;
+    }
+    onDateRangeChange("economics-income", {
+      start: Date.UTC(ACS_ECONOMIC_FIRST_YEAR, 0, 1),
+      end: Date.UTC(ACS_ECONOMIC_LATEST_YEAR, 11, 31),
+    });
+    const timelineYear = timelineRange
+      ? new Date(timelineRange.end).getUTCFullYear()
+      : ACS_ECONOMIC_LATEST_YEAR;
+    const year = Math.min(timelineYear, ACS_ECONOMIC_LATEST_YEAR);
+    const timelineStartYear = timelineRange
+      ? new Date(timelineRange.start).getUTCFullYear()
+      : ACS_ECONOMIC_FIRST_YEAR;
+    if (year < ACS_ECONOMIC_FIRST_YEAR || timelineStartYear > year) {
+      setIncomeValueByGeoid(null);
+      setIncomeDataYear(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    cachedApiGet<{
+      year: number;
+      counties: Array<{ geoid: string; medianHouseholdIncome: number }>;
+    }>(
+      `economics:incomeByCounty:${year}`,
+      `/api/v1/economics/incomeByCounty?year=${year}`,
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const values: Record<string, number> = {};
+        for (const county of response.counties ?? []) {
+          if (Number.isFinite(county.medianHouseholdIncome)) {
+            values[String(county.geoid).padStart(5, "0")] = county.medianHouseholdIncome;
+          }
+        }
+        setIncomeValueByGeoid(values);
+        setIncomeDataYear(response.year);
+      })
+      .catch((error) => {
+        console.error("County income data load failed:", error);
+        if (!cancelled) {
+          setIncomeValueByGeoid(null);
+          setIncomeDataYear(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [showIncome, timelineRange, onDateRangeChange]);
+
+  /** ACS share of households earning $200,000 or more for the selected year */
+  useEffect(() => {
+    if (!showHighIncomeHouseholds) {
+      setHighIncomeHouseholdValueByGeoid(null);
+      setHighIncomeDataYear(null);
+      onDateRangeChange("economics-high-income", null);
+      return;
+    }
+    onDateRangeChange("economics-high-income", {
+      start: Date.UTC(ACS_ECONOMIC_FIRST_YEAR, 0, 1),
+      end: Date.UTC(ACS_ECONOMIC_LATEST_YEAR, 11, 31),
+    });
+    const timelineYear = timelineRange
+      ? new Date(timelineRange.end).getUTCFullYear()
+      : ACS_ECONOMIC_LATEST_YEAR;
+    const year = Math.min(timelineYear, ACS_ECONOMIC_LATEST_YEAR);
+    const timelineStartYear = timelineRange
+      ? new Date(timelineRange.start).getUTCFullYear()
+      : ACS_ECONOMIC_FIRST_YEAR;
+    if (year < ACS_ECONOMIC_FIRST_YEAR || timelineStartYear > year) {
+      setHighIncomeHouseholdValueByGeoid(null);
+      setHighIncomeDataYear(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    cachedApiGet<{
+      year: number;
+      counties: Array<{ geoid: string; highIncomeHouseholdPercent: number }>;
+    }>(
+      `economics:highIncomeHouseholdsByCounty:${year}`,
+      `/api/v1/economics/highIncomeHouseholdsByCounty?year=${year}`,
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const values: Record<string, number> = {};
+        for (const county of response.counties ?? []) {
+          if (Number.isFinite(county.highIncomeHouseholdPercent)) {
+            values[String(county.geoid).padStart(5, "0")] = county.highIncomeHouseholdPercent;
+          }
+        }
+        setHighIncomeHouseholdValueByGeoid(values);
+        setHighIncomeDataYear(response.year);
+      })
+      .catch((error) => {
+        console.error("County high-income household data load failed:", error);
+        if (!cancelled) {
+          setHighIncomeHouseholdValueByGeoid(null);
+          setHighIncomeDataYear(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [showHighIncomeHouseholds, timelineRange, onDateRangeChange]);
+
+  /** BLS Local Area Unemployment Statistics for the selected timeline month */
+  useEffect(() => {
+    if (!showUnemployment) {
+      setUnemploymentValueByGeoid(null);
+      setUnemploymentPeriod(null);
+      onDateRangeChange("economics-unemployment", null);
+      return;
+    }
+    const now = new Date();
+    const latestMonth = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1);
+    onDateRangeChange("economics-unemployment", {
+      start: Date.UTC(UNEMPLOYMENT_FIRST_YEAR, 0, 1),
+      end: latestMonth,
+    });
+    const selectedDate = new Date(
+      Math.min(timelineRange?.end ?? now.getTime(), now.getTime()),
+    );
+    const selectedYear = selectedDate.getUTCFullYear();
+    if (selectedYear != null && selectedYear < UNEMPLOYMENT_FIRST_YEAR) {
+      setUnemploymentValueByGeoid(null);
+      setUnemploymentPeriod(null);
+      return;
+    }
+    const selectedMonth =
+      `${selectedYear}-${String(selectedDate.getUTCMonth() + 1).padStart(2, "0")}`;
+    const query = `?start=${selectedYear}-01&end=${selectedMonth}`;
+
+    let cancelled = false;
+    setLoading(true);
+    cachedApiGet<{
+      year?: number;
+      periodName?: string;
+      counties?: Array<{ geoid: string; unemploymentRate: number }>;
+      months?: Array<{
+        year: number;
+        period: string;
+        periodName: string;
+        counties: Array<{ geoid: string; unemploymentRate: number }>;
+      }>;
+    }>(
+      `economics:unemploymentByCounty:${selectedMonth}`,
+      `/api/v1/economics/unemploymentByCounty${query}`,
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const availableMonths = response.months?.filter((month) => month.counties.length);
+        const selectedPeriod = availableMonths?.[availableMonths.length - 1];
+        if (selectedPeriod && timelineRange) {
+          const rangeStart = new Date(timelineRange.start);
+          const rangeStartMonth = rangeStart.getUTCFullYear() * 100
+            + rangeStart.getUTCMonth() + 1;
+          const monthNumber = Number(selectedPeriod.period.slice(1));
+          if (selectedPeriod.year * 100 + monthNumber < rangeStartMonth) {
+            setUnemploymentValueByGeoid(null);
+            setUnemploymentPeriod(null);
+            return;
+          }
+        }
+        const counties = selectedPeriod?.counties ?? response.counties ?? [];
+        if (!counties.length) {
+          setUnemploymentValueByGeoid(null);
+          setUnemploymentPeriod(null);
+          return;
+        }
+        const values: Record<string, number> = {};
+        for (const county of counties) {
+          if (Number.isFinite(county.unemploymentRate)) {
+            values[String(county.geoid).padStart(5, "0")] = county.unemploymentRate;
+          }
+        }
+        setUnemploymentValueByGeoid(values);
+        setUnemploymentPeriod(
+          selectedPeriod
+            ? `${selectedPeriod.periodName} ${selectedPeriod.year}`
+            : `${response.periodName} ${response.year}`,
+        );
+      })
+      .catch((error) => {
+        console.error("County unemployment data load failed:", error);
+        if (!cancelled) {
+          setUnemploymentValueByGeoid(null);
+          setUnemploymentPeriod(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [showUnemployment, timelineRange, onDateRangeChange]);
+
+  /** Latest available SAIPE poverty rate by county GEOID */
+  useEffect(() => {
+    if (!showPoverty) {
+      setPovertyValueByGeoid(null);
+      setPovertyDataYear(null);
+      onDateRangeChange("economics-poverty", null);
+      return;
+    }
+    if (povertyAvailableYears.length) {
+      onDateRangeChange("economics-poverty", {
+        start: Date.UTC(Math.min(...povertyAvailableYears), 0, 1),
+        end: Date.UTC(Math.max(...povertyAvailableYears), 11, 31),
+      });
+    }
+    const timelineYear = timelineRange
+      ? new Date(timelineRange.end).getUTCFullYear()
+      : null;
+    const timelineStartYear = timelineRange
+      ? new Date(timelineRange.start).getUTCFullYear()
+      : null;
+    const timelinePovertyYear = timelineYear == null
+      ? null
+      : povertyAvailableYears
+        .filter((year) =>
+          year <= timelineYear && (timelineStartYear == null || year >= timelineStartYear)
+        )
+        .sort((a, b) => b - a)[0] ?? null;
+    const selectedPovertyYear = povertyYear ?? timelinePovertyYear;
+    if (
+      timelineYear != null
+      && povertyAvailableYears.length > 0
+      && selectedPovertyYear == null
+    ) {
+      setPovertyValueByGeoid(null);
+      setPovertyDataYear(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    const povertyPath = selectedPovertyYear == null
+      ? "/api/v1/economics/povertyByCounty"
+      : `/api/v1/economics/povertyByCounty?year=${selectedPovertyYear}`;
+    cachedApiGet<{
+      year: number;
+      latestYear: number;
+      availableYears: number[];
+      counties: Array<{ geoid: string; povertyRate: number }>;
+    }>(
+      `economics:povertyByCounty:${selectedPovertyYear ?? "latest"}`,
+      povertyPath,
+      CACHE_TTL.ECONOMICS
+    )
+      .then((response) => {
+        if (cancelled) return;
+        const values: Record<string, number> = {};
+        for (const county of response.counties ?? []) {
+          if (Number.isFinite(county.povertyRate)) {
+            values[String(county.geoid).padStart(5, "0")] = county.povertyRate;
+          }
+        }
+        setPovertyValueByGeoid(values);
+        setPovertyDataYear(response.year);
+        onDateRangeChange("economics-poverty", {
+          start: Date.UTC(Math.min(...response.availableYears), 0, 1),
+          end: Date.UTC(Math.max(...response.availableYears), 11, 31),
+        });
+        onPovertyDataMeta?.(response.latestYear, response.availableYears);
+      })
+      .catch((error) => {
+        console.error("County poverty data load failed:", error);
+        if (!cancelled) {
+          setPovertyValueByGeoid(null);
+          setPovertyDataYear(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      setLoading(false);
+    };
+  }, [
+    showPoverty,
+    povertyYear,
+    povertyAvailableYears,
+    timelineRange,
+    onPovertyDataMeta,
+    onDateRangeChange,
+  ]);
+
   /** SPLC Hate Map: group totals by state GEOID */
   useEffect(() => {
     if (!showSplcHateMap) {
@@ -1097,6 +1460,10 @@ export default function LeafletMap({
       }
       return {};
     }
+    if (showHighIncomeHouseholds) return highIncomeHouseholdValueByGeoid ?? {};
+    if (showUnemployment) return unemploymentValueByGeoid ?? {};
+    if (showPoverty) return povertyValueByGeoid ?? {};
+    if (showIncome) return incomeValueByGeoid ?? {};
     if (healthMetricId) {
       if (
         healthValueByGeoid &&
@@ -1144,6 +1511,14 @@ export default function LeafletMap({
     raceAgeValueByGeoid,
     healthMetricId,
     healthValueByGeoid,
+    showUnemployment,
+    unemploymentValueByGeoid,
+    showPoverty,
+    povertyValueByGeoid,
+    showHighIncomeHouseholds,
+    highIncomeHouseholdValueByGeoid,
+    showIncome,
+    incomeValueByGeoid,
     showSplcHateMap,
     splcByStateGeoid,
   ]);
@@ -1155,8 +1530,9 @@ export default function LeafletMap({
   const activeChoroplethColors = useMemo(() => {
     if (showSplcHateMap) return [...HEALTH_CHOROPLETH_COLORS_NEGATIVE];
     if (healthMetricId) return getHealthChoroplethColors(healthMetricId);
+    if (showIncome || showHighIncomeHouseholds) return INCOME_CHOROPLETH_COLORS;
     return CHOROPLETH_COLORS;
-  }, [healthMetricId, showSplcHateMap]);
+  }, [healthMetricId, showHighIncomeHouseholds, showIncome, showSplcHateMap]);
 
   const choroplethBreaks = useMemo(() => {
     const values = Array.from(choroplethValueByGeoid.values()).sort(
@@ -1187,12 +1563,24 @@ export default function LeafletMap({
       if (value == null || Number.isNaN(value)) return "N/A";
       if (showSplcHateMap)
         return `${Math.round(value)} group${Math.round(value) === 1 ? "" : "s"}`;
+      if (showHighIncomeHouseholds) return `${value.toFixed(1)}%`;
+      if (showUnemployment) return `${value.toFixed(1)}%`;
+      if (showPoverty) return `${value.toFixed(1)}%`;
+      if (showIncome) return `$${Math.round(value).toLocaleString("en-US")}`;
       if (healthMetricId) return `${value.toFixed(1)}%`;
       const unit = CHOROPLETH_METRICS[choroplethMetric].unit;
       if (unit === "%") return `${value.toFixed(1)}%`;
       return `${value.toFixed(1)} yrs`;
     },
-    [choroplethMetric, healthMetricId, showSplcHateMap]
+    [
+      choroplethMetric,
+      healthMetricId,
+      showHighIncomeHouseholds,
+      showIncome,
+      showPoverty,
+      showSplcHateMap,
+      showUnemployment,
+    ]
   );
 
   const choroplethStyle = useCallback(
@@ -1205,6 +1593,7 @@ export default function LeafletMap({
         color: "#0a3b55",
         weight: 0.35,
         opacity: 0.45,
+        renderer: choroplethRendererRef.current ?? undefined,
       } as L.PathOptions;
     },
     [choroplethValueByGeoid, getChoroplethColor]
@@ -1214,7 +1603,11 @@ export default function LeafletMap({
     if (!choroplethBreaks.length) return [];
     const fmt = showSplcHateMap
       ? (n: number) => String(Math.round(n))
-      : (n: number) => n.toFixed(1);
+      : showHighIncomeHouseholds || showUnemployment || showPoverty
+        ? (n: number) => n.toFixed(1)
+        : showIncome
+          ? (n: number) => `$${Math.round(n).toLocaleString("en-US")}`
+          : (n: number) => n.toFixed(1);
     const items: Array<{ color: string; label: string }> = [];
     for (let i = 0; i < choroplethBreaks.length; i++) {
       const lower = i === 0 ? 0 : choroplethBreaks[i - 1];
@@ -1226,7 +1619,15 @@ export default function LeafletMap({
       items.push({ color: activeChoroplethColors[i], label });
     }
     return items;
-  }, [choroplethBreaks, activeChoroplethColors, showSplcHateMap]);
+  }, [
+    choroplethBreaks,
+    activeChoroplethColors,
+    showHighIncomeHouseholds,
+    showIncome,
+    showPoverty,
+    showSplcHateMap,
+    showUnemployment,
+  ]);
 
   /** National-level summary for the current choropleth metric (for popup above legend) */
   const nationalSummary = useMemo(() => {
@@ -1238,6 +1639,7 @@ export default function LeafletMap({
       const total = values.reduce((a, b) => a + b, 0);
       return { splcTotal: total, isSplc: true as const };
     }
+    if (showIncome || showHighIncomeHouseholds || showUnemployment || showPoverty) return null;
     if (healthMetricId) {
       const values = Array.from(choroplethValueByGeoid.values()).filter(
         (v) => typeof v === "number" && !Number.isNaN(v)
@@ -1274,6 +1676,9 @@ export default function LeafletMap({
     selectedSexId,
     choroplethValueByGeoid,
     healthMetricId,
+    showIncome,
+    showPoverty,
+    showUnemployment,
     showSplcHateMap,
   ]);
 
@@ -1359,7 +1764,15 @@ export default function LeafletMap({
       const isSexView = selectedSexId != null;
       const metricLabel = showSplcHateMap
         ? SPLC_HATE_MAP_LABEL
-        : healthMetricId
+        : showHighIncomeHouseholds
+          ? `Households earning $200,000 or more (${highIncomeDataYear ?? "most recent"})`
+          : showUnemployment
+            ? `County Unemployment Rate${unemploymentPeriod ? ` (${unemploymentPeriod})` : ""}`
+          : showPoverty
+          ? `County Poverty Rate (${povertyYear ?? povertyDataYear ?? "most recent"})`
+          : showIncome
+          ? `Median Household Income (${incomeDataYear ?? "most recent"})`
+          : healthMetricId
           ? getHealthLayerMeta(healthMetricId).label
           : isAgeOnly
             ? `Percent population aged ${
@@ -1386,6 +1799,15 @@ export default function LeafletMap({
       selectedAgeGroupId,
       selectedSexId,
       healthMetricId,
+      showHighIncomeHouseholds,
+      showIncome,
+      incomeDataYear,
+      highIncomeDataYear,
+      showPoverty,
+      povertyYear,
+      povertyDataYear,
+      showUnemployment,
+      unemploymentPeriod,
       showSplcHateMap,
     ]
   );
@@ -1428,7 +1850,17 @@ export default function LeafletMap({
     if (!map || !mapReady || !choroplethFeatureCollection) return;
 
     if (!choroplethLayerRef.current) {
+      let pane = map.getPane("choroplethPane");
+      if (!pane) {
+        pane = map.createPane("choroplethPane");
+        pane.style.zIndex = "350";
+      }
+      const renderer = choroplethRendererRef.current ?? L.canvas({
+        pane: "choroplethPane",
+      });
+      choroplethRendererRef.current = renderer;
       choroplethLayerRef.current = L.geoJSON(choroplethFeatureCollection, {
+        pane: "choroplethPane",
         style: choroplethStyle,
         onEachFeature: onEachChoroplethFeature,
       });
@@ -1491,7 +1923,15 @@ export default function LeafletMap({
     const isSexView = selectedSexId != null;
     const metricLabel = showSplcHateMap
       ? SPLC_HATE_MAP_LABEL
-      : healthMetricId
+      : showHighIncomeHouseholds
+        ? `Households earning $200,000 or more (${highIncomeDataYear ?? "most recent"})`
+        : showUnemployment
+          ? `County Unemployment Rate${unemploymentPeriod ? ` (${unemploymentPeriod})` : ""}`
+        : showPoverty
+        ? `County Poverty Rate (${povertyYear ?? povertyDataYear ?? "most recent"})`
+        : showIncome
+        ? `Median Household Income (${incomeDataYear ?? "most recent"})`
+        : healthMetricId
         ? getHealthLayerMeta(healthMetricId).label
         : isAgeOnly
           ? `Percent population aged ${
@@ -1503,6 +1943,10 @@ export default function LeafletMap({
             : CHOROPLETH_METRICS[choroplethMetric].label;
     const unit = showSplcHateMap
       ? ""
+      : showUnemployment || showHighIncomeHouseholds || showPoverty
+        ? "%"
+      : showIncome
+        ? ""
       : healthMetricId
         ? "%"
         : isSexView
@@ -1522,6 +1966,20 @@ export default function LeafletMap({
           }</span>`
       )
       .join("");
+    const formatRangeBound = (value: number) => {
+      if (showSplcHateMap) return String(Math.round(value));
+      if (showHighIncomeHouseholds || showUnemployment || showPoverty) {
+        return `${value.toFixed(1)}%`;
+      }
+      if (showIncome) return `$${Math.round(value).toLocaleString("en-US")}`;
+      return `${value.toFixed(1)}${unit === "%" ? "%" : ""}`;
+    };
+    const rangeBounds = choroplethBreaks.length
+      ? `<div style="display:flex;justify-content:space-between;gap:6px;margin-top:3px;font-size:10px;opacity:0.75;">
+          <span>Min ${formatRangeBound(choroplethBreaks[0])}</span>
+          <span>Max ${formatRangeBound(choroplethBreaks[choroplethBreaks.length - 1])}</span>
+        </div>`
+      : "";
 
     const nationalPopupHtml =
       nationalSummary == null
@@ -1552,13 +2010,22 @@ export default function LeafletMap({
       <div style="font-weight:600;font-size:11px;margin-bottom:4px;opacity:0.9;">${
         showSplcHateMap
           ? "State aggregates (tabular import)"
-          : healthMetricId
+          : showUnemployment
+            ? "BLS Local Area Unemployment Statistics"
+            : showPoverty
+            ? "Census SAIPE county estimates"
+            : showHighIncomeHouseholds
+            ? "ACS 5-year estimates"
+            : showIncome
+            ? "County estimates"
+            : healthMetricId
             ? "County model-based rate"
             : "Total population"
       }</div>
       <div style="font-weight:600;margin-bottom:6px;">${metricLabel}</div>
       <div style="height:8px;border-radius:6px;background:linear-gradient(90deg, ${barStops});"></div>
       <div style="display:flex;justify-content:space-between;gap:6px;margin-top:4px;">${tickLabels}</div>
+      ${rangeBounds}
     `;
   }, [
     choroplethLegendItems,
@@ -1569,6 +2036,15 @@ export default function LeafletMap({
     selectedSexId,
     nationalSummary,
     healthMetricId,
+    showHighIncomeHouseholds,
+    highIncomeDataYear,
+    showIncome,
+    incomeDataYear,
+    showPoverty,
+    povertyYear,
+    povertyDataYear,
+    showUnemployment,
+    unemploymentPeriod,
     activeChoroplethColors,
     showSplcHateMap,
   ]);
@@ -1772,7 +2248,7 @@ export default function LeafletMap({
         {showOilSpills && (
           <OilSpillMarkers
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
@@ -1788,28 +2264,28 @@ export default function LeafletMap({
             title={stormEventCategory}
             categories={[stormEventCategory]}
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
         {showTornadoes && (
           <TornadoPathsLayer
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
         {showDebrisFlow && (
           <DebrisFlowMarkers
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
         {showLandslides && (
           <LandslideMarkers
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
@@ -1818,7 +2294,7 @@ export default function LeafletMap({
           <EarthquakeMarkers
             minMagnitude={earthquakeMinMagnitude}
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
@@ -1826,14 +2302,14 @@ export default function LeafletMap({
           <VolcanoMarkers
             minAlertLevel={volcanoMinAlert}
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
         {showTsunamis && (
           <TsunamiMarkers
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
@@ -1841,7 +2317,7 @@ export default function LeafletMap({
           <WildfireMarkers
             minAcres={wildfireMinAcres}
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
@@ -1849,7 +2325,7 @@ export default function LeafletMap({
           <DroughtLayer
             selectedCategory={droughtCategory}
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
@@ -1858,7 +2334,7 @@ export default function LeafletMap({
         {showAirQuality && (
           <AirQualityMarkers
             setLoading={setLoading}
-            timelineRange={timelineRange}
+            timelineRange={markerTimelineRange}
             onDateRangeChange={onDateRangeChange}
           />
         )}
@@ -1959,26 +2435,31 @@ export default function LeafletMap({
 
         {/* TESTING - Case by case police killings */}
         <PoliceKillings
-          PoliceKillingQ={PoliceKillingQ}
-          PoliceKillingYear={PoliceKillingYear}
           showPoliceKillingData={showPoliceKillingData}
-          timelineRange={timelineRange}
+          timelineRange={markerTimelineRange}
           onDateRangeChange={onDateRangeChange}
         />
+
+        {showAlprCameras && (
+          <AlprCameraMarkers flockOnly={alprFlockOnly} setLoading={setLoading} />
+        )}
 
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
 
-        {/* Flock Camera data */}
-        {showFlockData && <FlockMarkers setLoading={setLoading}></FlockMarkers>}
-
         <MissingPersons 
-          missingPersonQ={missingPersonQ}
-          missingPersonYear={missingPersonYear}
           showMissingPersonsData={showMissingPersonsData}
-          timelineRange={timelineRange}
+          timelineRange={markerTimelineRange}
           onDateRangeChange={onDateRangeChange}
         />
+
+        {showMassShootings && (
+          <MassShootingMarkers
+            setLoading={setLoading}
+            timelineRange={markerTimelineRange}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
 

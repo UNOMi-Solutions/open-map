@@ -8,20 +8,13 @@ import {
   type TimelineDateRange,
 } from "@/lib/timeline";
 
-/* Orange marker icon to distinguish air quality from other markers */
+/* Consistent translucent marker for air quality stations. */
 const AIR_QUALITY_ICON = L.divIcon({
   className: "air-quality-marker",
-  html: `<div style="
-    width: 28px;
-    height: 28px;
-    background: #f59e0b;
-    border: 2px solid #d97706;
-    border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  "></div>`,
-  iconSize: [28, 28],
-  iconAnchor: [14, 28],
-  popupAnchor: [0, -28],
+  html: `<div style="width:100%;height:100%;border-radius:50%;background:rgba(41, 39, 39, 0.45);"></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  popupAnchor: [0, -7],
 });
 
 /* Returned properties from air quality api */
