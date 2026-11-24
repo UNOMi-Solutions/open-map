@@ -29,7 +29,9 @@ let ghgEmissionsCache = null;
 
 // Cache for oil spills data
 let oilSpillsCache = null;
-
+let heartDiseaseMortalityCache = null;
+let heartDiseaseMortalityCacheAt = 0;
+const HEART_DISEASE_MORTALITY_CACHE_MS = 24 * 60 * 60 * 1000;
 
 // Test Command
 router.get('/test', (req, res) => {
@@ -753,6 +755,58 @@ router.get('/earthquakes', async (req, res) => {
     }
 });
 
+// Retrieve earthquake events from the USGS Earthquake Catalog API
+router.get('/earthquakeIncidents', async (req, res) => {
+    try {
+        const response = await axios.get('https://earthquake.usgs.gov/fdsnws/event/1/query', {
+            params: {
+                format: 'geojson',
+                starttime: req.query.starttime || DISASTER_START_DATE,
+                endtime: req.query.endtime || new Date().toISOString(),
+                minmagnitude: req.query.minmagnitude || 2.5,
+                // limits info to US only
+                minlatitude: 18,
+                maxlatitude: 72,
+                minlongitude: -180,
+                maxlongitude: -60,
+                orderby: 'time',
+                limit: 5000
+            }
+        });
+
+        const incidents = (response.data?.features || [])
+            .map((event) => {
+                const coordinates = event.geometry?.coordinates || [];
+                const properties = event.properties || {};
+                const [longitude, latitude, depth] = coordinates;
+
+                return {
+                    id: event.id,
+                    incidentType: 'Earthquake',
+                    declarationTitle: properties.title || 'Earthquake',
+                    incidentBeginDate: properties.time ? new Date(properties.time).toISOString() : null,
+                    latitude,
+                    longitude,
+                    depth,
+                    magnitude: properties.mag,
+                    place: properties.place || null,
+                    url: properties.url || null,
+                    county: null
+                };
+            })
+            .filter((incident) => Number.isFinite(incident.latitude) && Number.isFinite(incident.longitude));
+
+        res.json({
+            source: 'USGS Earthquake Catalog',
+            totalIncidents: incidents.length,
+            incidents
+        });
+    } catch (error) {
+        console.error('Error fetching USGS earthquake data:', error.message);
+        res.status(502).json({ error: 'Unable to fetch earthquake data from the USGS Earthquake Catalog API' });
+    }
+})
+
 // Source: IM3 Open Source Data Center Atlas
 // Data was manually downloaded so check for updates on the website
 const DATACENTER_CSV_PATH = path.join(__dirname, "../datacenter.csv");
@@ -865,6 +919,45 @@ router.get("/noiseTransportation", async (req, res) => {
   }
 });
 
+router.get("/heartDiseaseMortality", async (_req, res) => {
+    try {
+        if (
+            !heartDiseaseMortalityCache ||
+            Date.now() - heartDiseaseMortalityCacheAt > HEART_DISEASE_MORTALITY_CACHE_MS
+        ) {
+            const response = await axios.get(
+                "https://data.cdc.gov/resource/55yu-xksw.json",
+                {
+                    params: {
+                        "$select": "year,locationabbr,locationdesc,data_value,data_value_unit,data_value_type,locationid,y_lat,x_lon,georeference",
+                        "$where": "geographiclevel='County' AND stratification1='Overall' AND stratification2='Overall' AND data_value IS NOT NULL",
+                        "$limit": 50000,
+                    },
+                }
+            );
+
+            if (!Array.isArray(response.data)) {
+                throw new Error("Unexpected CDC API response");
+            }
+
+            heartDiseaseMortalityCache = response.data.filter((row) => {
+                const coordinates = row.georeference?.coordinates;
+                return (
+                    Number.isFinite(Number(row.data_value)) &&
+                    Array.isArray(coordinates) &&
+                    coordinates.length === 2
+                );
+            });
+            heartDiseaseMortalityCacheAt = Date.now();
+        }
+
+        res.json(heartDiseaseMortalityCache);
+    } catch (error) {
+        console.error("[environment/heartDiseaseMortality]", error.message);
+        res.status(502).json({ error: "Failed to fetch heart disease mortality data" });
+    }
+});
+
 let breastCancerIncidenceCache = null;
 let breastCancerIncidenceCacheAt = 0;
 const BREAST_CANCER_INCIDENCE_CACHE_MS = 24 * 60 * 60 * 1000;
@@ -910,4 +1003,5 @@ router.get("/breastCancerIncidence", async (req, res) => {
         });
     }
 });
+
 export default router;
