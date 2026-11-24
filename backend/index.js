@@ -37,7 +37,9 @@ import socialRoutes from "./routes/social.js";
 import stripeRoutes from "./routes/stripe.js";
 import stripeWebhook from "./routes/stripeWebhook.js";
 import profileRoutes from "./routes/profiles.js";
+import transportationRoutes from "./routes/transportation.js";
 import flockRoutes from "./routes/flock.js";
+import { warmAlprCache } from "./lib/alprCameras.js";
 
 // Connect to MongoDB
 connectDB();
@@ -161,7 +163,9 @@ app.use("/api/v1/health", auth, healthRoutes);
 app.use("/api/v1/lawEnforcement", auth, lawEnforcementRoutes);
 app.use("/api/v1/politics", auth, politicsRoutes);
 app.use("/api/v1/social", auth, socialRoutes);
+app.use("/api/v1/transportation", auth, transportationRoutes); // optional key for more frequent requests
 app.use("/api/v1/flock", auth, flockRoutes);
+app.use("/api/v1/transportation", auth, transportationRoutes); // optional key for more frequent requests
 
 // Stripe checkout routes (API-key protected, like the data routes).
 // The webhook is mounted separately above (before JSON parsing).
@@ -186,7 +190,7 @@ app.listen(PORT, () => {
 
   // Build the slowest datasets in the background. Failures are non-fatal: the
   // routes rebuild on demand, and a crash here would take down the container.
-  Promise.allSettled([warmCrimeCache(), warmLawEnforcementCache()]).then((results) => {
+  Promise.allSettled([warmCrimeCache(), warmLawEnforcementCache(), warmAlprCache()]).then((results) => {
     for (const result of results) {
       if (result.status === "rejected") {
         console.warn("[startup] cache warm-up failed:", result.reason?.message);

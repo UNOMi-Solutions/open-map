@@ -11,6 +11,15 @@ import { response, Router } from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getStormEventsSummary, getTornadoes, getDebrisFlows } from "../lib/stormEvents.js";
+import { getNationalRiskIndexSummary } from "../lib/nationalRiskIndex.js";
+import { getWildfires } from "../lib/wildfires.js";
+import { getVolcanoes } from "../lib/volcanoes.js";
+import { getTsunamis } from "../lib/tsunamis.js";
+import { getDroughtSummary } from "../lib/drought.js";
+import { getLandslides } from "../lib/landslides.js";
+
+import { getCached } from "../utils/dataCache.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
@@ -20,8 +29,9 @@ let ghgEmissionsCache = null;
 
 // Cache for oil spills data
 let oilSpillsCache = null;
-
-const DISASTER_START_DATE = '2024-01-01'; // Only fetch disasters since 2024
+let heartDiseaseMortalityCache = null;
+let heartDiseaseMortalityCacheAt = 0;
+const HEART_DISEASE_MORTALITY_CACHE_MS = 24 * 60 * 60 * 1000;
 
 // Test Command
 router.get('/test', (req, res) => {
@@ -86,7 +96,7 @@ router.get('/airQuality', async (req, res) => {
 });
 
 
-// Retrieve green house gas emissions from factories/mines in different industry sectors 
+// Retrieve green house gas emissions from factories/mines in different industry sectors
 router.get("/ghgEmissions", async (req, res) => {
     try {
       const stateCode = (req.query.stateCode || "").toString().trim().toUpperCase();
@@ -97,26 +107,26 @@ router.get("/ghgEmissions", async (req, res) => {
         return res.status(400).json({ error: "Please provide state code" });
       }
         */
-  
+
       // Download + cache if needed
       if (!ghgEmissionsCache) {
         console.log("Downloading and processing GHG emissions data...");
-  
+
         const response = await axios.get(
           "https://www.epa.gov/system/files/other-files/2024-10/2023_data_summary_spreadsheets.zip",
           { responseType: "arraybuffer" }
         );
-  
+
         const unZip = await JSZip.loadAsync(response.data);
         const fileName = Object.keys(unZip.files).find(
           (name) =>
             name.toLowerCase().includes("ghgp_data_2023") && name.endsWith(".xlsx")
         );
-  
+
         if (!fileName) {
           return res.status(404).json({ error: "File not found" });
         }
-  
+
         const bytes = await unZip.files[fileName].async("arraybuffer");
         const workbook = XLSX.read(bytes, { type: "arraybuffer" });
         const sheetName = workbook.SheetNames[0];
@@ -125,11 +135,11 @@ router.get("/ghgEmissions", async (req, res) => {
           header: 1,
           defval: "",
         });
-  
+
         const headerRowIndex = 3;
         const headers = rows[headerRowIndex];
         const dataRows = rows.slice(headerRowIndex + 1);
-  
+
         const jsonData = dataRows.map((row) => {
           const obj = {};
           headers.forEach((h, i) => {
@@ -137,21 +147,21 @@ router.get("/ghgEmissions", async (req, res) => {
           });
           return obj;
         });
-  
+
         ghgEmissionsCache = jsonData;
         console.log("GHG emissions data cached successfully");
       }
-  
-      // Helper to get state abbreviation from a row 
+
+      // Helper to get state abbreviation from a row
       const getRowStateCode = (row) => {
         const fromAbbrev = (row["State abbreviation"] || row["State Abbreviation"] || "").toString().trim().toUpperCase();
         const fromState = (row["State"] || "").toString().trim().toUpperCase();
         return fromAbbrev || fromState;
       };
-  
+
       // Filter rows for this state
       let facilities = ghgEmissionsCache;
-  
+
       // Optional: further filter by facility name if query provided
       if (facilityNameQuery) {
         facilities = facilities.filter((row) => {
@@ -159,11 +169,11 @@ router.get("/ghgEmissions", async (req, res) => {
           return facilityName.includes(facilityNameQuery);
         });
       }
-  
+
       if (facilities.length === 0) {
         return res.status(404).json({ error: "No facilities found for this state" });
       }
-  
+
       // Map to shape expected by GhgEmissionsMarkers.tsx
       const result = facilities.map((row, idx) => ({
         id: row["Facility ID"] || `${stateCode}-${idx}`,
@@ -176,7 +186,7 @@ router.get("/ghgEmissions", async (req, res) => {
         latitude: Number(row["Latitude"]),
         longitude: Number(row["Longitude"]),
       }));
-  
+
       res.json({ ghgEmissions: result });
     } catch (error) {
       console.error(error);
@@ -204,19 +214,19 @@ const facilityCodes = {
 
 // Facility type IDs whose data is updated from 2024+
 const facilityTypeIDs = [
-    1,  // Hazardous Waste Combustion Facilities 
-    3,  // Municipal Solid Waste Landfills 
-    9,  // Publicly Owned Treatment Works 
-    10, // Federally Owned Treatment Works 
-    16, // Electric Arc Furnaces 
-    21, // Commercial Radioactive Waste Disposal Facilities 
-    22, // Federal Radioactive Waste Disposal Facilities 
-    30, // Industrial Waste Landfills 
-    31, // Sewage Sludge Incinerators 
-    34, // Composting 
-    41, // Sewage Treatment Plants 
-    42, // Cement Kilns 
-    43  // Industrial Solid Waste Incineration Units 
+    1,  // Hazardous Waste Combustion Facilities
+    3,  // Municipal Solid Waste Landfills
+    9,  // Publicly Owned Treatment Works
+    10, // Federally Owned Treatment Works
+    16, // Electric Arc Furnaces
+    21, // Commercial Radioactive Waste Disposal Facilities
+    22, // Federal Radioactive Waste Disposal Facilities
+    30, // Industrial Waste Landfills
+    31, // Sewage Sludge Incinerators
+    34, // Composting
+    41, // Sewage Treatment Plants
+    42, // Cement Kilns
+    43  // Industrial Solid Waste Incineration Units
 ]
 
 const US_STATE_ABBREVIATIONS = [
@@ -227,11 +237,11 @@ const US_STATE_ABBREVIATIONS = [
     "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
 ];
 
-// Return information on the various waste sites 
+// Return information on the various waste sites
 router.get('/wasteTreatmentDisposalSites', async(req, res) => {
 
-    try { 
-        const allFacilities = []; 
+    try {
+        const allFacilities = [];
 
         /*
         if (!stateCode) {
@@ -322,7 +332,7 @@ router.get('/coalmines', async(req, res) => {
             "sort[0][column]": "period",
             "sort[0][direction]": "desc",
             api_key: process.env.EIA_API_KEY
-        } 
+        }
     })
 
         // Trim response to only include the requested fields
@@ -338,7 +348,7 @@ router.get('/coalmines', async(req, res) => {
         }))
 
         res.json(trimResponse)
-        
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message })
@@ -347,10 +357,10 @@ router.get('/coalmines', async(req, res) => {
 
 router.get('/oilSpills', async (req, res) => {
     try {
-        // Check if we have data is already downloaded 
+        // Check if we have data is already downloaded
         if (!oilSpillsCache) {
             console.log("Downloading and processing oil spills data...");
-            
+
             const url = "https://incidentnews.noaa.gov/raw/incidents.csv";
 
             // Fetch CSV as text
@@ -423,8 +433,8 @@ router.get('/oilSpills', async (req, res) => {
         const waterSystemsData = response.data;
 
         if (!waterSystemsData || waterSystemsData.length === 0) {
-            return res.status(404).json({ 
-                error: `No active public water systems found${countyName ? ` in ${countyName}, ${stateCode}` : ` in ${stateCode}`}` 
+            return res.status(404).json({
+                error: `No active public water systems found${countyName ? ` in ${countyName}, ${stateCode}` : ` in ${stateCode}`}`
             });
         }
 
@@ -445,7 +455,7 @@ router.get('/oilSpills', async (req, res) => {
         // Process the data to provide clear safety information
         const processedSystems = Object.values(uniqueFacilities).map(system => {
             let violations = system.sdwis_violation || [];
-            
+
             // Sort violations by date (most recent first)
             violations.sort((a, b) => {
                 const dateA = new Date(a.violation_date || 0);
@@ -461,17 +471,17 @@ router.get('/oilSpills', async (req, res) => {
             });
 
             // Get the most recent violation date
-            const mostRecentDate = validViolations.length > 0 && validViolations[0].violation_date 
-                ? new Date(validViolations[0].violation_date) 
+            const mostRecentDate = validViolations.length > 0 && validViolations[0].violation_date
+                ? new Date(validViolations[0].violation_date)
                 : null;
-            
+
             // Categorize violations by type
             // Compliance status codes: 'O' = Open/Active violation, 'K' = Known violation, 'R' = Resolved
-            const activeViolations = validViolations.filter(v => 
+            const activeViolations = validViolations.filter(v =>
                 v.compliance_status_code === 'O' || v.compliance_status_code === 'K'
             );
-            
-            const resolvedViolations = validViolations.filter(v => 
+
+            const resolvedViolations = validViolations.filter(v =>
                 v.compliance_status_code === 'R'
             );
 
@@ -486,15 +496,15 @@ router.get('/oilSpills', async (req, res) => {
             // Determine safety status based on active violations and recent past violations
             let safetyStatus = 'safe';
             let safetyMessage = 'No active violations detected';
-            
+
             if (activeViolations.length > 0) {
                 // Check for health-based violations (more serious)
-                const healthViolations = activeViolations.filter(v => 
-                    v.violation_category_code === 'H' || 
+                const healthViolations = activeViolations.filter(v =>
+                    v.violation_category_code === 'H' ||
                     v.violation_category_code === 'M' ||
                     v.contaminant_code // MCL violations
                 );
-                
+
                 if (healthViolations.length > 0) {
                     safetyStatus = 'unsafe';
                     safetyMessage = `Active health-based violations detected. ${activeViolations.length} total active violation(s)`;
@@ -544,7 +554,7 @@ router.get('/oilSpills', async (req, res) => {
 
         // Calculate overall area safety summary
         const systemsWithViolations = processedSystems.filter(s => s.safetyStatus !== 'safe');
-        const overallStatus = systemsWithViolations.length === 0 ? 'safe' : 
+        const overallStatus = systemsWithViolations.length === 0 ? 'safe' :
                              processedSystems.some(s => s.safetyStatus === 'unsafe') ? 'unsafe' : 'caution';
 
         res.json({
@@ -563,129 +573,237 @@ router.get('/oilSpills', async (req, res) => {
     } catch (err) {
         console.error(err);
         if (err.response) {
-            return res.status(err.response.status || 500).json({ 
-                error: `Failed to fetch drinking water data: ${err.response.statusText || err.message}` 
+            return res.status(err.response.status || 500).json({
+                error: `Failed to fetch drinking water data: ${err.response.statusText || err.message}`
             });
         }
         res.status(500).json({ error: err.message || "Failed to fetch drinking water data" });
-    }  
+    }
 })*/
 
-// Retrieve recent natural disaster incidents (since 2024) for a specific state
-router.get('/naturalDisasterIncidents', async (req, res) => {
+// Source: FEMA National Risk Index, county risk ratings for 18 hazards
+router.get('/nationalRiskIndex', async (req, res) => {
     try {
-        const stateCode = req.query.stateCode.toUpperCase();
-
-        if (!stateCode) {
-            return res.status(400).json({ error: "Missing 'stateCode' query parameter." });
-        }
-
-        // Filter by state and date to minimize payload
-        const baseUrl = 'https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries';
-        const filter = `declarationDate ge '${DISASTER_START_DATE}' and state eq '${stateCode}'`;
-        let allDeclarations = [];
-        let skip = 0;
-        const pageSize = 1000;
-        let hasMore = true;
-
-        // API has many pages of records so we need to go page by page to extract records
-        try {
-            while (hasMore) {
-                const response = await axios.get(baseUrl, {
-                    params: {
-                        $filter: filter,
-                        $top: pageSize,
-                        $skip: skip,
-                        $orderby: 'declarationDate desc',
-                        $format: 'json'
-                    }
-                });
-
-                if (!response.data || !response.data.DisasterDeclarationsSummaries) break;
-
-                // Add declerations to array and check if there are more pages
-                const declarations = response.data.DisasterDeclarationsSummaries;
-                allDeclarations = allDeclarations.concat(declarations);
-                hasMore = declarations.length === pageSize;
-                if (hasMore) skip += pageSize;
-            }
-        } catch (error) {
-            console.error(`Error fetching FEMA disaster declarations:`, error.message);
-            return res.status(500).json({ 
-                error: `Unable to fetch disaster data from FEMA OpenFEMA API`
-            });
-        }
-
-        // Listed incident types 
-        const INCIDENT_TYPES = new Set([
-            'Biological', 'Coastal Storm', 'Dam/Levee Break', 'Earthquake', 'Fire', 'Flood',
-            'Hurricane', 'Mud/Landslide', 'Other', 'Severe Ice Storm', 'Severe Storm', 'Snowstorm',
-            'Straight-Line Winds', 'Tornado', 'Tropical Depression', 'Tropical Storm', 'Winter Storm'
-        ]);
-
-        // Filter incidents by type
-        const filteredIncidents = allDeclarations.filter(incident => {
-            const type = (incident.incidentType || '').trim();
-            return type && INCIDENT_TYPES.has(type);
-        });
-
-        if (filteredIncidents.length === 0) {
-            return res.status(404).json({ 
-                error: `No natural disaster incidents found for state: ${stateCode} since 2024`
-            });
-        }
-
-        // Sort by date (most recent first)
-        filteredIncidents.sort((a, b) => {
-            const dateA = a.declarationDate || a.incidentBeginDate || '';
-            const dateB = b.declarationDate || b.incidentBeginDate || '';
-            return dateB.localeCompare(dateA);
-        });
-
-        // Format the response - only include essential fields
-        const formattedIncidents = filteredIncidents.map(incident => ({
-            incidentType: incident.incidentType,
-            state: incident.state,
-            incidentBeginDate: incident.incidentBeginDate,
-            incidentEndDate: incident.incidentEndDate,
-            declarationTitle: incident.declarationTitle || incident.title,
-            county: incident.designatedArea || null
-        }));
-
-        // Group by incident type for summary
-        const byIncidentType = {};
-        formattedIncidents.forEach(incident => {
-            const type = incident.incidentType || 'Unknown';
-            if (!byIncidentType[type]) {
-                byIncidentType[type] = [];
-            }
-            byIncidentType[type].push(incident);
-        });
-
-        const today = new Date();
-        res.json({
-            state: stateCode,
-            dateRange: {
-                start: DISASTER_START_DATE,
-                end: today.toISOString().split('T')[0],
-                period: "Since 2024"
-            },
-            totalIncidents: formattedIncidents.length,
-            incidentsByType: Object.keys(byIncidentType).map(type => ({
-                type: type,
-                count: byIncidentType[type].length
-            })),
-            incidents: formattedIncidents
-        });
-
+        res.json(await getNationalRiskIndexSummary());
     } catch (error) {
-        console.error(error);
-        if (error.response) {
-            return res.status(error.response.status || 500).json({ 
-                error: "Failed to fetch natural disaster incidents response from api" 
+        console.error('Error fetching FEMA National Risk Index:', error.message);
+        res.status(500).json({ error: 'Unable to fetch National Risk Index data from FEMA' });
+    }
+});
+
+// Source: NOAA NCEI Storm Events Database, county-level event counts since 2024
+router.get('/stormEvents', async (req, res) => {
+    try {
+        res.json(await getStormEventsSummary());
+    } catch (error) {
+        console.error('Error building NOAA storm events summary:', error.message);
+        res.status(500).json({ error: 'Unable to fetch storm events data from NOAA' });
+    }
+});
+
+// Tornado county-path segments from the same Storm Events files (BEGIN/END lat-lon)
+router.get('/tornadoes', async (req, res) => {
+    try {
+        res.json(await getTornadoes());
+    } catch (error) {
+        console.error('Error building NOAA tornado paths:', error.message);
+        res.status(500).json({ error: 'Unable to fetch tornado data from NOAA' });
+    }
+});
+
+// Debris-flow points from the same Storm Events files
+router.get('/debrisFlows', async (req, res) => {
+    try {
+        res.json(await getDebrisFlows());
+    } catch (error) {
+        console.error('Error building NOAA debris flows:', error.message);
+        res.status(500).json({ error: 'Unable to fetch debris flow data from NOAA' });
+    }
+});
+
+// Source: NIFC WFIGS incident locations, wildfires of 100+ acres since 2024
+router.get('/wildfires', async (req, res) => {
+    try {
+        res.json(await getWildfires());
+    } catch (error) {
+        console.error('Error fetching NIFC wildfires:', error.message);
+        res.status(500).json({ error: 'Unable to fetch wildfire data from NIFC' });
+    }
+});
+
+// Source: USGS Volcano Hazards Program (HANS), US volcanoes with current alert levels
+router.get('/volcanoes', async (req, res) => {
+    try {
+        res.json(await getVolcanoes());
+    } catch (error) {
+        console.error('Error fetching USGS volcanoes:', error.message);
+        res.status(500).json({ error: 'Unable to fetch volcano data from USGS' });
+    }
+});
+
+// Source: NOAA NCEI Global Historical Tsunami Database, US runups since 1900
+router.get('/tsunamis', async (req, res) => {
+    try {
+        res.json(await getTsunamis());
+    } catch (error) {
+        console.error('Error fetching NOAA tsunami runups:', error.message);
+        res.status(500).json({ error: 'Unable to fetch tsunami data from NOAA' });
+    }
+});
+
+// Source: USGS Landslide Inventories across the United States v3 (NASA events, fatalities, 2020+)
+router.get('/landslides', async (req, res) => {
+    try {
+        res.json(await getLandslides());
+    } catch (error) {
+        console.error('Error fetching USGS landslides:', error.message);
+        res.status(500).json({ error: 'Unable to fetch landslide data from USGS' });
+    }
+});
+
+// Source: U.S. Drought Monitor, current county drought coverage
+router.get('/drought', async (req, res) => {
+    try {
+        res.json(await getDroughtSummary());
+    } catch (error) {
+        console.error('Error fetching U.S. Drought Monitor data:', error.message);
+        res.status(500).json({ error: 'Unable to fetch drought data from the U.S. Drought Monitor' });
+    }
+});
+
+// Source: USGS Earthquake Hazards Program (FDSN event API), past 365 days, M2.5+
+const EARTHQUAKE_CACHE_MS = 15 * 60 * 1000;
+const EARTHQUAKE_MIN_MAGNITUDE = 2.5;
+let earthquakesCache = null;
+
+const US_STATE_NAMES = [
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
+    'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
+    'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri',
+    'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York',
+    'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',
+    'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+    'West Virginia', 'Wisconsin', 'Wyoming', 'Puerto Rico', 'U.S. Virgin Islands', 'Guam',
+];
+const US_PLACE_SUFFIXES = new Set([
+    ...US_STATE_NAMES.map(name => name.toLowerCase()),
+    ...Object.keys(US_STATE_CENTROIDS).map(code => code.toLowerCase()),
+]);
+const US_STATE_NAME_PATTERN = new RegExp(`\\b(${US_STATE_NAMES.join('|').replace(/\./g, '\\.')})\\b`, 'i');
+
+// The USGS search box is rectangular and also catches Canada, Mexico and the Caribbean, so keep only
+// events whose place text points at a US state/territory (including offshore ones like "off the coast of Oregon")
+function isUSEarthquakePlace(place) {
+    if (!place) return false;
+    const suffix = place.split(', ').pop().trim().toLowerCase();
+    if (US_PLACE_SUFFIXES.has(suffix)) return true;
+    if (/aleutian|gulf of alaska/.test(suffix)) return true;
+    return !place.includes(', ') && US_STATE_NAME_PATTERN.test(place);
+}
+
+router.get('/earthquakes', async (req, res) => {
+    try {
+        if (!earthquakesCache || Date.now() - earthquakesCache.fetchedAt > EARTHQUAKE_CACHE_MS) {
+            const end = new Date();
+            const start = new Date(end.getTime() - 365 * 24 * 60 * 60 * 1000);
+            const response = await axios.get('https://earthquake.usgs.gov/fdsnws/event/1/query', {
+                params: {
+                    format: 'geojson',
+                    eventtype: 'earthquake',
+                    starttime: start.toISOString(),
+                    endtime: end.toISOString(),
+                    minmagnitude: EARTHQUAKE_MIN_MAGNITUDE,
+                    minlatitude: 13,
+                    maxlatitude: 72,
+                    minlongitude: -180,
+                    maxlongitude: -64,
+                    orderby: 'time',
+                },
+                timeout: 60000,
             });
+
+            const earthquakes = (response.data?.features ?? [])
+                .filter(f => f.properties?.type === 'earthquake' && isUSEarthquakePlace(f.properties.place))
+                // Trimmed to keep ~12k events under the frontend's localStorage cache limit;
+                // the event page URL is rebuilt from the id on the client
+                .map(f => ({
+                    id: f.id,
+                    magnitude: f.properties.mag,
+                    place: f.properties.place,
+                    time: f.properties.time,
+                    longitude: Math.round(f.geometry.coordinates[0] * 1000) / 1000,
+                    latitude: Math.round(f.geometry.coordinates[1] * 1000) / 1000,
+                    depthKm: Math.round(f.geometry.coordinates[2] * 10) / 10,
+                    feltReports: f.properties.felt,
+                    tsunami: f.properties.tsunami === 1,
+                }));
+
+            earthquakesCache = {
+                fetchedAt: Date.now(),
+                body: {
+                    dateRange: { start: start.toISOString(), end: end.toISOString() },
+                    minMagnitude: EARTHQUAKE_MIN_MAGNITUDE,
+                    totalEarthquakes: earthquakes.length,
+                    earthquakes,
+                },
+            };
         }
-        res.status(500).json({ error: error.message || "Failed to fetch natural disaster incidents data" });
+        res.json(earthquakesCache.body);
+    } catch (error) {
+        console.error('Error fetching USGS earthquakes:', error.message);
+        res.status(500).json({ error: 'Unable to fetch earthquake data from USGS' });
+    }
+});
+
+// Retrieve earthquake events from the USGS Earthquake Catalog API
+router.get('/earthquakeIncidents', async (req, res) => {
+    try {
+        const response = await axios.get('https://earthquake.usgs.gov/fdsnws/event/1/query', {
+            params: {
+                format: 'geojson',
+                starttime: req.query.starttime || DISASTER_START_DATE,
+                endtime: req.query.endtime || new Date().toISOString(),
+                minmagnitude: req.query.minmagnitude || 2.5,
+                // limits info to US only
+                minlatitude: 18,
+                maxlatitude: 72,
+                minlongitude: -180,
+                maxlongitude: -60,
+                orderby: 'time',
+                limit: 5000
+            }
+        });
+
+        const incidents = (response.data?.features || [])
+            .map((event) => {
+                const coordinates = event.geometry?.coordinates || [];
+                const properties = event.properties || {};
+                const [longitude, latitude, depth] = coordinates;
+
+                return {
+                    id: event.id,
+                    incidentType: 'Earthquake',
+                    declarationTitle: properties.title || 'Earthquake',
+                    incidentBeginDate: properties.time ? new Date(properties.time).toISOString() : null,
+                    latitude,
+                    longitude,
+                    depth,
+                    magnitude: properties.mag,
+                    place: properties.place || null,
+                    url: properties.url || null,
+                    county: null
+                };
+            })
+            .filter((incident) => Number.isFinite(incident.latitude) && Number.isFinite(incident.longitude));
+
+        res.json({
+            source: 'USGS Earthquake Catalog',
+            totalIncidents: incidents.length,
+            incidents
+        });
+    } catch (error) {
+        console.error('Error fetching USGS earthquake data:', error.message);
+        res.status(502).json({ error: 'Unable to fetch earthquake data from the USGS Earthquake Catalog API' });
     }
 })
 
@@ -747,11 +865,150 @@ router.get("/dataCenters", async (req, res) => {
         res.status(500).json({ error: err.message || "Failed to load data center data" });
     }
 })
+
+
+const NOISE_SERVICE_ROOT =
+  "https://tiles.arcgis.com/tiles/xOi1kZaI0eWDREZv/arcgis/rest/services";
+const NOISE_SERVICES = [
+  { region: "CONUS",  name: "NTAD_Noise_2022_CONUS_aviation_rail_road" },
+  { region: "Alaska", name: "NTAD_Noise_2022_Alaska_aviation_rail_road" },
+  { region: "Hawaii", name: "NTAD_Noise_2022_Hawaii_aviation_road" }, // Hawaii has no rail service in 2022.
+];
+const NOISE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Metadata and legend for the BTS National Transportation Noise Map (2022).
+router.get("/noiseTransportation", async (req, res) => {
+  try {
+    // cache holds the service metadata and legend
+    const data = await getCached("environment:noiseTransportation:v2", NOISE_TTL_MS, async () => {
+      const services = await Promise.all(
+        NOISE_SERVICES.map(async ({ region, name }) => {
+          const base = `${NOISE_SERVICE_ROOT}/${name}/MapServer`;
+          const info = (await axios.get(base, { params: { f: "json" } })).data;
+          return {
+            region,
+            sourceUrl: base,
+            tileUrlTemplate: `${base}/tile/{z}/{y}/{x}`,
+            maxNativeZoom: info.maxLOD ?? 12,
+            fullExtent: info.fullExtent,  // Web Mercator
+          };
+        })
+      );
+
+      // Legend comes from the CONUS file. All three services share the same LAeq bands.
+      const conusBase = `${NOISE_SERVICE_ROOT}/${NOISE_SERVICES[0].name}/MapServer`;
+      const legend = (await axios.get(`${conusBase}/legend`, { params: { f: "json" } })).data;
+      const imageLayer = (legend.layers ?? []).find((l) => l.type === "Raster Layer");
+
+      // Per-service fields live in `services`; other fields share base meta data
+      return {
+        attribution: "US DOT BTS National Transportation Noise Map 2022",
+        metric: "24-hour LAeq (dB), modeled",
+        legend: (imageLayer?.legend ?? []).map((e) => ({
+          label: e.label,
+          imageData: e.imageData,
+          contentType: e.contentType,
+        })),
+        services,
+      };
+    });
+    res.json(data);
+  } catch (err) {
+    console.error("[environment/noiseTransportation]", err.message);
+    res.status(502).json({ error: "Failed to fetch noise map metadata" });
+  }
+});
+
+router.get("/heartDiseaseMortality", async (_req, res) => {
+    try {
+        if (
+            !heartDiseaseMortalityCache ||
+            Date.now() - heartDiseaseMortalityCacheAt > HEART_DISEASE_MORTALITY_CACHE_MS
+        ) {
+            const response = await axios.get(
+                "https://data.cdc.gov/resource/55yu-xksw.json",
+                {
+                    params: {
+                        "$select": "year,locationabbr,locationdesc,data_value,data_value_unit,data_value_type,locationid,y_lat,x_lon,georeference",
+                        "$where": "geographiclevel='County' AND stratification1='Overall' AND stratification2='Overall' AND data_value IS NOT NULL",
+                        "$limit": 50000,
+                    },
+                }
+            );
+
+            if (!Array.isArray(response.data)) {
+                throw new Error("Unexpected CDC API response");
+            }
+
+            heartDiseaseMortalityCache = response.data.filter((row) => {
+                const coordinates = row.georeference?.coordinates;
+                return (
+                    Number.isFinite(Number(row.data_value)) &&
+                    Array.isArray(coordinates) &&
+                    coordinates.length === 2
+                );
+            });
+            heartDiseaseMortalityCacheAt = Date.now();
+        }
+
+        res.json(heartDiseaseMortalityCache);
+    } catch (error) {
+        console.error("[environment/heartDiseaseMortality]", error.message);
+        res.status(502).json({ error: "Failed to fetch heart disease mortality data" });
+    }
+});
+
+let breastCancerIncidenceCache = null;
+let breastCancerIncidenceCacheAt = 0;
+const BREAST_CANCER_INCIDENCE_CACHE_MS = 24 * 60 * 60 * 1000;
+
+router.get("/breastCancerIncidence", async (req, res) => {
+    try {
+        const cacheExpired =
+            Date.now() - breastCancerIncidenceCacheAt >
+            BREAST_CANCER_INCIDENCE_CACHE_MS;
+
+        if (!breastCancerIncidenceCache || cacheExpired) {
+            const response = await axios.get(
+                "https://services.arcgis.com/n902V8mYALGk0qHD/arcgis/rest/services/NCI_State_Breast_Cancer_Incidence_Rates/FeatureServer/0/query",
+                {
+                    params: {
+                        where: "1=1",
+                        outFields:
+                            "STATE_NAME,STATE_ABBR,AllAge_F_AA_Rate,AllAge_F_Lower_CI,AllAge_F_Upper_CI,AllAge_F_Average_Count",
+                        returnGeometry: true,
+                        outSR: 4326,
+                        f: "geojson",
+                    },
+                    timeout: 30000,
+                },
+            );
+
+            if (
+                response.data?.type !== "FeatureCollection" ||
+                !Array.isArray(response.data.features)
+            ) {
+                throw new Error("ArcGIS returned an invalid GeoJSON response");
+            }
+
+            breastCancerIncidenceCache = response.data;
+            breastCancerIncidenceCacheAt = Date.now();
+        }
+
+        res.json(breastCancerIncidenceCache);
+    } catch (err) {
+        console.error("[environment/breastCancerIncidence]", err.message);
+        res.status(502).json({
+            error: "Failed to fetch breast cancer incidence data",
+        });
+    }
+});
+
 let oilDrillingLocationsCache = null;
 let oilDrillingLocationsCacheAt = 0;
 const OIL_DRILLING_LOCATIONS_CACHE_MS = 24 * 60 * 60 * 1000;
 
-router.get("/oilDrillingLocations", async (req, res) => {
+router.get("/oilDrillingLocations", async (_req, res) => {
     try {
         if (
             !oilDrillingLocationsCache ||
@@ -775,37 +1032,29 @@ router.get("/oilDrillingLocations", async (req, res) => {
                     },
                     timeout: 60000,
                 });
-
                 const data = response.data;
 
                 if (data.error) {
                     throw new Error(data.error.message || "BOEM query failed");
                 }
-
                 if (!Array.isArray(data.features)) {
                     throw new Error("BOEM returned an unexpected response");
                 }
 
                 features.push(...data.features);
-
                 const hasMore =
                     data.exceededTransferLimit === true ||
                     data.properties?.exceededTransferLimit === true;
-
                 if (
                     data.features.length === 0 ||
                     (!hasMore && data.features.length < pageSize)
                 ) {
                     break;
                 }
-
                 offset += data.features.length;
             }
 
-            oilDrillingLocationsCache = {
-                type: "FeatureCollection",
-                features,
-            };
+            oilDrillingLocationsCache = { type: "FeatureCollection", features };
             oilDrillingLocationsCacheAt = Date.now();
         }
 
@@ -815,4 +1064,5 @@ router.get("/oilDrillingLocations", async (req, res) => {
         res.status(502).json({ error: "Failed to fetch BOEM well locations" });
     }
 });
+
 export default router;

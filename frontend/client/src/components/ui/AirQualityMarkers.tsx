@@ -2,21 +2,19 @@ import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
+import {
+  getTimelineDateRange,
+  isDateInTimelineRange,
+  type TimelineDateRange,
+} from "@/lib/timeline";
 
-/* Orange marker icon to distinguish air quality from other markers */
+/* Consistent translucent marker for air quality stations. */
 const AIR_QUALITY_ICON = L.divIcon({
   className: "air-quality-marker",
-  html: `<div style="
-    width: 28px;
-    height: 28px;
-    background: #f59e0b;
-    border: 2px solid #d97706;
-    border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  "></div>`,
-  iconSize: [28, 28],
-  iconAnchor: [14, 28],
-  popupAnchor: [0, -28],
+  html: `<div style="width:100%;height:100%;border-radius:50%;background:rgba(41, 39, 39, 0.45);"></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  popupAnchor: [0, -7],
 });
 
 /* Returned properties from air quality api */
@@ -77,9 +75,15 @@ function normalizeStation(obs: Record<string, unknown>, fallbackLat: number, fal
 
 type AirQualityMarkersProps = {
   setLoading: (loading: boolean) => void;
+  timelineRange: TimelineDateRange | null;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
 }
 
-const AirQualityMarkers = ({setLoading} : AirQualityMarkersProps) => {
+const AirQualityMarkers = ({
+  setLoading,
+  timelineRange,
+  onDateRangeChange,
+} : AirQualityMarkersProps) => {
   const [stations, setStations] = useState<AirQualityStation[]>([]);
 
   useEffect(() => {
@@ -129,9 +133,28 @@ const AirQualityMarkers = ({setLoading} : AirQualityMarkersProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    onDateRangeChange(
+      "air-quality",
+      getTimelineDateRange(
+        stations.map((station) =>
+          station.dateObserved ? new Date(station.dateObserved) : null,
+        ),
+      ),
+    );
+    return () => onDateRangeChange("air-quality", null);
+  }, [stations, onDateRangeChange]);
+
   return (
     <>
-      {stations.map((station, index) => (
+      {stations
+        .filter((station) =>
+          isDateInTimelineRange(
+            station.dateObserved ? new Date(station.dateObserved) : null,
+            timelineRange,
+          ),
+        )
+        .map((station, index) => (
         <Marker
           key={`aq-${station.lat}-${station.lon}-${index}`}
           position={[station.lat, station.lon]}

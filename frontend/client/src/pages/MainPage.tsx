@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignUp from "./sections/SignUp";
@@ -17,7 +17,13 @@ import SharePopup from "./sections/SharePopup";
 import Profiles from "./sections/Profiles";
 import AccountSettings from "./sections/AccountSettings";
 import EmailChangeVerification from "./sections/EmailChangeVerification";
-import { fetchMe, getAuthToken, setAuthToken, type AccountUser } from "@/lib/apiClient";
+import {
+  ApiError,
+  fetchMe,
+  getAuthToken,
+  setAuthToken,
+  type AccountUser,
+} from "@/lib/apiClient";
 import LeafletMap, {
   ChoroplethMetricKey,
   HouseDistrictPartyMode,
@@ -26,13 +32,226 @@ import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { X, UserPlusIcon, SettingsIcon } from "lucide-react";
 import { BannerAd, VideoAd } from "@/components/ads";
 
-import { PoliceKillingQKey } from "@/components/ui/PoliceKillings";
 import {
   HEALTH_ALL_LAYER_IDS,
   HEALTH_WIRED_LAYER_IDS,
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
+import {
+  INCIDENT_FILTER_PREFIXES,
+  INCIDENT_MENU_ID,
+  INCIDENT_TYPE_IDS,
+  migrateIncidentLayers,
+  selectIncidentType,
+  stormCategoryFromLayers,
+  stripIncidentSelections,
+} from "@/lib/disaster-incidents";
 import LoadingBar from "./sections/LoadingBar";
+import AdsterraBanner from "@/components/ads/AdsterraBanner";
+import {
+  formatTimelineDate,
+  type TimelineDateRange,
+} from "@/lib/timeline";
+import MonetagAd from "@/components/ads/MonetagAd";
+
+interface TimelineRangeControlProps {
+  availableDateRange: TimelineDateRange;
+  selectedRange: TimelineDateRange;
+  onCommit: (range: TimelineDateRange) => void;
+  singleDateMode?: boolean;
+}
+
+function TimelineRangeControl({
+  availableDateRange,
+  selectedRange,
+  onCommit,
+  singleDateMode = false,
+}: TimelineRangeControlProps) {
+  const [draftRange, setDraftRange] = useState(selectedRange);
+  const [isUpdating, startTransition] = useTransition();
+  const dayInMs = 24 * 60 * 60 * 1000;
+  const dateSpan = availableDateRange.end - availableDateRange.start || 1;
+
+  useEffect(() => {
+    setDraftRange(selectedRange);
+  }, [selectedRange.start, selectedRange.end]);
+
+  const commitRange = (range: TimelineDateRange) => {
+    startTransition(() => onCommit(range));
+  };
+
+  const commitDraftRange = () => {
+    if (
+      draftRange.start !== selectedRange.start ||
+      draftRange.end !== selectedRange.end
+    ) {
+      commitRange(draftRange);
+    }
+  };
+
+  const resetRange = () => {
+    const resetValue = singleDateMode
+      ? { start: availableDateRange.end, end: availableDateRange.end }
+      : availableDateRange;
+    setDraftRange(resetValue);
+    commitRange(resetValue);
+  };
+
+  return (
+    <aside
+      aria-label="Data timeline"
+      className="fixed bottom-5 right-5 z-[3000] w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-[#0c1022]/95 p-4 text-white shadow-2xl backdrop-blur"
+    >
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold">Timeline</h2>
+          {isUpdating && (
+            <span role="status" className="inline-flex items-center gap-1 text-xs text-sky-200">
+              <Loader className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              Updating map
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={resetRange}
+          className="text-xs text-sky-300 hover:text-sky-200 disabled:opacity-50"
+          disabled={
+            singleDateMode
+              ? selectedRange.end === availableDateRange.end
+              : selectedRange.start === availableDateRange.start &&
+                selectedRange.end === availableDateRange.end
+          }
+        >
+          Reset
+        </button>
+      </div>
+      <div className="mb-1 flex justify-between gap-3 text-xs text-white/80">
+        {singleDateMode ? (
+          <span>
+            Date <strong>{formatTimelineDate(draftRange.end)}</strong>
+          </span>
+        ) : (
+          <>
+            <span>
+              From <strong>{formatTimelineDate(draftRange.start)}</strong>
+            </span>
+            <span>
+              Through <strong>{formatTimelineDate(draftRange.end)}</strong>
+            </span>
+          </>
+        )}
+      </div>
+      <div className="relative my-2 h-6">
+        <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/20" />
+        {singleDateMode ? (
+          <>
+            <div
+              className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+              style={{
+                left: 0,
+                right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
+              }}
+            />
+            <label className="sr-only" htmlFor="timeline-date">
+              Selected data date
+            </label>
+            <input
+              id="timeline-date"
+              aria-label="Selected data date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.end}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const date = Number(event.target.value);
+                setDraftRange({ start: date, end: date });
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+          </>
+        ) : (
+          <>
+            <div
+              className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
+              style={{
+                left: `${((draftRange.start - availableDateRange.start) / dateSpan) * 100}%`,
+                right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
+              }}
+            />
+            <label className="sr-only" htmlFor="timeline-start">
+              Earliest displayed date
+            </label>
+            <input
+              id="timeline-start"
+              aria-label="Earliest displayed date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.start}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const start = Number(event.target.value);
+                setDraftRange((current) => ({
+                  ...current,
+                  start: Math.min(start, current.end),
+                }));
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+            <label className="sr-only" htmlFor="timeline-end">
+              Latest displayed date
+            </label>
+            <input
+              id="timeline-end"
+              aria-label="Latest displayed date"
+              type="range"
+              min={availableDateRange.start}
+              max={availableDateRange.end}
+              step={dayInMs}
+              value={draftRange.end}
+              disabled={availableDateRange.start === availableDateRange.end}
+              onChange={(event) => {
+                const end = Number(event.target.value);
+                setDraftRange((current) => ({
+                  ...current,
+                  end: Math.max(end, current.start),
+                }));
+              }}
+              onPointerUp={commitDraftRange}
+              onPointerCancel={commitDraftRange}
+              onKeyUp={commitDraftRange}
+              onBlur={commitDraftRange}
+              className="timeline-range-input"
+            />
+          </>
+        )}
+      </div>
+      <div className="mt-1 flex justify-between text-[10px] text-white/50">
+        <span>{formatTimelineDate(availableDateRange.start)}</span>
+        <span>{formatTimelineDate(availableDateRange.end)}</span>
+      </div>
+    </aside>
+  );
+}
+
+const ECONOMICS_LAYER_IDS = new Set([
+  "income",
+  "high-income-households",
+  "unemployment",
+  "poverty-stricken-areas",
+]);
 
 export default function MainPage() {
   const [progress, setProgress] = useState(0);
@@ -51,11 +270,16 @@ export default function MainPage() {
   // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
   // logged-in user, or null when they have no active subscription.
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [accountPlanResolved, setAccountPlanResolved] = useState(
+    () => !getAuthToken(),
+  );
   // Whether the logged-in user's email has been verified. Unverified users
   // cannot subscribe to a paid plan.
   const [isVerified, setIsVerified] = useState(false);
-  // Premium users see no ads. Wire this up to your real subscription flag.
-  const [isPremium] = useState(false);
+  const isPremium = ["premium", "enterprise", "agency"].includes(
+    currentPlan ?? "",
+  );
+  const shouldShowAds = accountPlanResolved && !isPremium;
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   // Remembers a plan a logged-out user tried to select so we can resume the
   // pricing flow after they log in / sign up.
@@ -72,6 +296,80 @@ export default function MainPage() {
     { id: string; lat: number; lng: number; stateName?: string }[]
   >([]);
   const [selectedLayers, setSelectedLayers] = useState<string[]>([]);
+  const [povertyYear, setPovertyYear] = useState<number | null>(null);
+  const [povertyLatestYear, setPovertyLatestYear] = useState<number | null>(null);
+  const [povertyAvailableYears, setPovertyAvailableYears] = useState<number[]>([]);
+  const [datasetDateRanges, setDatasetDateRanges] = useState<
+    Record<string, TimelineDateRange>
+  >({});
+  const [timelineRange, setTimelineRange] = useState<TimelineDateRange | null>(null);
+  const previousAvailableDateRange = useRef<TimelineDateRange | null>(null);
+  const economicTimelineMode = selectedLayers.some((layerId) =>
+    ECONOMICS_LAYER_IDS.has(layerId),
+  );
+  const availableDateRange = useMemo(() => {
+    const ranges = economicTimelineMode
+      ? Object.entries(datasetDateRanges)
+          .filter(([datasetId]) => datasetId.startsWith("economics-"))
+          .map(([, range]) => range)
+      : Object.values(datasetDateRanges);
+    if (ranges.length === 0) return null;
+    return {
+      start: Math.min(...ranges.map((range) => range.start)),
+      end: Math.max(...ranges.map((range) => range.end)),
+    };
+  }, [datasetDateRanges, economicTimelineMode]);
+
+  const handleDatasetDateRangeChange = useCallback(
+    (datasetId: string, range: TimelineDateRange | null) => {
+      setDatasetDateRanges((current) => {
+        const existing = current[datasetId];
+        if (!range) {
+          if (!existing) return current;
+          const next = { ...current };
+          delete next[datasetId];
+          return next;
+        }
+        if (existing?.start === range.start && existing.end === range.end) {
+          return current;
+        }
+        return { ...current, [datasetId]: range };
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const previous = previousAvailableDateRange.current;
+    previousAvailableDateRange.current = availableDateRange;
+
+    if (!availableDateRange) {
+      setTimelineRange(null);
+      return;
+    }
+    setTimelineRange((current) => {
+      const clamp = (timestamp: number) =>
+        Math.min(availableDateRange.end, Math.max(availableDateRange.start, timestamp));
+      if (economicTimelineMode) {
+        const selectedDate = current && previous
+          ? clamp(current.end)
+          : availableDateRange.end;
+        return { start: selectedDate, end: selectedDate };
+      }
+      if (
+        !current ||
+        !previous ||
+        (current.start === previous.start && current.end === previous.end)
+      ) {
+        return availableDateRange;
+      }
+      const start = clamp(current.start);
+      return {
+        start,
+        end: Math.max(start, clamp(current.end)),
+      };
+    });
+  }, [availableDateRange, economicTimelineMode]);
   const SIDEBAR_WIDTH_OPEN = 430;
   // NEW: sidebar open/close
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -88,8 +386,7 @@ export default function MainPage() {
 
   // Props for Displaying Police Killing Data
   const [showPoliceKillingData, setShowPoliceKillingData] = useState(false);
-  const [PoliceKillingQ, setPoliceKillingQ] = useState<PoliceKillingQKey>("Q1");
-  const [PoliceKillingYear, setPoliceKillingYear] = useState<number>(2026);
+  const [showPoliceShootings, setShowPoliceShootings] = useState(false);
 
   // Props for displaying homicide data
   const [showMurderData, setShowMurderData] = useState(false);
@@ -102,17 +399,32 @@ export default function MainPage() {
 
   // Props for missing persons data
   const [showMissingPersonsData, setShowMissingPersonsData] = useState(false);
-  const [missingPersonQ, setMissingPersonQ] = useState<string>("Q1");
-  const [missingPersonYear, setMissingPersonYear] = useState<number>(2026);
 
   // Props for consent age data
   const [showConsentAgeData, setShowConsentAgeData] = useState(false);
+
+  // props for rural access
+  const [ruralAccessYear, setRuralAccessYear] = useState(2021);
 
   const [politicalLayerIds, setPoliticalLayerIds] = useState<string[]>([]);
   const [houseDistrictPartyMode, setHouseDistrictPartyMode] =
     useState<HouseDistrictPartyMode>("both");
   /** CDC PLACES county choropleth; exclusive with census race/age/sex selection */
   const [healthMetricId, setHealthMetricId] = useState<string | null>(null);
+
+  const handlePovertyDataMeta = useCallback(
+    (latestYear: number, availableYears: number[]) => {
+      setPovertyLatestYear(latestYear);
+      setPovertyAvailableYears(availableYears);
+    },
+    [],
+  );
+  const handleTimelineRangeChange = useCallback((range: TimelineDateRange) => {
+    setPovertyYear(null);
+    setTimelineRange(economicTimelineMode
+      ? { start: range.end, end: range.end }
+      : range);
+  }, [economicTimelineMode]);
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
@@ -197,6 +509,7 @@ export default function MainPage() {
     plan: string | null = null,
     verified: boolean = false
   ) => {
+    setAccountPlanResolved(false);
     setIsLoggedIn(true);
     setUserEmail(email);
     setCurrentPlan(plan);
@@ -205,9 +518,12 @@ export default function MainPage() {
     // The login/verify responses don't carry every account field (e.g. the
     // display name), so pull the full record once the token is stored.
     fetchMe()
-      .then(({ user }) => user && applyAccount(user))
-      .catch(() => {
-        /* Session restore already handles a bad token; nothing to do here. */
+      .then(({ user }) => {
+        if (user) applyAccount(user);
+        setAccountPlanResolved(true);
+      })
+      .catch((error) => {
+        console.error("[MainPage] Account refresh after login failed:", error);
       });
     // If the user was trying to pick a plan before authenticating, bring them
     // back to the pricing screen to finish choosing.
@@ -239,6 +555,7 @@ export default function MainPage() {
     setUserEmail("");
     setUserName("");
     setCurrentPlan(null);
+    setAccountPlanResolved(true);
     setIsVerified(false);
     setIsSignUpDropdownOpen(false);
     setIsAccountOpen(false);
@@ -266,7 +583,25 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
+          ),
+          layerId,
+        ]);
+        setHealthMetricId(null);
+        setSelectedRaceCensusId("all");
+        setSelectedAgeGroupId(null);
+        setSelectedSexId(null);
+        setShowChoropleth(false);
+      } else {
+        setSelectedLayers((prev) => prev.filter((id) => id !== layerId));
+      }
+      return;
+    }
+    if (ECONOMICS_LAYER_IDS.has(layerId)) {
+      if (checked) {
+        setSelectedLayers((prev) => [
+          ...prev.filter(
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
           ),
           layerId,
         ]);
@@ -284,7 +619,7 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
           ),
           layerId,
         ]);
@@ -303,6 +638,42 @@ export default function MainPage() {
       }
       return;
     }
+    if (layerId === INCIDENT_MENU_ID) {
+      setSelectedLayers((prev) =>
+        checked
+          ? prev.includes(INCIDENT_MENU_ID)
+            ? prev
+            : [...prev, INCIDENT_MENU_ID]
+          : stripIncidentSelections(prev),
+      );
+      return;
+    }
+    if (INCIDENT_TYPE_IDS.has(layerId)) {
+      setSelectedLayers((prev) =>
+        checked
+          ? selectIncidentType(prev, layerId)
+          : prev.filter(
+              (id) =>
+                id !== layerId &&
+                !INCIDENT_FILTER_PREFIXES.some((prefix) => id.startsWith(prefix)),
+            ),
+      );
+      return;
+    }
+    const singleSelectPrefix = [
+      "eq-mag:",
+      "nri-hz:",
+      "vo-alert:",
+      "wf-acres:",
+      "dr-cat:",
+    ].find((p) => layerId.startsWith(p));
+    if (singleSelectPrefix) {
+      setSelectedLayers((prev) => [
+        ...prev.filter((id) => !id.startsWith(singleSelectPrefix)),
+        ...(checked ? [layerId] : []),
+      ]);
+      return;
+    }
     setSelectedLayers((prev) =>
       checked ? [...prev, layerId] : prev.filter((id) => id !== layerId)
     );
@@ -314,7 +685,7 @@ export default function MainPage() {
     );
   };
 
-  /** Clear sidebar map filters (layers, choropleth, crime/police/social/political). Does not remove dropped pins or pin-drop mode. */
+  /** Clear sidebar map filters (layers, choropleth, crime/social/political). Does not remove dropped pins or pin-drop mode. */
   const handleResetAllFilters = () => {
     setSelectedLayers([]);
     setChoroplethMetric("pct_white");
@@ -323,16 +694,13 @@ export default function MainPage() {
     setSelectedRaceCensusId("all");
     setSelectedSexId(null);
     setShowPoliceKillingData(false);
-    setPoliceKillingQ("Q1");
-    setPoliceKillingYear(2026);
+    setShowPoliceShootings(false);
     setShowMurderData(false);
     setMurderCategory("victim");
     setMurderAttribute("age");
     setArrestCategory("Arrestee Sex");
     setShowArrestData(false);
     setShowMissingPersonsData(false);
-    setMissingPersonQ("Q1");
-    setMissingPersonYear(2026);
     setShowConsentAgeData(false);
     setPoliticalLayerIds([]);
     setHouseDistrictPartyMode("both");
@@ -350,16 +718,13 @@ export default function MainPage() {
     selectedRaceCensusId,
     selectedSexId,
     showPoliceKillingData,
-    PoliceKillingQ,
-    PoliceKillingYear,
+    showPoliceShootings,
     showMurderData,
     murderCategory,
     murderAttribute,
     arrestCategory,
     showArrestData,
     showMissingPersonsData,
-    missingPersonQ,
-    missingPersonYear,
     showConsentAgeData,
     politicalLayerIds,
     houseDistrictPartyMode,
@@ -372,23 +737,22 @@ export default function MainPage() {
   const applyConfig = (config: Record<string, any>) => {
     const c = config || {};
     setMapPins(Array.isArray(c.mapPins) ? c.mapPins : []);
-    setSelectedLayers(Array.isArray(c.selectedLayers) ? c.selectedLayers : []);
+    setSelectedLayers(
+      migrateIncidentLayers(Array.isArray(c.selectedLayers) ? c.selectedLayers : [])
+    );
     setChoroplethMetric(c.choroplethMetric ?? "pct_white");
     setShowChoropleth(!!c.showChoropleth);
     setSelectedAgeGroupId(c.selectedAgeGroupId ?? null);
     setSelectedRaceCensusId(c.selectedRaceCensusId ?? "all");
     setSelectedSexId(c.selectedSexId ?? null);
     setShowPoliceKillingData(!!c.showPoliceKillingData);
-    setPoliceKillingQ(c.PoliceKillingQ ?? "Q1");
-    setPoliceKillingYear(c.PoliceKillingYear ?? 2026);
+    setShowPoliceShootings(!!c.showPoliceShootings);
     setShowMurderData(!!c.showMurderData);
     setMurderCategory(c.murderCategory ?? "victim");
     setMurderAttribute(c.murderAttribute ?? "age");
     setArrestCategory(c.arrestCategory ?? "Arrestee Sex");
     setShowArrestData(!!c.showArrestData);
     setShowMissingPersonsData(!!c.showMissingPersonsData);
-    setMissingPersonQ(c.missingPersonQ ?? "Q1");
-    setMissingPersonYear(c.missingPersonYear ?? 2026);
     setShowConsentAgeData(!!c.showConsentAgeData);
     setPoliticalLayerIds(Array.isArray(c.politicalLayerIds) ? c.politicalLayerIds : []);
     setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
@@ -401,7 +765,10 @@ export default function MainPage() {
 
   // Restore the logged-in session (and plan) on page load using the stored JWT.
   useEffect(() => {
-    if (!getAuthToken()) return;
+    if (!getAuthToken()) {
+      setAccountPlanResolved(true);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -409,9 +776,14 @@ export default function MainPage() {
         if (cancelled || !user) return;
         applyAccount(user);
         setIsLoggedIn(true);
-      } catch {
-        // Token invalid/expired — clear it so the UI reflects a logged-out state.
-        setAuthToken(null);
+        setAccountPlanResolved(true);
+      } catch (error) {
+        if (error instanceof ApiError && [401, 403].includes(error.status)) {
+          setAuthToken(null);
+          setAccountPlanResolved(true);
+          return;
+        }
+        console.error("[MainPage] Session restore failed:", error);
       }
     })();
     return () => {
@@ -438,7 +810,9 @@ export default function MainPage() {
         prev.filter((id) => !HEALTH_ALL_LAYER_IDS.has(id))
       );
     }
-    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id)));
+    setSelectedLayers((prev) =>
+      prev.filter((id) => !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id))
+    );
   }, [selectedRaceCensusId, selectedAgeGroupId, selectedSexId, healthMetricId]);
 
   /** Population choropleth and SPLC are mutually exclusive for the colored layer */
@@ -447,7 +821,7 @@ export default function MainPage() {
       const next = !v;
       if (next) {
         setSelectedLayers((prev) =>
-          prev.filter((id) => !SPLC_LAYER_IDS.has(id))
+          prev.filter((id) => !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id))
         );
       }
       return next;
@@ -515,9 +889,9 @@ export default function MainPage() {
                   onClick={toggleSignUpDropdown}
                   className="h-[39px] bg-[#06012a] rounded-[29.09px] border border-[#312b7a] flex items-center gap-2"
                 >
-                  <img 
-                    className="w-[22px] h-[17px]" 
-                    alt="Sign Up" 
+                  <img
+                    className="w-[22px] h-[17px]"
+                    alt="Sign Up"
                     src="/figmaAssets/create-account.svg"
                     style={{ filter: 'brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(119%) contrast(119%)' }}
                   />
@@ -530,7 +904,7 @@ export default function MainPage() {
                     <div className="bg-gray-700 rounded-lg p-4 w-64 text-white shadow-lg">
                       {/* Sign Up Option */}
                       { !isLoggedIn && (
-                      <div 
+                      <div
                         className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                         onClick={handleSignUpClick}
                       >
@@ -573,7 +947,7 @@ export default function MainPage() {
                             <span className="text-[10.5px] text-white">Account Settings</span>
                           </div>
 
-                          <div 
+                          <div
                             className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
                               handlePricingClick();
@@ -598,7 +972,7 @@ export default function MainPage() {
                             <UserPlusIcon className="w-[16px] h-[16px] text-white" />
                             <span className="text-[10.5px] text-white">My Profiles</span>
                           </div>
-                          
+
                           <div className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors">
                             <img
                               className="w-[18px] h-[18px] opacity-100"
@@ -607,8 +981,8 @@ export default function MainPage() {
                             />
                             <span className="text-[10.5px] text-white">Help</span>
                           </div>
-                          
-                          <div 
+
+                          <div
                             className="flex items-center gap-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
                               handleUserLogout();
@@ -630,7 +1004,7 @@ export default function MainPage() {
               </div>
               {/* Login Button */}
               { !isLoggedIn &&
-              <Button 
+              <Button
                 onClick={() => setIsLoginOpen(true)}
                 className="h-[39px] bg-[#06012a] rounded-[29.09px] border border-[#312b7a] flex items-center gap-2"
               >
@@ -647,7 +1021,7 @@ export default function MainPage() {
                 </div>
               </button>
             </div>
-            
+
 
             {/* Slide-out App Menu (your existing modal/drawer) */}
             <SideBarMenu
@@ -698,7 +1072,7 @@ export default function MainPage() {
                 className="absolute top-[42px] z-30 transition-[left] duration-300"
                 style={{ left: sidebarOpen ? 480 : 80 }}
               >
-                <Button 
+                <Button
                   onClick={() => setIsShareOpen(true)}
                   className="h-[39px] bg-white rounded-[29.09px] border border-[#312b7a] flex items-center gap-2 hover:bg-white"
                 >
@@ -712,7 +1086,7 @@ export default function MainPage() {
             <section ref={mapSectionRef} className="relative h-screen w-full overflow-hidden">
               {/* Map layer */}
               <div className="absolute inset-0 z-0">
-                <LeafletMap 
+                <LeafletMap
                   loading={isLoading}
                   setLoading={setLoading}
                   sidebarOffsetPx={sidebarOpen ? SIDEBAR_WIDTH_OPEN : 0}
@@ -726,8 +1100,7 @@ export default function MainPage() {
                   showChoropleth={showChoropleth}
 
                   showPoliceKillingData={showPoliceKillingData}
-                  PoliceKillingQ={PoliceKillingQ}
-                  PoliceKillingYear={PoliceKillingYear}
+                  showPoliceShootings={showPoliceShootings}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -737,17 +1110,54 @@ export default function MainPage() {
                   showArrestData={showArrestData}
 
                   showMissingPersonsData={showMissingPersonsData}
-                  missingPersonQ={missingPersonQ}
-                  missingPersonYear={missingPersonYear}
+
+                  showMassShootings={selectedLayers.includes("mass-shootings")}
 
                   showConsentAgeData={showConsentAgeData}
+                  showAlprCameras={selectedLayers.includes("alpr-cameras")}
+                  alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
                   showOilDrillingLocations={selectedLayers.includes("oil-drilling-locations")}
-                  showNaturalDisasterIncidents={selectedLayers.includes("natural-disaster-incidents")}
+                  showNaturalDisasterIncidents={selectedLayers.some((id) => id.startsWith("nd-type:")) || selectedLayers.includes("natural-disaster-incidents")}
                   naturalDisasterIncidentTypes={selectedLayers
                     .filter((id) => id.startsWith("nd-type:"))
                     .map((id) => id.replace("nd-type:", ""))}
+                  showHeartDiseaseMortality={selectedLayers.includes("heart-disease")}
+                  showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
+                  nationalRiskIndexHazard={
+                    selectedLayers.find((l) => l.startsWith("nri-hz:"))?.slice("nri-hz:".length) ?? null
+                  }
+                  stormEventCategory={stormCategoryFromLayers(selectedLayers)}
+                  showTornadoes={selectedLayers.includes("ndi-tornado")}
+                  showDebrisFlow={selectedLayers.includes("ndi-debris-flow")}
+                  showLandslides={selectedLayers.includes("landslides")}
+                  showEarthquakes={selectedLayers.includes("earthquakes")}
+                  earthquakeMinMagnitude={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("eq-mag:"));
+                    return id ? Number(id.slice("eq-mag:".length)) : null;
+                  })()}
+                  showVolcanoes={selectedLayers.includes("volcanoes")}
+                  volcanoMinAlert={
+                    selectedLayers.find((l) => l.startsWith("vo-alert:"))?.slice("vo-alert:".length) ?? null
+                  }
+                  showTsunamis={selectedLayers.includes("tsunamis")}
+                  showWildfires={selectedLayers.includes("wildfires")}
+                  wildfireMinAcres={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("wf-acres:"));
+                    return id ? Number(id.slice("wf-acres:".length)) : null;
+                  })()}
+                  showDrought={selectedLayers.includes("drought")}
+                  droughtCategory={(() => {
+                    const id = selectedLayers.find((l) => l.startsWith("dr-cat:"));
+                    return id ? Number(id.slice("dr-cat:".length)) : null;
+                  })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showNoisePollution={selectedLayers.includes("noise-pollution")}
+                  showRuralAccess={selectedLayers.includes("rural-access") }
+                  showBreastCancerIncidence={selectedLayers.includes("breast-cancer")}
+                  ruralAccessYear={ruralAccessYear}
+                  onRuralAccessYearChange={setRuralAccessYear}
+
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
                   showDataCenters={selectedLayers.includes("data-centers")}
@@ -757,10 +1167,28 @@ export default function MainPage() {
                   politicalLayerIds={politicalLayerIds}
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
+                  showIncome={selectedLayers.includes("income")}
+                  showHighIncomeHouseholds={selectedLayers.includes("high-income-households")}
+                  showUnemployment={selectedLayers.includes("unemployment")}
+                  showPoverty={selectedLayers.includes("poverty-stricken-areas")}
+                  povertyYear={povertyYear}
+                  povertyAvailableYears={povertyAvailableYears}
+                  onPovertyDataMeta={handlePovertyDataMeta}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
-                  showFlockData={selectedLayers.includes("flock-cameras")}
+                  timelineRange={timelineRange}
+                  onDateRangeChange={handleDatasetDateRangeChange}
+                  timelineVisible={Boolean(availableDateRange && timelineRange)}
                 />
               </div>
+
+              {availableDateRange && timelineRange && (
+                <TimelineRangeControl
+                  availableDateRange={availableDateRange}
+                  selectedRange={timelineRange}
+                  onCommit={handleTimelineRangeChange}
+                  singleDateMode={economicTimelineMode}
+                />
+              )}
 
               {/* Landing content overlay (full screen) */}
               {showLanding && (
@@ -807,22 +1235,17 @@ export default function MainPage() {
               )}
 
               {/* RIGHT-SIDE AD RAIL (visible on landing + when sidebar closed). Hidden for premium. */}
-              {!isPremium && (showLanding || !sidebarOpen) && (
+              {shouldShowAds && (showLanding || !sidebarOpen) && (
                 <aside
                   aria-label="Sponsored"
                   className={[
                     "hidden lg:flex flex-col gap-4",
                     "absolute top-28 right-6 z-30",
-                    "w-[300px] max-h-[calc(100vh-160px)] overflow-y-auto",
+                    "w-[344px] max-h-[calc(100vh-160px)] overflow-y-auto",
                     "rounded-xl border border-white/15 bg-[#0c1022]/70 backdrop-blur-sm",
                     "p-3 shadow-2xl pointer-events-auto",
                   ].join(" ")}
                 >
-                  <BannerAd
-                    showLabel
-                    className="bg-white/5 rounded-md p-2"
-                    style={{ minHeight: 250 }}
-                  />
                   <VideoAd
                     showLabel
                     className="bg-white/5 rounded-md p-2"
@@ -856,10 +1279,8 @@ export default function MainPage() {
 
                   showPoliceKillingData={showPoliceKillingData}
                   onTogglePoliceKillingData={() => setShowPoliceKillingData((v) => !v)}
-                  PoliceKillingQ={PoliceKillingQ}
-                  onPoliceKillingQChange={setPoliceKillingQ}
-                  PoliceKillingYear={PoliceKillingYear}
-                  onPoliceKillingYearChange={setPoliceKillingYear}
+                  showPoliceShootings={showPoliceShootings}
+                  onTogglePoliceShootings={() => setShowPoliceShootings((v) => !v)}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -876,10 +1297,6 @@ export default function MainPage() {
 
                   showMissingPersonsData={showMissingPersonsData}
                   onToggleMissingPersonsData={() => setShowMissingPersonsData((v) => !v)}
-                  missingPersonQ={missingPersonQ}
-                  onMissingPersonQChange={setMissingPersonQ}
-                  missingPersonYear={missingPersonYear}
-                  onMissingPersonYearChange={setMissingPersonYear}
 
                   showConsentAgeData={showConsentAgeData}
                   onToggleConsentAgeData={() => setShowConsentAgeData((v) => !v)}
@@ -889,9 +1306,13 @@ export default function MainPage() {
                   onSelectedRaceCensusIdChange={setSelectedRaceCensusId}
                   selectedSexId={selectedSexId}
                   onSelectedSexIdChange={setSelectedSexId}
-                  
+
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
+                  povertyYear={povertyYear}
+                  povertyLatestYear={povertyLatestYear}
+                  povertyAvailableYears={povertyAvailableYears}
+                  onPovertyYearChange={setPovertyYear}
                   politicalLayerIds={politicalLayerIds}
                   onPoliticalLayerToggle={handlePoliticalLayerToggle}
                   houseDistrictPartyMode={houseDistrictPartyMode}
@@ -899,11 +1320,11 @@ export default function MainPage() {
                   onResetAllFilters={handleResetAllFilters}
                 />
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
-                {!isPremium && (
-                  <div className="px-4 pt-4 pb-8 space-y-4 border-t border-white/10 mt-4">
-                    <BannerAd showLabel className="bg-white/5 rounded-md p-2" />
-                    <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
-                  </div>
+                {shouldShowAds && (
+                  <MonetagAd
+                    zoneId="12248955"
+                    scriptSrc="https://n6wxm.com/vignette.min.js"
+                  />
                 )}
               </aside>
 
@@ -930,7 +1351,7 @@ export default function MainPage() {
             {/* ======= END HERO ======= */}
 
             {/* Fixed bottom banner ad (hidden on landing screen and for premium users). */}
-            {!showLanding && !isPremium && !sidebarOpen && (
+            {!showLanding && shouldShowAds && !sidebarOpen && (
               <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none flex justify-center pb-2 px-4">
                 <div className="pointer-events-auto bg-[#0c1022]/85 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl max-w-[900px] w-full p-2">
                   <BannerAd showLabel />
@@ -976,8 +1397,8 @@ export default function MainPage() {
       )}
 
       {/* Share Popup */}
-      <SharePopup 
-        isOpen={isShareOpen} 
+      <SharePopup
+        isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         mapContainerRef={mapSectionRef}
       />
@@ -1015,7 +1436,7 @@ export default function MainPage() {
 
       {/* Sign Up Modal */}
       {isSignUpOpen && (
-        <SignUp 
+        <SignUp
           isOpen={isSignUpOpen}
           onClose={() => setIsSignUpOpen(false)}
           onLogin={(email, plan, verified) => {
@@ -1037,8 +1458,8 @@ export default function MainPage() {
 
       {/* Login Modal */}
       {isLoginOpen && (
-        <Login 
-          isOpen={isLoginOpen} 
+        <Login
+          isOpen={isLoginOpen}
           onClose={() => {
             setIsLoginOpen(false);
             setPendingPlan(null);
@@ -1054,7 +1475,7 @@ export default function MainPage() {
       {/* Verify Modal */}
       {isVerifyOpen && (
         <Verify
-          isOpen={isVerifyOpen} 
+          isOpen={isVerifyOpen}
           onClose={() => setIsVerifyOpen(false)}
           onLogin={(email) => {
             // Reaching this callback means the email was just verified.
@@ -1066,7 +1487,7 @@ export default function MainPage() {
       {/* Password Reset Modal */}
       {isResetOpen && (
         <Reset
-          isOpen={isResetOpen} 
+          isOpen={isResetOpen}
           onClose={() => setIsResetOpen(false)}
         />
       )}
