@@ -57,6 +57,10 @@ interface NavigationMenuSectionProps {
   onToggleConsentAgeData: () => void;
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
+  selectedGroundwaterYear: string;
+  onSelectedGroundwaterYearChange: (year: string) => void;
+  selectedInvasiveYear: string;
+  onSelectedInvasiveYearChange: (year: string) => void;
   povertyYear: number | null;
   povertyLatestYear: number | null;
   povertyAvailableYears: number[];
@@ -109,6 +113,10 @@ export const NavigationMenuSection = ({
   onToggleConsentAgeData,
   selectedLayers = [],
   onLayerToggle,
+  selectedGroundwaterYear,
+  onSelectedGroundwaterYearChange,
+  selectedInvasiveYear,
+  onSelectedInvasiveYearChange,
   povertyYear,
   povertyLatestYear,
   povertyAvailableYears,
@@ -136,6 +144,8 @@ export const NavigationMenuSection = ({
     { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    { id: "groundwater-levels", label: "Groundwater Levels" },
+    { id: "invasive-species-group", label: "Invasive Species" },
     { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
 
     // { id: "toxic-spills", label: "Toxic Spills" },
@@ -325,6 +335,86 @@ export const NavigationMenuSection = ({
                 {item.label}
               </label>
             </div>
+            {item.id === "groundwater-levels" &&
+              selectedLayers.includes("groundwater-levels") && (
+                <div className="ml-6 mt-2 mb-2">
+                  <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                    Year:
+                  </span>
+                  <select
+                    value={selectedGroundwaterYear}
+                    onChange={(e) =>
+                      onSelectedGroundwaterYearChange(e.target.value)
+                    }
+                    className="bg-white text-black text-[11px] rounded px-2 py-1"
+                  >
+                    <option value="all">All Years</option>
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1970 + 1 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+            {item.id === "invasive-species-group" &&
+              selectedLayers.includes("invasive-species-group") && (
+                <div className="ml-6 mt-2 mb-2">
+                  <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                    Year:
+                  </span>
+
+                  <select
+                    value={selectedInvasiveYear}
+                    onChange={(e) =>
+                      onSelectedInvasiveYearChange(e.target.value)
+                    }
+                    className="bg-white text-black text-[11px] rounded px-2 py-1 mb-2"
+                  >
+                    <option value="all">All Years</option>
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1970 + 1 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+
+                  {[
+                    ["invasive-species", "Aquatic"],
+                    ["invasive-plants", "Plants"],
+                    ["invasive-insects", "Insects"],
+                    ["invasive-reptiles", "Reptiles"],
+                    ["invasive-birds", "Birds"],
+                    ["invasive-amphibians", "Amphibians"],
+                    ["invasive-mammals", "Mammals"],
+                  ].map(([id, label]) => (
+                    <div key={id} className="flex items-center mt-1.5">
+                      <Checkbox
+                        id={id}
+                        className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                        checked={selectedLayers.includes(id)}
+                        onCheckedChange={(checked) =>
+                          onLayerToggle?.(id, checked === true)
+                        }
+                      />
+                      <label
+                        htmlFor={id}
+                        className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+                      >
+                        {label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+
             {renderSubFilters(item.id, subFilters)}
           </div>
         ),
