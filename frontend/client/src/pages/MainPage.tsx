@@ -387,6 +387,7 @@ export default function MainPage() {
 
   // Props for Displaying Police Killing Data
   const [showPoliceKillingData, setShowPoliceKillingData] = useState(false);
+  const [showPoliceShootings, setShowPoliceShootings] = useState(false);
 
   // Props for displaying homicide data
   const [showMurderData, setShowMurderData] = useState(false);
@@ -696,6 +697,7 @@ export default function MainPage() {
     setSelectedRaceCensusId("all");
     setSelectedSexId(null);
     setShowPoliceKillingData(false);
+    setShowPoliceShootings(false);
     setShowMurderData(false);
     setMurderCategory("victim");
     setMurderAttribute("age");
@@ -720,6 +722,7 @@ export default function MainPage() {
     selectedRaceCensusId,
     selectedSexId,
     showPoliceKillingData,
+    showPoliceShootings,
     showMurderData,
     murderCategory,
     murderAttribute,
@@ -748,6 +751,7 @@ export default function MainPage() {
     setSelectedRaceCensusId(c.selectedRaceCensusId ?? "all");
     setSelectedSexId(c.selectedSexId ?? null);
     setShowPoliceKillingData(!!c.showPoliceKillingData);
+    setShowPoliceShootings(!!c.showPoliceShootings);
     setShowMurderData(!!c.showMurderData);
     setMurderCategory(c.murderCategory ?? "victim");
     setMurderAttribute(c.murderAttribute ?? "age");
@@ -891,9 +895,9 @@ export default function MainPage() {
                   onClick={toggleSignUpDropdown}
                   className="h-[39px] bg-[#06012a] rounded-[29.09px] border border-[#312b7a] flex items-center gap-2"
                 >
-                  <img 
-                    className="w-[22px] h-[17px]" 
-                    alt="Sign Up" 
+                  <img
+                    className="w-[22px] h-[17px]"
+                    alt="Sign Up"
                     src="/figmaAssets/create-account.svg"
                     style={{ filter: 'brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(119%) contrast(119%)' }}
                   />
@@ -906,7 +910,7 @@ export default function MainPage() {
                     <div className="bg-gray-700 rounded-lg p-4 w-64 text-white shadow-lg">
                       {/* Sign Up Option */}
                       { !isLoggedIn && (
-                      <div 
+                      <div
                         className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                         onClick={handleSignUpClick}
                       >
@@ -949,7 +953,7 @@ export default function MainPage() {
                             <span className="text-[10.5px] text-white">Account Settings</span>
                           </div>
 
-                          <div 
+                          <div
                             className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
                               handlePricingClick();
@@ -974,7 +978,7 @@ export default function MainPage() {
                             <UserPlusIcon className="w-[16px] h-[16px] text-white" />
                             <span className="text-[10.5px] text-white">My Profiles</span>
                           </div>
-                          
+
                           <div className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors">
                             <img
                               className="w-[18px] h-[18px] opacity-100"
@@ -983,8 +987,8 @@ export default function MainPage() {
                             />
                             <span className="text-[10.5px] text-white">Help</span>
                           </div>
-                          
-                          <div 
+
+                          <div
                             className="flex items-center gap-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
                               handleUserLogout();
@@ -1006,7 +1010,7 @@ export default function MainPage() {
               </div>
               {/* Login Button */}
               { !isLoggedIn &&
-              <Button 
+              <Button
                 onClick={() => setIsLoginOpen(true)}
                 className="h-[39px] bg-[#06012a] rounded-[29.09px] border border-[#312b7a] flex items-center gap-2"
               >
@@ -1023,7 +1027,7 @@ export default function MainPage() {
                 </div>
               </button>
             </div>
-            
+
 
             {/* Slide-out App Menu (your existing modal/drawer) */}
             <SideBarMenu
@@ -1074,7 +1078,7 @@ export default function MainPage() {
                 className="absolute top-[42px] z-30 transition-[left] duration-300"
                 style={{ left: sidebarOpen ? 480 : 80 }}
               >
-                <Button 
+                <Button
                   onClick={() => setIsShareOpen(true)}
                   className="h-[39px] bg-white rounded-[29.09px] border border-[#312b7a] flex items-center gap-2 hover:bg-white"
                 >
@@ -1088,7 +1092,7 @@ export default function MainPage() {
             <section ref={mapSectionRef} className="relative h-screen w-full overflow-hidden">
               {/* Map layer */}
               <div className="absolute inset-0 z-0">
-                <LeafletMap 
+                <LeafletMap
                   loading={isLoading}
                   setLoading={setLoading}
                   sidebarOffsetPx={sidebarOpen ? SIDEBAR_WIDTH_OPEN : 0}
@@ -1102,6 +1106,7 @@ export default function MainPage() {
                   showChoropleth={showChoropleth}
 
                   showPoliceKillingData={showPoliceKillingData}
+                  showPoliceShootings={showPoliceShootings}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -1118,10 +1123,12 @@ export default function MainPage() {
                   showAlprCameras={selectedLayers.includes("alpr-cameras")}
                   alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
+                  showOilDrillingLocations={selectedLayers.includes("oil-drilling-locations")}
                   showNaturalDisasterIncidents={selectedLayers.some((id) => id.startsWith("nd-type:")) || selectedLayers.includes("natural-disaster-incidents")}
                   naturalDisasterIncidentTypes={selectedLayers
                     .filter((id) => id.startsWith("nd-type:"))
                     .map((id) => id.replace("nd-type:", ""))}
+                  showHeartDiseaseMortality={selectedLayers.includes("heart-disease")}
                   showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
                   nationalRiskIndexHazard={
                     selectedLayers.find((l) => l.startsWith("nri-hz:"))?.slice("nri-hz:".length) ?? null
@@ -1153,12 +1160,13 @@ export default function MainPage() {
                   showAirQuality={selectedLayers.includes("air-quality")}
                   showNoisePollution={selectedLayers.includes("noise-pollution")}
                   showRuralAccess={selectedLayers.includes("rural-access") }
+                  showBreastCancerIncidence={selectedLayers.includes("breast-cancer")}
                   ruralAccessYear={ruralAccessYear}
                   onRuralAccessYearChange={setRuralAccessYear}
                   nasaLayerIds={selectedLayers.filter((id) => id.startsWith(NASA_PREFIX))}
                   nasaDate={nasaDate}
                   onNasaDateChange={setNasaDate}
-                  
+
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
                   showDataCenters={selectedLayers.includes("data-centers")}
@@ -1280,6 +1288,8 @@ export default function MainPage() {
 
                   showPoliceKillingData={showPoliceKillingData}
                   onTogglePoliceKillingData={() => setShowPoliceKillingData((v) => !v)}
+                  showPoliceShootings={showPoliceShootings}
+                  onTogglePoliceShootings={() => setShowPoliceShootings((v) => !v)}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -1305,7 +1315,7 @@ export default function MainPage() {
                   onSelectedRaceCensusIdChange={setSelectedRaceCensusId}
                   selectedSexId={selectedSexId}
                   onSelectedSexIdChange={setSelectedSexId}
-                  
+
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
                   povertyYear={povertyYear}
@@ -1396,8 +1406,8 @@ export default function MainPage() {
       )}
 
       {/* Share Popup */}
-      <SharePopup 
-        isOpen={isShareOpen} 
+      <SharePopup
+        isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         mapContainerRef={mapSectionRef}
       />
@@ -1435,7 +1445,7 @@ export default function MainPage() {
 
       {/* Sign Up Modal */}
       {isSignUpOpen && (
-        <SignUp 
+        <SignUp
           isOpen={isSignUpOpen}
           onClose={() => setIsSignUpOpen(false)}
           onLogin={(email, plan, verified) => {
@@ -1457,8 +1467,8 @@ export default function MainPage() {
 
       {/* Login Modal */}
       {isLoginOpen && (
-        <Login 
-          isOpen={isLoginOpen} 
+        <Login
+          isOpen={isLoginOpen}
           onClose={() => {
             setIsLoginOpen(false);
             setPendingPlan(null);
@@ -1474,7 +1484,7 @@ export default function MainPage() {
       {/* Verify Modal */}
       {isVerifyOpen && (
         <Verify
-          isOpen={isVerifyOpen} 
+          isOpen={isVerifyOpen}
           onClose={() => setIsVerifyOpen(false)}
           onLogin={(email) => {
             // Reaching this callback means the email was just verified.
@@ -1486,7 +1496,7 @@ export default function MainPage() {
       {/* Password Reset Modal */}
       {isResetOpen && (
         <Reset
-          isOpen={isResetOpen} 
+          isOpen={isResetOpen}
           onClose={() => setIsResetOpen(false)}
         />
       )}

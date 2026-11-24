@@ -48,7 +48,7 @@ const MISCONDUCT_SHEET_URL =
  * megabytes, and parsing it per request is what exhausts the container.
  */
 function getMpvDataset() {
-    return getCached("lawEnforcement:mpv", DATASET_TTL_MS, async () => {
+    return getCached("lawEnforcement:mpv:v2", DATASET_TTL_MS, async () => {
         const response = await axios.get(MPV_DATASET_URL, { responseType: "arraybuffer" });
         const workbook = XLSX.read(response.data, { type: "buffer" });
         const { byPostalCode } = await getZipData();
@@ -62,6 +62,7 @@ function getMpvDataset() {
                     incident["Media description of the circumstances surrounding the death"],
                 "Link to news article or photo of official document":
                     incident["Link to news article or photo of official document"],
+                "Cause of death": incident["Cause of death"],
             }));
 
         return {
@@ -110,6 +111,19 @@ router.get('/policeVictimCases', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error });
+    }
+});
+
+// Firearm-caused deaths by police, filtered from the Mapping Police Violence dataset.
+router.get('/policeShootingVictimCases', async (req, res) => {
+    try {
+        const { cases } = await getMpvDataset();
+        res.json(cases.filter((incident) =>
+            /gunshot|gunfire|firearm|shooting/i.test(String(incident["Cause of death"] ?? ""))
+        ));
+    } catch (error) {
+        console.error("[lawEnforcement/policeShootingVictimCases]", error.message);
+        res.status(500).json({ error: "Failed to fetch fatal police shooting data" });
     }
 });
 
