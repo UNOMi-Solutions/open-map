@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import BreastCancerIncidenceChoropleth from "./BreastCancerIncidenceChoropleth";
 import {
   MapContainer,
   GeoJSON,
@@ -406,6 +407,7 @@ export default function LeafletMap({
   showAirQuality = false,
   showNoisePollution = false,
   showRuralAccess = false,
+  showBreastCancerIncidence = false,
   ruralAccessYear = 2021,
   onRuralAccessYearChange,
   showGHGEmissions = false,
@@ -482,7 +484,8 @@ export default function LeafletMap({
   showAirQuality?: boolean;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
-  showRuralAccess?: boolean;  
+  showRuralAccess?: boolean;
+  showBreastCancerIncidence?: boolean;
   ruralAccessYear?: number;
   onRuralAccessYearChange?: (year: number) => void;
   
@@ -1875,7 +1878,11 @@ export default function LeafletMap({
   useEffect(() => {
     const el = choroplethLegendElRef.current;
     if (!el) return;
-    if (!choroplethVisible || !choroplethLegendItems.length) {
+    if (
+      !choroplethVisible ||
+      !choroplethLegendItems.length ||
+      showBreastCancerIncidence
+    ) {
       el.style.display = "none";
       return;
     }
@@ -2009,6 +2016,7 @@ export default function LeafletMap({
     unemploymentPeriod,
     activeChoroplethColors,
     showSplcHateMap,
+    showBreastCancerIncidence,
   ]);
 
   /** base map threshold for zoom/clickl */
@@ -2315,7 +2323,9 @@ export default function LeafletMap({
             setLoading={setLoading}
           />
         )}        
-        
+        {showBreastCancerIncidence && (
+        <BreastCancerIncidenceChoropleth />
+        )}
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />

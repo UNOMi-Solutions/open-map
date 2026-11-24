@@ -1153,6 +1153,7 @@ export default function MainPage() {
                   showAirQuality={selectedLayers.includes("air-quality")}
                   showNoisePollution={selectedLayers.includes("noise-pollution")}
                   showRuralAccess={selectedLayers.includes("rural-access") }
+                  showBreastCancerIncidence={selectedLayers.includes("breast-cancer")}
                   ruralAccessYear={ruralAccessYear}
                   onRuralAccessYearChange={setRuralAccessYear}
                   

@@ -136,7 +136,7 @@ export const NavigationMenuSection = ({
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
     { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
-    
+
     // { id: "toxic-spills", label: "Toxic Spills" },
     // { id: "toxic-area", label: "Toxic Area" },
   ];
@@ -145,7 +145,7 @@ export const NavigationMenuSection = ({
     ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
     ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
     ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
-    
+
     // { id: "toxic-spills", label: "Toxic Spills" },
     // { id: "toxic-area", label: "Toxic Area" },
   ];
@@ -623,7 +623,7 @@ export const NavigationMenuSection = ({
                 <span className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
                   Homicide
                 </span>
-                
+
               </div>
 
                   { (showMurderData) ? <>

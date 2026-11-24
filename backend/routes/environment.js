@@ -957,4 +957,51 @@ router.get("/heartDiseaseMortality", async (_req, res) => {
         res.status(502).json({ error: "Failed to fetch heart disease mortality data" });
     }
 });
+
+let breastCancerIncidenceCache = null;
+let breastCancerIncidenceCacheAt = 0;
+const BREAST_CANCER_INCIDENCE_CACHE_MS = 24 * 60 * 60 * 1000;
+
+router.get("/breastCancerIncidence", async (req, res) => {
+    try {
+        const cacheExpired =
+            Date.now() - breastCancerIncidenceCacheAt >
+            BREAST_CANCER_INCIDENCE_CACHE_MS;
+
+        if (!breastCancerIncidenceCache || cacheExpired) {
+            const response = await axios.get(
+                "https://services.arcgis.com/n902V8mYALGk0qHD/arcgis/rest/services/NCI_State_Breast_Cancer_Incidence_Rates/FeatureServer/0/query",
+                {
+                    params: {
+                        where: "1=1",
+                        outFields:
+                            "STATE_NAME,STATE_ABBR,AllAge_F_AA_Rate,AllAge_F_Lower_CI,AllAge_F_Upper_CI,AllAge_F_Average_Count",
+                        returnGeometry: true,
+                        outSR: 4326,
+                        f: "geojson",
+                    },
+                    timeout: 30000,
+                },
+            );
+
+            if (
+                response.data?.type !== "FeatureCollection" ||
+                !Array.isArray(response.data.features)
+            ) {
+                throw new Error("ArcGIS returned an invalid GeoJSON response");
+            }
+
+            breastCancerIncidenceCache = response.data;
+            breastCancerIncidenceCacheAt = Date.now();
+        }
+
+        res.json(breastCancerIncidenceCache);
+    } catch (err) {
+        console.error("[environment/breastCancerIncidence]", err.message);
+        res.status(502).json({
+            error: "Failed to fetch breast cancer incidence data",
+        });
+    }
+});
+
 export default router;
