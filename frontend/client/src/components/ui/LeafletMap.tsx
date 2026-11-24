@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import BreastCancerIncidenceChoropleth from "./BreastCancerIncidenceChoropleth";
 import {
   MapContainer,
   GeoJSON,
@@ -45,11 +46,17 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
+import OilDrillingMarkers from "./OilDrillingMarkers";
 import MassShootingMarkers from "./MassShootingMarkers";
-
+import HeartDiseaseMortalityMarkers from "./HeartDiseaseMortalityMarkers";
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
+//Groundwater levels data
+import GroundwaterMarkers from "./GroundwaterMarkers";
+
+//Invasive Species data
+import InvasiveSpeciesMarkers from "./InvasiveSpeciesMarkers";
 // Noise pollution data
 import NoisePollutionLayer from "./NoisePollutionLayer";
 
@@ -61,8 +68,27 @@ import RuralAccessChoropleth from "./RuralAccessChoropleth";
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
+//Invasive Plants data
+import InvasivePlantMarkers from "./InvasivePlantMarkers";
+
+//Invasive Insects data
+import InvasiveInsectMarkers from "./InvasiveInsectMarkers";
+
+//Invasive Mammal data
+import InvasiveMammalMarkers from "./InvasiveMammalMarkers";
+
+//Invasive Reptile data
+import InvasiveReptileMarkers from "./InvasiveReptileMarkers";
+
+//Invasive Bird data
+import InvasiveBirdMarkers from "./InvasiveBirdMarkers";
+
+//Invasive Amphibians data
+import InvasiveAmphibianMarkers from "./InvasiveAmphibianMarkers";
+
 // Police Killing Data
 import PoliceKillings from "./PoliceKillings";
+import PoliceShootings from "./PoliceShootings";
 
 // State markers with arrest data
 import ArrestMarkers from "./ArrestMarkers";
@@ -139,7 +165,7 @@ function isState(
 }
 
 /*This object is utilized by getStateCode function.  When a user clicks on a state
-on the map, the function gets the state code so the backend route can fetch the 
+on the map, the function gets the state code so the backend route can fetch the
 corresponding data for that state*/
 const STATE_NAME_TO_CODE: Record<string, string> = {
   Alabama: "AL", Alaska: "AK", Arizona: "AZ", Arkansas: "AR", California: "CA", Colorado: "CO",
@@ -322,14 +348,14 @@ function geometryContainsPoint(
   point: [number, number]
 ): boolean {
   if (!geometry) return false;
-  
+
   // Turf expects [lng, lat] format for points
   const turfPoint = turf.point([point[0], point[1]]);
-  
+
   try {
     // Convert geometry to Turf feature
     const feature = turf.feature(geometry);
-    
+
     // Use Turf's booleanPointInPolygon for accurate point-in-polygon testing
     // Cast to any to handle all geometry types (Turf handles this internally)
     return turf.booleanPointInPolygon(turfPoint, feature as any, {
@@ -384,6 +410,7 @@ export default function LeafletMap({
   showChoropleth = true,
 
   showPoliceKillingData = false,
+  showPoliceShootings = false,
 
   showMurderData = false,
   murderCategory = "victim",
@@ -401,13 +428,26 @@ export default function LeafletMap({
   alprFlockOnly = false,
 
   /*toggle environmental information */
-  showOilSpills = false,  
+  showOilSpills = false,
+  showOilDrillingLocations = false,
+  showHeartDiseaseMortality = false,
   showAirQuality = false,
   showDams = false,
   selectedDamHazard = "all",
   selectedDamYear = "all",
+  showGroundwaterLevels = false,
+  selectedGroundwaterYear = "all",
+  showInvasiveSpecies = false,
+  showInvasivePlants = false,
+  showInvasiveInsects = false,
+  showInvasiveMammals = false,
+  showInvasiveReptiles = false,
+  showInvasiveBirds = false,
+  showInvasiveAmphibians = false,
+  selectedInvasiveYear = "all",
   showNoisePollution = false,
   showRuralAccess = false,
+  showBreastCancerIncidence = false,
   ruralAccessYear = 2021,
   onRuralAccessYearChange,
   showGHGEmissions = false,
@@ -461,7 +501,8 @@ export default function LeafletMap({
   showChoropleth?: boolean;
 
   showPoliceKillingData?: boolean;
-  
+  showPoliceShootings?: boolean;
+
   showMurderData?: boolean;
   murderCategory?: string;
   murderAttribute?: string;
@@ -480,15 +521,29 @@ export default function LeafletMap({
   showAlprCameras?: boolean;
   alprFlockOnly?: boolean;
   showOilSpills?: boolean;
+  showOilDrillingLocations?: boolean;
+  showHeartDiseaseMortality?: boolean;
   showAirQuality?: boolean;
   showDams?: boolean;
   selectedDamHazard?: string;
   selectedDamYear?: string;
+  showGroundwaterLevels?: boolean;
+  selectedGroundwaterYear: string;
+  showInvasiveSpecies?: boolean;
+  showInvasivePlants?: boolean;
+  showInvasiveInsects?: boolean;
+  showInvasiveMammals?: boolean;
+  showInvasiveReptiles?: boolean;
+  showInvasiveBirds?: boolean;
+  showInvasiveAmphibians?: boolean;
+  selectedInvasiveYear?: string;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
-  showRuralAccess?: boolean;  
+  showRuralAccess?: boolean;
+  showBreastCancerIncidence?: boolean;
   ruralAccessYear?: number;
   onRuralAccessYearChange?: (year: number) => void;
+
   showWasteTreatmentDisposal?: boolean;
   showEarthquakes?: boolean;
   earthquakeMinMagnitude?: number | null;
@@ -1878,7 +1933,11 @@ export default function LeafletMap({
   useEffect(() => {
     const el = choroplethLegendElRef.current;
     if (!el) return;
-    if (!choroplethVisible || !choroplethLegendItems.length) {
+    if (
+      !choroplethVisible ||
+      !choroplethLegendItems.length ||
+      showBreastCancerIncidence
+    ) {
       el.style.display = "none";
       return;
     }
@@ -2012,6 +2071,7 @@ export default function LeafletMap({
     unemploymentPeriod,
     activeChoroplethColors,
     showSplcHateMap,
+    showBreastCancerIncidence,
   ]);
 
   /** base map threshold for zoom/clickl */
@@ -2106,7 +2166,7 @@ export default function LeafletMap({
       });
     });
   };
-  
+
   return (
     <div
       ref={mapSectionRef}
@@ -2217,6 +2277,12 @@ export default function LeafletMap({
             onDateRangeChange={onDateRangeChange}
           />
         )}
+        {showOilDrillingLocations && (
+          <OilDrillingMarkers setLoading={setLoading} />
+        )}
+        {showHeartDiseaseMortality && (
+          <HeartDiseaseMortalityMarkers setLoading={setLoading} />
+       )}
 
         {/* FEMA National Risk Index – county risk ratings, overall or for one hazard */}
         {showNationalRiskIndex && (
@@ -2323,11 +2389,68 @@ export default function LeafletMap({
             onYearChange={onRuralAccessYearChange}
             setLoading={setLoading}
           />
-        )}        
-        
+        )}
+        {showBreastCancerIncidence && (
+        <BreastCancerIncidenceChoropleth />
+        )}
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
+        )}
+
+        {/* Groundwater levels */}
+        {showGroundwaterLevels && (
+          <GroundwaterMarkers
+            setLoading={setLoading}
+            selectedYear={selectedGroundwaterYear}
+          />
+        )}
+
+        {/* Invasive species */}
+        {showInvasiveSpecies && (
+          <InvasiveSpeciesMarkers setLoading={setLoading} selectedYear={selectedInvasiveYear}/>
+        )}
+
+        {showInvasivePlants && (
+          <InvasivePlantMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveInsects && (
+          <InvasiveInsectMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveMammals && (
+          <InvasiveMammalMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveReptiles && (
+          <InvasiveReptileMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveBirds && (
+          <InvasiveBirdMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveAmphibians && (
+          <InvasiveAmphibianMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
         )}
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}
@@ -2358,6 +2481,7 @@ export default function LeafletMap({
           timelineRange={markerTimelineRange}
           onDateRangeChange={onDateRangeChange}
         />
+        <PoliceShootings show={showPoliceShootings} setLoading={setLoading} />
 
         {showAlprCameras && (
           <AlprCameraMarkers flockOnly={alprFlockOnly} setLoading={setLoading} />
@@ -2366,7 +2490,7 @@ export default function LeafletMap({
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
 
-        <MissingPersons 
+        <MissingPersons
           showMissingPersonsData={showMissingPersonsData}
           timelineRange={markerTimelineRange}
           onDateRangeChange={onDateRangeChange}
