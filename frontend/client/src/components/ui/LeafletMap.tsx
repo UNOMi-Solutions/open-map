@@ -530,13 +530,6 @@ export default function LeafletMap({
 
   /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
   showMassShootings?: boolean;
-<<<<<<< HEAD
-
-  showNaturalDisasterIncidents?: boolean;
-  naturalDisasterIncidentTypes?: string[];
-
-=======
->>>>>>> origin/main
   showConsentAgeData?: boolean;
   showArsonData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
