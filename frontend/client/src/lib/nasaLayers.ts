@@ -22,6 +22,8 @@ export type NasaLayer = {
   imagery?: boolean;
   /** Periods to step back from NASA's newest date. Default 1: the newest period is often still filling in. */
   lag?: number;
+  /** For layers without a time dimension: the period the data describes, shown in the legend */
+  dataDate?: string;
   /** Gridded land datasets that end near 60 S: GIBS paints the area past the grid as a solid
    *  fill colour or noise, so these layers stop at 60 S (LAND_BOUNDS in NasaLayers.tsx). */
   landOnly?: boolean;
@@ -36,6 +38,7 @@ export const NASA_GROUPS: NasaGroup[] = [
   "People and Nature",
 ];
 
+// dataDate: the year in the GIBS identifier; Built-up Areas is SEDAC's HBASE dataset (Landsat, 2010).
 export const NASA_LAYERS: NasaLayer[] = [
   { id: "true-color", gibsId: "VIIRS_NOAA20_CorrectedReflectance_TrueColor", title: "Satellite Photo (daily)", note: "What the surface and clouds looked like from orbit that day.", group: "Imagery", imagery: true },
   { id: "night-lights", gibsId: "VIIRS_Black_Marble", title: "Earth at Night", note: "City and settlement lights, cloud-free yearly composite.", group: "Imagery", imagery: true },
@@ -58,15 +61,15 @@ export const NASA_LAYERS: NasaLayer[] = [
   { id: "vegetation", gibsId: "MODIS_Terra_L3_NDVI_Monthly", title: "Vegetation Greenness", note: "How green and dense plant cover is, monthly (NDVI).", group: "Land and Water" },
   { id: "soil-moisture", gibsId: "SMAP_L4_Analyzed_Surface_Soil_Moisture", title: "Soil Moisture", note: "Water in the top layer of soil (SMAP satellite plus model).", group: "Land and Water" },
   { id: "land-cover", gibsId: "MODIS_Combined_L3_IGBP_Land_Cover_Type_Annual", title: "Land Cover", note: "Forest, cropland, grassland, urban and other cover types, yearly.", group: "Land and Water" },
-  { id: "croplands", gibsId: "Agricultural_Lands_Croplands_2000", title: "Croplands", note: "Share of land that is farmed (year 2000).", group: "Land and Water", landOnly: true },
-  { id: "pastures", gibsId: "Agricultural_Lands_Pastures_2000", title: "Pastures", note: "Share of land that is grazed (year 2000).", group: "Land and Water", landOnly: true },
+  { id: "croplands", gibsId: "Agricultural_Lands_Croplands_2000", title: "Croplands", note: "Share of land that is farmed (year 2000).", group: "Land and Water", landOnly: true, dataDate: "2000" },
+  { id: "pastures", gibsId: "Agricultural_Lands_Pastures_2000", title: "Pastures", note: "Share of land that is grazed (year 2000).", group: "Land and Water", landOnly: true, dataDate: "2000" },
   { id: "elevation", gibsId: "ASTER_GDEM_Color_Shaded_Relief", title: "Terrain and Elevation", note: "Shaded relief coloured by height above sea level.", group: "Land and Water" },
 
-  { id: "population-density", gibsId: "GPW_Population_Density_2020", title: "Population Density", note: "People per square kilometre (2020).", group: "People and Nature", landOnly: true },
-  { id: "built-up", gibsId: "Landsat_Human_Built-up_And_Settlement_Extent", title: "Built-up Areas", note: "Where buildings and pavement cover the ground (Landsat).", group: "People and Nature" },
-  { id: "human-footprint", gibsId: "Human_Footprint_1995-2004", title: "Human Footprint", note: "Combined human pressure on the land (1995 to 2004).", group: "People and Nature", landOnly: true },
-  { id: "mammal-richness", gibsId: "Mammal_Richness_Grids_All_Species_2013", title: "Mammal Species Richness", note: "Number of mammal species whose range covers each place.", group: "People and Nature", landOnly: true },
-  { id: "amphibian-richness", gibsId: "Amphibian_Richness_All_Species_2013", title: "Amphibian Species Richness", note: "Number of amphibian species whose range covers each place.", group: "People and Nature", landOnly: true },
+  { id: "population-density", gibsId: "GPW_Population_Density_2020", title: "Population Density", note: "People per square kilometre (2020).", group: "People and Nature", landOnly: true, dataDate: "2020" },
+  { id: "built-up", gibsId: "Landsat_Human_Built-up_And_Settlement_Extent", title: "Built-up Areas", note: "Where buildings and pavement cover the ground (Landsat).", group: "People and Nature", dataDate: "2010" },
+  { id: "human-footprint", gibsId: "Human_Footprint_1995-2004", title: "Human Footprint", note: "Combined human pressure on the land (1995 to 2004).", group: "People and Nature", landOnly: true, dataDate: "1995 to 2004" },
+  { id: "mammal-richness", gibsId: "Mammal_Richness_Grids_All_Species_2013", title: "Mammal Species Richness", note: "Number of mammal species whose range covers each place.", group: "People and Nature", landOnly: true, dataDate: "2013" },
+  { id: "amphibian-richness", gibsId: "Amphibian_Richness_All_Species_2013", title: "Amphibian Species Richness", note: "Number of amphibian species whose range covers each place.", group: "People and Nature", landOnly: true, dataDate: "2013" },
 ];
 
 /** Changes whenever the set of GIBS ids changes. cached metadata is refetched. */
@@ -166,4 +169,37 @@ export function describeTime(meta: NasaLayerMeta, time: string | null): string {
   if (isSubdaily(meta)) return `Latest pass, ${date}`;
   const cadence = !p ? "" : unit === "M" ? "Monthly" : unit === "Y" ? "Yearly" : p[1] === "1" ? "Daily" : `${p[1]}-day`;
   return cadence ? `${cadence}, ${date}` : date;
+}
+
+/**
+ * Every date this layer can show, as UTC-midnight timestamps, up to its newest complete period
+ * (the same "latest" resolveTime uses). Feeds the global timeline so it only offers real dates.
+ */
+export function availableDays(meta: NasaLayerMeta, lag = 1): number[] {
+  if (!meta.hasTime || !meta.defaultTime) return [];
+  const latest = resolveTime(meta, null, lag);
+  if (!latest) return [];
+  if (isSubdaily(meta)) return [toMs(latest)];
+  const last = toMs(latest);
+  const out: number[] = [];
+  for (const r of meta.ranges) {
+    const start = toMs(r.start);
+    const end = Math.min(toMs(r.end), last);
+    const p = period(r.interval);
+    if (!p) {
+      if (start <= last) out.push(start);
+      continue;
+    }
+    const n = Number(p[1]);
+    for (let i = 0, t = start; t <= end; i++) {
+      out.push(t);
+      if (p[2] === "D") t = start + (i + 1) * n * DAY_MS;
+      else {
+        const d = new Date(start);
+        d.setUTCMonth(d.getUTCMonth() + (i + 1) * n * (p[2] === "Y" ? 12 : 1));
+        t = d.getTime();
+      }
+    }
+  }
+  return out;
 }

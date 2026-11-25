@@ -643,9 +643,9 @@ export const NavigationMenuSection = ({
   const sexSectionDisabled = hasRaceSelection || hasAgeSelection;
 
   return (
-    <div className="absolute inset-0 w-full">
+    <div className="absolute inset-0 flex w-full flex-col">
       <div className="absolute inset-0 bg-[#06012A]/80 pointer-events-none" />
-      <div className="relative z-10">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
       {/* OpenMap Logo */}
       <div className="flex justify-center pt-7">
         <img
@@ -686,7 +686,8 @@ export const NavigationMenuSection = ({
         </button>
       </div>
 
-      <div className="mt-12 px-12 overflow-y-auto overscroll-contain">
+      {/* fills the space under the search box; only the accordion list below scrolls */}
+      <div className="mt-12 flex min-h-0 flex-1 flex-col px-12">
         <h2 className="text-[17px] text-white font-semibold font-futura leading-[100%] text-center">
           Search Categories
         </h2>
@@ -713,10 +714,7 @@ export const NavigationMenuSection = ({
           </button>
         </div>
       {/* Scrollable accordion area */}
-      <div 
-        className="mt-8 ml-6 mr-6 pr-4 overflow-y-auto overscroll-contain"
-        style={{ maxHeight: "calc(100vh - 260px)" }}
-      >
+      <div className="mt-8 ml-6 mr-6 min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 pr-4">
         <Accordion type="multiple" className="w-full">
         <AccordionItem value="environment" className="border-0">
           <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">

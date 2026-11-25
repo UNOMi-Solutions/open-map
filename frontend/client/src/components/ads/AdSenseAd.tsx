@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { AD_PREVIEW } from "./slots";
 
 declare global {
   interface Window {
@@ -36,6 +37,8 @@ type AdSenseAdProps = {
   wrapperStyle?: React.CSSProperties;
   /** Optional label rendered above the ad ("Advertisement"). Off by default. */
   showLabel?: boolean;
+  /** Shown in the VITE_AD_PREVIEW placeholder: the unit's size and the variable that sets its slot */
+  preview?: { size: string; envVar: string; minHeight: number };
 };
 
 /**
@@ -56,6 +59,7 @@ export default function AdSenseAd({
   className,
   wrapperStyle,
   showLabel = false,
+  preview,
 }: AdSenseAdProps) {
   const pushed = useRef(false);
 
@@ -74,7 +78,23 @@ export default function AdSenseAd({
     }
   }, [slot]);
 
-  if (!slot) return null;
+  if (!slot) {
+    if (!AD_PREVIEW || !preview) return null; // no slot ID yet: draw nothing, not an empty box
+    return (
+      <div className={className} style={wrapperStyle}>
+        <div
+          className="flex flex-col items-center justify-center rounded-md border border-dashed border-white/30 bg-white/5 p-3 text-center text-[11px] text-white/60"
+          style={{ minHeight: preview.minHeight }}
+        >
+          <span className="text-[10px] uppercase tracking-wider text-white/40">Ad preview</span>
+          <span className="mt-1 font-semibold text-white/80">{preview.size}</span>
+          <span className="mt-1">
+            Set <code className="text-sky-300">{preview.envVar}</code> to show the real unit
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={className} style={wrapperStyle}>

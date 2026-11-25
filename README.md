@@ -274,3 +274,41 @@ The "Satellite (NASA)" sidebar section shows raster layers from NASA GIBS (Globa
 - The date picker applies to all NASA layers at once; each layer shows its closest earlier data and the legend states the date actually shown. Layers without a time dimension are labelled "Fixed dataset".
 - Data layers draw at 70% opacity; photo imagery is opaque and sits below them. Layers cover the whole globe and repeat across the date line like the base map; only tiles in view are requested.
 - These are satellite retrievals and model estimates, not ground measurements; the legend says so.
+
+---
+
+## Global Timeline
+
+One panel (`frontend/client/src/components/ui/MapTimeline.tsx`, built from the reusable `DateTimeline.tsx`) controls the dates of every dated layer.
+
+- **Single-date layers** (economics, each NASA layer) keep their own day. Each gets a colour: a dot on the ruler at the day it shows, a chip above the ruler, and an outline on its legend row (NASA for now). Dots for the same or nearby days stack.
+- **All** (default) moves every single-date layer to the picked day; each shows its latest day with data on or before it. Clicking a chip or dot focuses that layer so the ruler moves only it.
+- **Date saver:** each layer's last day is remembered after it is switched off (and in this browser across reloads) and restored when it is switched back on. Reset all filters clears it.
+- **Span layers** (oil spills, storms, ...) share a range slider in the same panel.
+- **While the bar moves**, each dot steps to the day its layer would show and legend dates update live (`lib/timelinePreview.ts`); the map reloads only when the change is committed.
+- **Folding:** the chevron (or the summary line) folds the panel to one line with the dates on show; the choice is remembered in this browser.
+- Days without data in any active layer are hatched "No data", each layer judged by its own spacing.
+
+**Feeding it from a layer:** call the `onDateRangeChange` prop that LeafletMap passes to layers, and clear it on unmount:
+
+```ts
+onDateRangeChange("my-dataset", { start, end }, { label: "My Dataset", single: true, availableDates });
+return () => onDateRangeChange("my-dataset", null);
+```
+
+The third argument is optional. A single-date layer reads its day from `datasetRanges["my-dataset"]` (LeafletMap prop) and should wait for it before fetching, so a remembered day does not cost a throwaway first load.
+
+**Using the control elsewhere:** `<DateTimeline mode="single" | "range" min max value onCommit availableDates? markers? onMarkerClick? accent? gaps? title? embedded? className? />`. The date can be dragged, clicked, scrolled (one available date per wheel notch, Shift for bigger jumps), stepped with the arrow keys, or typed (2026-01-10, 1/10/2026, Jan 10 2026, January 2026, 2026). The map updates only on commit (pointer up, Enter, or 250 ms after the last scroll or key press).
+
+---
+
+## Ad placements
+
+| Placement | Component | Slot variable | Size | Where |
+|---|---|---|---|---|
+| Right column | `VideoAd` | `VITE_ADSENSE_SLOT_VIDEO` | 300×250 | In the map's right column under the legends (`MapRail`); scrolls with them and stops above the timeline. On the landing screen it sits in the right rail. |
+| Bottom banner | `BannerAd` | `VITE_ADSENSE_SLOT_BANNER` | responsive, about 728×90 | Bottom of the map; ends left of the timeline panel while the timeline is open. |
+
+- A placement draws only when its slot ID is set (Vercel environment variables, see `components/ads/slots.ts`), so an unfilled slot never leaves an empty box over the legends or the timeline. AdSense also only fills units once the site is approved.
+- **Preview locally:** start the frontend with `VITE_AD_PREVIEW=true` (for example `VITE_AD_PREVIEW=true npm run web`). Slots without an ID then show a dashed placeholder at the real size naming the variable to set. Never set it in production.
+- Premium users and the open sidebar hide both placements, as before.
