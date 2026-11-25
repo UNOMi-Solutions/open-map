@@ -42,6 +42,7 @@ export default function VideoAd({
       className={className}
       wrapperStyle={style}
       style={{ display: "block", width: "100%", minHeight: 250 }}
+      preview={{ size: "Video / multiplex unit, 300×250", envVar: "VITE_ADSENSE_SLOT_VIDEO", minHeight: 250 }}
     />
   );
 }

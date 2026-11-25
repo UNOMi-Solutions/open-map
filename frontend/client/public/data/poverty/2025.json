@@ -1,0 +1,4317 @@
+{
+  "01003": {
+    "name": "Baldwin County",
+    "rate": 9.0,
+    "count": 23871
+  },
+  "01015": {
+    "name": "Calhoun County",
+    "rate": 16.8,
+    "count": 18745
+  },
+  "01043": {
+    "name": "Cullman County",
+    "rate": 13.0,
+    "count": 11989
+  },
+  "01049": {
+    "name": "DeKalb County",
+    "rate": 19.5,
+    "count": 14319
+  },
+  "01051": {
+    "name": "Elmore County",
+    "rate": 10.8,
+    "count": 9465
+  },
+  "01055": {
+    "name": "Etowah County",
+    "rate": 19.5,
+    "count": 19889
+  },
+  "01069": {
+    "name": "Houston County",
+    "rate": 16.3,
+    "count": 17726
+  },
+  "01073": {
+    "name": "Jefferson County",
+    "rate": 15.8,
+    "count": 102135
+  },
+  "01077": {
+    "name": "Lauderdale County",
+    "rate": 14.2,
+    "count": 13263
+  },
+  "01081": {
+    "name": "Lee County",
+    "rate": 15.2,
+    "count": 27664
+  },
+  "01083": {
+    "name": "Limestone County",
+    "rate": 10.3,
+    "count": 12325
+  },
+  "01089": {
+    "name": "Madison County",
+    "rate": 10.4,
+    "count": 43893
+  },
+  "01095": {
+    "name": "Marshall County",
+    "rate": 14.3,
+    "count": 14582
+  },
+  "01097": {
+    "name": "Mobile County",
+    "rate": 14.3,
+    "count": 57707
+  },
+  "01101": {
+    "name": "Montgomery County",
+    "rate": 16.4,
+    "count": 35612
+  },
+  "01103": {
+    "name": "Morgan County",
+    "rate": 11.5,
+    "count": 14272
+  },
+  "01115": {
+    "name": "St. Clair County",
+    "rate": 13.2,
+    "count": 12721
+  },
+  "01117": {
+    "name": "Shelby County",
+    "rate": 6.8,
+    "count": 15898
+  },
+  "01121": {
+    "name": "Talladega County",
+    "rate": 13.7,
+    "count": 10739
+  },
+  "01125": {
+    "name": "Tuscaloosa County",
+    "rate": 17.5,
+    "count": 39129
+  },
+  "01127": {
+    "name": "Walker County",
+    "rate": 15.3,
+    "count": 9782
+  },
+  "02020": {
+    "name": "Anchorage Municipality",
+    "rate": 9.8,
+    "count": 27350
+  },
+  "02090": {
+    "name": "Fairbanks North Star Borough",
+    "rate": 10.0,
+    "count": 9079
+  },
+  "02170": {
+    "name": "Matanuska-Susitna Borough",
+    "rate": 8.7,
+    "count": 10150
+  },
+  "04001": {
+    "name": "Apache County",
+    "rate": 33.0,
+    "count": 20833
+  },
+  "04003": {
+    "name": "Cochise County",
+    "rate": 15.5,
+    "count": 18760
+  },
+  "04005": {
+    "name": "Coconino County",
+    "rate": 16.0,
+    "count": 21231
+  },
+  "04013": {
+    "name": "Maricopa County",
+    "rate": 10.1,
+    "count": 467327
+  },
+  "04015": {
+    "name": "Mohave County",
+    "rate": 14.9,
+    "count": 33339
+  },
+  "04017": {
+    "name": "Navajo County",
+    "rate": 20.7,
+    "count": 22314
+  },
+  "04019": {
+    "name": "Pima County",
+    "rate": 13.7,
+    "count": 143982
+  },
+  "04021": {
+    "name": "Pinal County",
+    "rate": 13.8,
+    "count": 72288
+  },
+  "04025": {
+    "name": "Yavapai County",
+    "rate": 10.7,
+    "count": 26566
+  },
+  "04027": {
+    "name": "Yuma County",
+    "rate": 14.0,
+    "count": 30195
+  },
+  "05007": {
+    "name": "Benton County",
+    "rate": 6.8,
+    "count": 22348
+  },
+  "05031": {
+    "name": "Craighead County",
+    "rate": 22.0,
+    "count": 24918
+  },
+  "05045": {
+    "name": "Faulkner County",
+    "rate": 14.5,
+    "count": 18719
+  },
+  "05051": {
+    "name": "Garland County",
+    "rate": 13.2,
+    "count": 13023
+  },
+  "05069": {
+    "name": "Jefferson County",
+    "rate": 21.3,
+    "count": 11921
+  },
+  "05085": {
+    "name": "Lonoke County",
+    "rate": 10.3,
+    "count": 7785
+  },
+  "05119": {
+    "name": "Pulaski County",
+    "rate": 15.4,
+    "count": 60858
+  },
+  "05125": {
+    "name": "Saline County",
+    "rate": 7.7,
+    "count": 10144
+  },
+  "05131": {
+    "name": "Sebastian County",
+    "rate": 16.2,
+    "count": 20796
+  },
+  "05143": {
+    "name": "Washington County",
+    "rate": 15.8,
+    "count": 41410
+  },
+  "05145": {
+    "name": "White County",
+    "rate": 10.1,
+    "count": 7854
+  },
+  "06001": {
+    "name": "Alameda County",
+    "rate": 9.8,
+    "count": 158210
+  },
+  "06007": {
+    "name": "Butte County",
+    "rate": 17.1,
+    "count": 35076
+  },
+  "06013": {
+    "name": "Contra Costa County",
+    "rate": 7.8,
+    "count": 90631
+  },
+  "06017": {
+    "name": "El Dorado County",
+    "rate": 5.9,
+    "count": 11273
+  },
+  "06019": {
+    "name": "Fresno County",
+    "rate": 17.1,
+    "count": 174261
+  },
+  "06023": {
+    "name": "Humboldt County",
+    "rate": 14.7,
+    "count": 18919
+  },
+  "06025": {
+    "name": "Imperial County",
+    "rate": 20.0,
+    "count": 34954
+  },
+  "06029": {
+    "name": "Kern County",
+    "rate": 17.2,
+    "count": 156285
+  },
+  "06031": {
+    "name": "Kings County",
+    "rate": 16.1,
+    "count": 22597
+  },
+  "06033": {
+    "name": "Lake County",
+    "rate": 19.3,
+    "count": 12927
+  },
+  "06037": {
+    "name": "Los Angeles County",
+    "rate": 12.6,
+    "count": 1200273
+  },
+  "06039": {
+    "name": "Madera County",
+    "rate": 15.7,
+    "count": 25455
+  },
+  "06041": {
+    "name": "Marin County",
+    "rate": 8.7,
+    "count": 21655
+  },
+  "06045": {
+    "name": "Mendocino County",
+    "rate": 15.1,
+    "count": 13170
+  },
+  "06047": {
+    "name": "Merced County",
+    "rate": 16.7,
+    "count": 48910
+  },
+  "06053": {
+    "name": "Monterey County",
+    "rate": 10.6,
+    "count": 44038
+  },
+  "06055": {
+    "name": "Napa County",
+    "rate": 7.8,
+    "count": 10226
+  },
+  "06057": {
+    "name": "Nevada County",
+    "rate": 8.9,
+    "count": 8946
+  },
+  "06059": {
+    "name": "Orange County",
+    "rate": 8.6,
+    "count": 268211
+  },
+  "06061": {
+    "name": "Placer County",
+    "rate": 6.5,
+    "count": 28473
+  },
+  "06065": {
+    "name": "Riverside County",
+    "rate": 10.0,
+    "count": 250367
+  },
+  "06067": {
+    "name": "Sacramento County",
+    "rate": 11.8,
+    "count": 188985
+  },
+  "06069": {
+    "name": "San Benito County",
+    "rate": 7.9,
+    "count": 5515
+  },
+  "06071": {
+    "name": "San Bernardino County",
+    "rate": 12.6,
+    "count": 275077
+  },
+  "06073": {
+    "name": "San Diego County",
+    "rate": 9.9,
+    "count": 315722
+  },
+  "06075": {
+    "name": "San Francisco County",
+    "rate": 11.8,
+    "count": 96130
+  },
+  "06077": {
+    "name": "San Joaquin County",
+    "rate": 11.9,
+    "count": 96416
+  },
+  "06079": {
+    "name": "San Luis Obispo County",
+    "rate": 13.6,
+    "count": 36201
+  },
+  "06081": {
+    "name": "San Mateo County",
+    "rate": 6.3,
+    "count": 46698
+  },
+  "06083": {
+    "name": "Santa Barbara County",
+    "rate": 12.7,
+    "count": 53292
+  },
+  "06085": {
+    "name": "Santa Clara County",
+    "rate": 6.7,
+    "count": 125765
+  },
+  "06087": {
+    "name": "Santa Cruz County",
+    "rate": 10.4,
+    "count": 25723
+  },
+  "06089": {
+    "name": "Shasta County",
+    "rate": 16.0,
+    "count": 28597
+  },
+  "06095": {
+    "name": "Solano County",
+    "rate": 8.9,
+    "count": 39835
+  },
+  "06097": {
+    "name": "Sonoma County",
+    "rate": 9.4,
+    "count": 45076
+  },
+  "06099": {
+    "name": "Stanislaus County",
+    "rate": 16.4,
+    "count": 90552
+  },
+  "06101": {
+    "name": "Sutter County",
+    "rate": 13.5,
+    "count": 13255
+  },
+  "06103": {
+    "name": "Tehama County",
+    "rate": 13.2,
+    "count": 8494
+  },
+  "06107": {
+    "name": "Tulare County",
+    "rate": 21.0,
+    "count": 100521
+  },
+  "06111": {
+    "name": "Ventura County",
+    "rate": 9.0,
+    "count": 73994
+  },
+  "06113": {
+    "name": "Yolo County",
+    "rate": 18.2,
+    "count": 38964
+  },
+  "06115": {
+    "name": "Yuba County",
+    "rate": 11.9,
+    "count": 10355
+  },
+  "08001": {
+    "name": "Adams County",
+    "rate": 9.5,
+    "count": 52185
+  },
+  "08005": {
+    "name": "Arapahoe County",
+    "rate": 6.3,
+    "count": 42310
+  },
+  "08013": {
+    "name": "Boulder County",
+    "rate": 12.1,
+    "count": 38113
+  },
+  "08014": {
+    "name": "Broomfield County",
+    "rate": 4.9,
+    "count": 3868
+  },
+  "08031": {
+    "name": "Denver County",
+    "rate": 10.5,
+    "count": 76458
+  },
+  "08035": {
+    "name": "Douglas County",
+    "rate": 3.2,
+    "count": 12714
+  },
+  "08041": {
+    "name": "El Paso County",
+    "rate": 8.8,
+    "count": 64705
+  },
+  "08059": {
+    "name": "Jefferson County",
+    "rate": 7.3,
+    "count": 41907
+  },
+  "08069": {
+    "name": "Larimer County",
+    "rate": 11.5,
+    "count": 41982
+  },
+  "08077": {
+    "name": "Mesa County",
+    "rate": 14.3,
+    "count": 22657
+  },
+  "08101": {
+    "name": "Pueblo County",
+    "rate": 14.9,
+    "count": 24574
+  },
+  "08123": {
+    "name": "Weld County",
+    "rate": 9.5,
+    "count": 35338
+  },
+  "09110": {
+    "name": "Capitol Planning Region",
+    "rate": 9.6,
+    "count": 91959
+  },
+  "09120": {
+    "name": "Greater Bridgeport Planning Region",
+    "rate": 12.6,
+    "count": 41126
+  },
+  "09130": {
+    "name": "Lower Connecticut River Valley Planning Region",
+    "rate": 5.0,
+    "count": 8596
+  },
+  "09140": {
+    "name": "Naugatuck Valley Planning Region",
+    "rate": 8.4,
+    "count": 38290
+  },
+  "09150": {
+    "name": "Northeastern Connecticut Planning Region",
+    "rate": 8.2,
+    "count": 7942
+  },
+  "09160": {
+    "name": "Northwest Hills Planning Region",
+    "rate": 8.4,
+    "count": 9506
+  },
+  "09170": {
+    "name": "South Central Connecticut Planning Region",
+    "rate": 11.7,
+    "count": 64943
+  },
+  "09180": {
+    "name": "Southeastern Connecticut Planning Region",
+    "rate": 9.0,
+    "count": 24574
+  },
+  "09190": {
+    "name": "Western Connecticut Planning Region",
+    "rate": 6.2,
+    "count": 39498
+  },
+  "10001": {
+    "name": "Kent County",
+    "rate": 9.2,
+    "count": 17528
+  },
+  "10003": {
+    "name": "New Castle County",
+    "rate": 9.6,
+    "count": 54981
+  },
+  "10005": {
+    "name": "Sussex County",
+    "rate": 9.5,
+    "count": 25974
+  },
+  "11001": {
+    "name": "District of Columbia",
+    "rate": 15.9,
+    "count": 105481
+  },
+  "12001": {
+    "name": "Alachua County",
+    "rate": 18.9,
+    "count": 51246
+  },
+  "12005": {
+    "name": "Bay County",
+    "rate": 9.4,
+    "count": 18855
+  },
+  "12009": {
+    "name": "Brevard County",
+    "rate": 11.5,
+    "count": 75402
+  },
+  "12011": {
+    "name": "Broward County",
+    "rate": 10.1,
+    "count": 201148
+  },
+  "12015": {
+    "name": "Charlotte County",
+    "rate": 9.1,
+    "count": 19561
+  },
+  "12017": {
+    "name": "Citrus County",
+    "rate": 14.9,
+    "count": 25336
+  },
+  "12019": {
+    "name": "Clay County",
+    "rate": 9.8,
+    "count": 23186
+  },
+  "12021": {
+    "name": "Collier County",
+    "rate": 7.8,
+    "count": 32281
+  },
+  "12023": {
+    "name": "Columbia County",
+    "rate": 20.5,
+    "count": 14310
+  },
+  "12031": {
+    "name": "Duval County",
+    "rate": 12.8,
+    "count": 133919
+  },
+  "12033": {
+    "name": "Escambia County",
+    "rate": 15.4,
+    "count": 48409
+  },
+  "12035": {
+    "name": "Flagler County",
+    "rate": 11.2,
+    "count": 15638
+  },
+  "12053": {
+    "name": "Hernando County",
+    "rate": 9.9,
+    "count": 21662
+  },
+  "12055": {
+    "name": "Highlands County",
+    "rate": 15.2,
+    "count": 16814
+  },
+  "12057": {
+    "name": "Hillsborough County",
+    "rate": 11.1,
+    "count": 171097
+  },
+  "12061": {
+    "name": "Indian River County",
+    "rate": 9.4,
+    "count": 15958
+  },
+  "12069": {
+    "name": "Lake County",
+    "rate": 9.1,
+    "count": 40858
+  },
+  "12071": {
+    "name": "Lee County",
+    "rate": 9.6,
+    "count": 82582
+  },
+  "12073": {
+    "name": "Leon County",
+    "rate": 16.5,
+    "count": 46235
+  },
+  "12081": {
+    "name": "Manatee County",
+    "rate": 9.3,
+    "count": 42968
+  },
+  "12083": {
+    "name": "Marion County",
+    "rate": 12.8,
+    "count": 55636
+  },
+  "12085": {
+    "name": "Martin County",
+    "rate": 6.6,
+    "count": 10706
+  },
+  "12086": {
+    "name": "Miami-Dade County",
+    "rate": 12.7,
+    "count": 349936
+  },
+  "12087": {
+    "name": "Monroe County",
+    "rate": 12.5,
+    "count": 9892
+  },
+  "12089": {
+    "name": "Nassau County",
+    "rate": 8.0,
+    "count": 8537
+  },
+  "12091": {
+    "name": "Okaloosa County",
+    "rate": 6.5,
+    "count": 14077
+  },
+  "12095": {
+    "name": "Orange County",
+    "rate": 9.8,
+    "count": 146647
+  },
+  "12097": {
+    "name": "Osceola County",
+    "rate": 8.2,
+    "count": 38922
+  },
+  "12099": {
+    "name": "Palm Beach County",
+    "rate": 10.3,
+    "count": 159134
+  },
+  "12101": {
+    "name": "Pasco County",
+    "rate": 9.6,
+    "count": 63810
+  },
+  "12103": {
+    "name": "Pinellas County",
+    "rate": 11.0,
+    "count": 102772
+  },
+  "12105": {
+    "name": "Polk County",
+    "rate": 14.3,
+    "count": 122094
+  },
+  "12107": {
+    "name": "Putnam County",
+    "rate": 23.5,
+    "count": 17955
+  },
+  "12109": {
+    "name": "St. Johns County",
+    "rate": 8.4,
+    "count": 28942
+  },
+  "12111": {
+    "name": "St. Lucie County",
+    "rate": 9.7,
+    "count": 38608
+  },
+  "12113": {
+    "name": "Santa Rosa County",
+    "rate": 6.9,
+    "count": 14238
+  },
+  "12115": {
+    "name": "Sarasota County",
+    "rate": 9.2,
+    "count": 43395
+  },
+  "12117": {
+    "name": "Seminole County",
+    "rate": 7.3,
+    "count": 35678
+  },
+  "12119": {
+    "name": "Sumter County",
+    "rate": 13.3,
+    "count": 19923
+  },
+  "12127": {
+    "name": "Volusia County",
+    "rate": 12.7,
+    "count": 74678
+  },
+  "12131": {
+    "name": "Walton County",
+    "rate": 10.0,
+    "count": 9152
+  },
+  "13013": {
+    "name": "Barrow County",
+    "rate": 12.1,
+    "count": 12014
+  },
+  "13015": {
+    "name": "Bartow County",
+    "rate": 8.2,
+    "count": 9683
+  },
+  "13021": {
+    "name": "Bibb County",
+    "rate": 22.8,
+    "count": 34218
+  },
+  "13031": {
+    "name": "Bulloch County",
+    "rate": 20.9,
+    "count": 17232
+  },
+  "13045": {
+    "name": "Carroll County",
+    "rate": 9.6,
+    "count": 12291
+  },
+  "13047": {
+    "name": "Catoosa County",
+    "rate": 6.8,
+    "count": 4700
+  },
+  "13051": {
+    "name": "Chatham County",
+    "rate": 14.3,
+    "count": 42779
+  },
+  "13057": {
+    "name": "Cherokee County",
+    "rate": 6.1,
+    "count": 18195
+  },
+  "13059": {
+    "name": "Clarke County",
+    "rate": 26.5,
+    "count": 31928
+  },
+  "13063": {
+    "name": "Clayton County",
+    "rate": 17.4,
+    "count": 50832
+  },
+  "13067": {
+    "name": "Cobb County",
+    "rate": 7.0,
+    "count": 54897
+  },
+  "13073": {
+    "name": "Columbia County",
+    "rate": 5.6,
+    "count": 9426
+  },
+  "13077": {
+    "name": "Coweta County",
+    "rate": 6.9,
+    "count": 10954
+  },
+  "13089": {
+    "name": "DeKalb County",
+    "rate": 12.1,
+    "count": 91880
+  },
+  "13095": {
+    "name": "Dougherty County",
+    "rate": 24.8,
+    "count": 19456
+  },
+  "13097": {
+    "name": "Douglas County",
+    "rate": 12.8,
+    "count": 19488
+  },
+  "13103": {
+    "name": "Effingham County",
+    "rate": 4.4,
+    "count": 3202
+  },
+  "13113": {
+    "name": "Fayette County",
+    "rate": 4.7,
+    "count": 5859
+  },
+  "13115": {
+    "name": "Floyd County",
+    "rate": 16.9,
+    "count": 16341
+  },
+  "13117": {
+    "name": "Forsyth County",
+    "rate": 4.6,
+    "count": 12883
+  },
+  "13121": {
+    "name": "Fulton County",
+    "rate": 11.4,
+    "count": 122070
+  },
+  "13127": {
+    "name": "Glynn County",
+    "rate": 11.5,
+    "count": 9850
+  },
+  "13135": {
+    "name": "Gwinnett County",
+    "rate": 9.1,
+    "count": 92399
+  },
+  "13139": {
+    "name": "Hall County",
+    "rate": 10.4,
+    "count": 23359
+  },
+  "13151": {
+    "name": "Henry County",
+    "rate": 10.6,
+    "count": 27708
+  },
+  "13153": {
+    "name": "Houston County",
+    "rate": 10.0,
+    "count": 17666
+  },
+  "13157": {
+    "name": "Jackson County",
+    "rate": 8.2,
+    "count": 8119
+  },
+  "13179": {
+    "name": "Liberty County",
+    "rate": 15.4,
+    "count": 10347
+  },
+  "13185": {
+    "name": "Lowndes County",
+    "rate": 16.6,
+    "count": 19650
+  },
+  "13215": {
+    "name": "Muscogee County",
+    "rate": 21.9,
+    "count": 42578
+  },
+  "13217": {
+    "name": "Newton County",
+    "rate": 9.8,
+    "count": 12091
+  },
+  "13223": {
+    "name": "Paulding County",
+    "rate": 7.3,
+    "count": 13731
+  },
+  "13245": {
+    "name": "Richmond County",
+    "rate": 17.0,
+    "count": 33760
+  },
+  "13247": {
+    "name": "Rockdale County",
+    "rate": 18.3,
+    "count": 17840
+  },
+  "13255": {
+    "name": "Spalding County",
+    "rate": 18.6,
+    "count": 12980
+  },
+  "13285": {
+    "name": "Troup County",
+    "rate": 17.4,
+    "count": 12433
+  },
+  "13295": {
+    "name": "Walker County",
+    "rate": 10.4,
+    "count": 7122
+  },
+  "13297": {
+    "name": "Walton County",
+    "rate": 11.6,
+    "count": 12946
+  },
+  "13313": {
+    "name": "Whitfield County",
+    "rate": 9.4,
+    "count": 9873
+  },
+  "15001": {
+    "name": "Hawaii County",
+    "rate": 14.9,
+    "count": 30972
+  },
+  "15003": {
+    "name": "Honolulu County",
+    "rate": 8.2,
+    "count": 78960
+  },
+  "15007": {
+    "name": "Kauai County",
+    "rate": 6.7,
+    "count": 4808
+  },
+  "15009": {
+    "name": "Maui County",
+    "rate": 10.1,
+    "count": 15990
+  },
+  "16001": {
+    "name": "Ada County",
+    "rate": 7.7,
+    "count": 41112
+  },
+  "16005": {
+    "name": "Bannock County",
+    "rate": 11.9,
+    "count": 10633
+  },
+  "16019": {
+    "name": "Bonneville County",
+    "rate": 9.8,
+    "count": 13160
+  },
+  "16027": {
+    "name": "Canyon County",
+    "rate": 10.8,
+    "count": 29371
+  },
+  "16055": {
+    "name": "Kootenai County",
+    "rate": 8.4,
+    "count": 15988
+  },
+  "16083": {
+    "name": "Twin Falls County",
+    "rate": 7.7,
+    "count": 7432
+  },
+  "17019": {
+    "name": "Champaign County",
+    "rate": 18.1,
+    "count": 35028
+  },
+  "17031": {
+    "name": "Cook County",
+    "rate": 13.6,
+    "count": 695766
+  },
+  "17037": {
+    "name": "DeKalb County",
+    "rate": 14.4,
+    "count": 13773
+  },
+  "17043": {
+    "name": "DuPage County",
+    "rate": 5.7,
+    "count": 52570
+  },
+  "17089": {
+    "name": "Kane County",
+    "rate": 7.3,
+    "count": 37737
+  },
+  "17091": {
+    "name": "Kankakee County",
+    "rate": 10.3,
+    "count": 10505
+  },
+  "17093": {
+    "name": "Kendall County",
+    "rate": 5.0,
+    "count": 7241
+  },
+  "17097": {
+    "name": "Lake County",
+    "rate": 6.6,
+    "count": 45905
+  },
+  "17099": {
+    "name": "LaSalle County",
+    "rate": 14.5,
+    "count": 15244
+  },
+  "17111": {
+    "name": "McHenry County",
+    "rate": 5.5,
+    "count": 17471
+  },
+  "17113": {
+    "name": "McLean County",
+    "rate": 13.8,
+    "count": 22264
+  },
+  "17115": {
+    "name": "Macon County",
+    "rate": 15.5,
+    "count": 15045
+  },
+  "17119": {
+    "name": "Madison County",
+    "rate": 9.5,
+    "count": 24099
+  },
+  "17143": {
+    "name": "Peoria County",
+    "rate": 17.4,
+    "count": 30107
+  },
+  "17161": {
+    "name": "Rock Island County",
+    "rate": 14.4,
+    "count": 19731
+  },
+  "17163": {
+    "name": "St. Clair County",
+    "rate": 10.2,
+    "count": 25097
+  },
+  "17167": {
+    "name": "Sangamon County",
+    "rate": 13.0,
+    "count": 24866
+  },
+  "17179": {
+    "name": "Tazewell County",
+    "rate": 9.1,
+    "count": 11527
+  },
+  "17183": {
+    "name": "Vermilion County",
+    "rate": 15.1,
+    "count": 10225
+  },
+  "17197": {
+    "name": "Will County",
+    "rate": 6.2,
+    "count": 43947
+  },
+  "17199": {
+    "name": "Williamson County",
+    "rate": 12.5,
+    "count": 8130
+  },
+  "17201": {
+    "name": "Winnebago County",
+    "rate": 15.5,
+    "count": 43326
+  },
+  "18003": {
+    "name": "Allen County",
+    "rate": 13.1,
+    "count": 52233
+  },
+  "18005": {
+    "name": "Bartholomew County",
+    "rate": 13.4,
+    "count": 11354
+  },
+  "18011": {
+    "name": "Boone County",
+    "rate": 4.1,
+    "count": 3277
+  },
+  "18019": {
+    "name": "Clark County",
+    "rate": 10.2,
+    "count": 13246
+  },
+  "18035": {
+    "name": "Delaware County",
+    "rate": 19.2,
+    "count": 20285
+  },
+  "18039": {
+    "name": "Elkhart County",
+    "rate": 11.8,
+    "count": 24099
+  },
+  "18043": {
+    "name": "Floyd County",
+    "rate": 9.0,
+    "count": 7244
+  },
+  "18053": {
+    "name": "Grant County",
+    "rate": 17.7,
+    "count": 10919
+  },
+  "18057": {
+    "name": "Hamilton County",
+    "rate": 4.5,
+    "count": 17480
+  },
+  "18059": {
+    "name": "Hancock County",
+    "rate": 5.7,
+    "count": 5132
+  },
+  "18063": {
+    "name": "Hendricks County",
+    "rate": 7.2,
+    "count": 13524
+  },
+  "18067": {
+    "name": "Howard County",
+    "rate": 13.5,
+    "count": 11216
+  },
+  "18081": {
+    "name": "Johnson County",
+    "rate": 8.9,
+    "count": 14995
+  },
+  "18085": {
+    "name": "Kosciusko County",
+    "rate": 7.4,
+    "count": 5849
+  },
+  "18089": {
+    "name": "Lake County",
+    "rate": 13.2,
+    "count": 65705
+  },
+  "18091": {
+    "name": "LaPorte County",
+    "rate": 12.6,
+    "count": 13145
+  },
+  "18095": {
+    "name": "Madison County",
+    "rate": 13.8,
+    "count": 17594
+  },
+  "18097": {
+    "name": "Marion County",
+    "rate": 15.1,
+    "count": 146277
+  },
+  "18105": {
+    "name": "Monroe County",
+    "rate": 22.5,
+    "count": 28754
+  },
+  "18109": {
+    "name": "Morgan County",
+    "rate": 12.5,
+    "count": 9284
+  },
+  "18127": {
+    "name": "Porter County",
+    "rate": 9.2,
+    "count": 15942
+  },
+  "18141": {
+    "name": "St. Joseph County",
+    "rate": 15.2,
+    "count": 39858
+  },
+  "18157": {
+    "name": "Tippecanoe County",
+    "rate": 15.1,
+    "count": 25887
+  },
+  "18163": {
+    "name": "Vanderburgh County",
+    "rate": 13.6,
+    "count": 24164
+  },
+  "18167": {
+    "name": "Vigo County",
+    "rate": 13.8,
+    "count": 13566
+  },
+  "18173": {
+    "name": "Warrick County",
+    "rate": 4.3,
+    "count": 2823
+  },
+  "18177": {
+    "name": "Wayne County",
+    "rate": 10.8,
+    "count": 7052
+  },
+  "19013": {
+    "name": "Black Hawk County",
+    "rate": 13.7,
+    "count": 17243
+  },
+  "19049": {
+    "name": "Dallas County",
+    "rate": 3.9,
+    "count": 4642
+  },
+  "19061": {
+    "name": "Dubuque County",
+    "rate": 9.1,
+    "count": 8711
+  },
+  "19103": {
+    "name": "Johnson County",
+    "rate": 19.7,
+    "count": 29575
+  },
+  "19113": {
+    "name": "Linn County",
+    "rate": 13.3,
+    "count": 30199
+  },
+  "19153": {
+    "name": "Polk County",
+    "rate": 9.3,
+    "count": 47108
+  },
+  "19155": {
+    "name": "Pottawattamie County",
+    "rate": 11.6,
+    "count": 10531
+  },
+  "19163": {
+    "name": "Scott County",
+    "rate": 13.0,
+    "count": 22306
+  },
+  "19169": {
+    "name": "Story County",
+    "rate": 18.5,
+    "count": 16335
+  },
+  "19193": {
+    "name": "Woodbury County",
+    "rate": 8.9,
+    "count": 9157
+  },
+  "20015": {
+    "name": "Butler County",
+    "rate": 6.6,
+    "count": 4386
+  },
+  "20045": {
+    "name": "Douglas County",
+    "rate": 15.4,
+    "count": 17341
+  },
+  "20091": {
+    "name": "Johnson County",
+    "rate": 4.8,
+    "count": 30500
+  },
+  "20103": {
+    "name": "Leavenworth County",
+    "rate": 7.9,
+    "count": 6377
+  },
+  "20161": {
+    "name": "Riley County",
+    "rate": 18.7,
+    "count": 11628
+  },
+  "20173": {
+    "name": "Sedgwick County",
+    "rate": 12.0,
+    "count": 63266
+  },
+  "20177": {
+    "name": "Shawnee County",
+    "rate": 10.8,
+    "count": 18771
+  },
+  "20209": {
+    "name": "Wyandotte County",
+    "rate": 15.1,
+    "count": 25516
+  },
+  "21015": {
+    "name": "Boone County",
+    "rate": 9.9,
+    "count": 14233
+  },
+  "21029": {
+    "name": "Bullitt County",
+    "rate": 8.6,
+    "count": 7460
+  },
+  "21037": {
+    "name": "Campbell County",
+    "rate": 14.8,
+    "count": 13925
+  },
+  "21047": {
+    "name": "Christian County",
+    "rate": 19.6,
+    "count": 12989
+  },
+  "21059": {
+    "name": "Daviess County",
+    "rate": 17.0,
+    "count": 17522
+  },
+  "21067": {
+    "name": "Fayette County",
+    "rate": 14.4,
+    "count": 45480
+  },
+  "21093": {
+    "name": "Hardin County",
+    "rate": 10.1,
+    "count": 11203
+  },
+  "21111": {
+    "name": "Jefferson County",
+    "rate": 14.1,
+    "count": 109667
+  },
+  "21117": {
+    "name": "Kenton County",
+    "rate": 7.6,
+    "count": 13158
+  },
+  "21145": {
+    "name": "McCracken County",
+    "rate": 24.5,
+    "count": 16282
+  },
+  "21151": {
+    "name": "Madison County",
+    "rate": 19.0,
+    "count": 18085
+  },
+  "21185": {
+    "name": "Oldham County",
+    "rate": 7.8,
+    "count": 5256
+  },
+  "21199": {
+    "name": "Pulaski County",
+    "rate": 23.9,
+    "count": 15898
+  },
+  "21227": {
+    "name": "Warren County",
+    "rate": 11.0,
+    "count": 15682
+  },
+  "22005": {
+    "name": "Ascension Parish",
+    "rate": 13.8,
+    "count": 18387
+  },
+  "22015": {
+    "name": "Bossier Parish",
+    "rate": 14.6,
+    "count": 18895
+  },
+  "22017": {
+    "name": "Caddo Parish",
+    "rate": 17.0,
+    "count": 37314
+  },
+  "22019": {
+    "name": "Calcasieu Parish",
+    "rate": 16.1,
+    "count": 33100
+  },
+  "22033": {
+    "name": "East Baton Rouge Parish",
+    "rate": 19.7,
+    "count": 86886
+  },
+  "22045": {
+    "name": "Iberia Parish",
+    "rate": 27.7,
+    "count": 18248
+  },
+  "22051": {
+    "name": "Jefferson Parish",
+    "rate": 15.3,
+    "count": 65557
+  },
+  "22055": {
+    "name": "Lafayette Parish",
+    "rate": 12.8,
+    "count": 32698
+  },
+  "22057": {
+    "name": "Lafourche Parish",
+    "rate": 15.0,
+    "count": 13954
+  },
+  "22063": {
+    "name": "Livingston Parish",
+    "rate": 15.1,
+    "count": 23132
+  },
+  "22071": {
+    "name": "Orleans Parish",
+    "rate": 20.0,
+    "count": 69952
+  },
+  "22073": {
+    "name": "Ouachita Parish",
+    "rate": 23.9,
+    "count": 36488
+  },
+  "22079": {
+    "name": "Rapides Parish",
+    "rate": 21.8,
+    "count": 26751
+  },
+  "22097": {
+    "name": "St. Landry Parish",
+    "rate": 26.6,
+    "count": 21223
+  },
+  "22103": {
+    "name": "St. Tammany Parish",
+    "rate": 9.8,
+    "count": 27017
+  },
+  "22105": {
+    "name": "Tangipahoa Parish",
+    "rate": 20.9,
+    "count": 28633
+  },
+  "22109": {
+    "name": "Terrebonne Parish",
+    "rate": 16.8,
+    "count": 17291
+  },
+  "23001": {
+    "name": "Androscoggin County",
+    "rate": 10.9,
+    "count": 12165
+  },
+  "23003": {
+    "name": "Aroostook County",
+    "rate": 14.5,
+    "count": 9450
+  },
+  "23005": {
+    "name": "Cumberland County",
+    "rate": 6.4,
+    "count": 19558
+  },
+  "23011": {
+    "name": "Kennebec County",
+    "rate": 10.7,
+    "count": 13226
+  },
+  "23019": {
+    "name": "Penobscot County",
+    "rate": 11.8,
+    "count": 17756
+  },
+  "23031": {
+    "name": "York County",
+    "rate": 7.9,
+    "count": 17268
+  },
+  "24001": {
+    "name": "Allegany County",
+    "rate": 13.9,
+    "count": 8404
+  },
+  "24003": {
+    "name": "Anne Arundel County",
+    "rate": 6.6,
+    "count": 38826
+  },
+  "24005": {
+    "name": "Baltimore County",
+    "rate": 9.2,
+    "count": 76514
+  },
+  "24009": {
+    "name": "Calvert County",
+    "rate": 3.3,
+    "count": 3099
+  },
+  "24013": {
+    "name": "Carroll County",
+    "rate": 5.4,
+    "count": 9355
+  },
+  "24015": {
+    "name": "Cecil County",
+    "rate": 8.8,
+    "count": 9234
+  },
+  "24017": {
+    "name": "Charles County",
+    "rate": 7.7,
+    "count": 13504
+  },
+  "24021": {
+    "name": "Frederick County",
+    "rate": 6.2,
+    "count": 18384
+  },
+  "24025": {
+    "name": "Harford County",
+    "rate": 8.1,
+    "count": 21531
+  },
+  "24027": {
+    "name": "Howard County",
+    "rate": 7.0,
+    "count": 23576
+  },
+  "24031": {
+    "name": "Montgomery County",
+    "rate": 8.0,
+    "count": 84775
+  },
+  "24033": {
+    "name": "Prince George's County",
+    "rate": 9.5,
+    "count": 89707
+  },
+  "24037": {
+    "name": "St. Mary's County",
+    "rate": 7.1,
+    "count": 8090
+  },
+  "24043": {
+    "name": "Washington County",
+    "rate": 13.4,
+    "count": 20402
+  },
+  "24045": {
+    "name": "Wicomico County",
+    "rate": 20.2,
+    "count": 20825
+  },
+  "24510": {
+    "name": "Baltimore city",
+    "rate": 20.9,
+    "count": 115023
+  },
+  "25001": {
+    "name": "Barnstable County",
+    "rate": 7.8,
+    "count": 17972
+  },
+  "25003": {
+    "name": "Berkshire County",
+    "rate": 11.6,
+    "count": 14231
+  },
+  "25005": {
+    "name": "Bristol County",
+    "rate": 10.1,
+    "count": 58373
+  },
+  "25009": {
+    "name": "Essex County",
+    "rate": 9.0,
+    "count": 72620
+  },
+  "25011": {
+    "name": "Franklin County",
+    "rate": 10.5,
+    "count": 7315
+  },
+  "25013": {
+    "name": "Hampden County",
+    "rate": 15.5,
+    "count": 70349
+  },
+  "25015": {
+    "name": "Hampshire County",
+    "rate": 10.3,
+    "count": 14354
+  },
+  "25017": {
+    "name": "Middlesex County",
+    "rate": 7.4,
+    "count": 118727
+  },
+  "25021": {
+    "name": "Norfolk County",
+    "rate": 7.9,
+    "count": 57065
+  },
+  "25023": {
+    "name": "Plymouth County",
+    "rate": 7.5,
+    "count": 40434
+  },
+  "25025": {
+    "name": "Suffolk County",
+    "rate": 16.1,
+    "count": 119471
+  },
+  "25027": {
+    "name": "Worcester County",
+    "rate": 10.2,
+    "count": 87758
+  },
+  "26005": {
+    "name": "Allegan County",
+    "rate": 8.6,
+    "count": 10553
+  },
+  "26017": {
+    "name": "Bay County",
+    "rate": 14.8,
+    "count": 14924
+  },
+  "26021": {
+    "name": "Berrien County",
+    "rate": 11.3,
+    "count": 16846
+  },
+  "26025": {
+    "name": "Calhoun County",
+    "rate": 18.4,
+    "count": 23884
+  },
+  "26037": {
+    "name": "Clinton County",
+    "rate": 8.8,
+    "count": 7001
+  },
+  "26045": {
+    "name": "Eaton County",
+    "rate": 8.5,
+    "count": 9123
+  },
+  "26049": {
+    "name": "Genesee County",
+    "rate": 15.0,
+    "count": 59343
+  },
+  "26055": {
+    "name": "Grand Traverse County",
+    "rate": 10.2,
+    "count": 9728
+  },
+  "26065": {
+    "name": "Ingham County",
+    "rate": 13.5,
+    "count": 35995
+  },
+  "26067": {
+    "name": "Ionia County",
+    "rate": 11.9,
+    "count": 7491
+  },
+  "26073": {
+    "name": "Isabella County",
+    "rate": 21.3,
+    "count": 12678
+  },
+  "26075": {
+    "name": "Jackson County",
+    "rate": 14.1,
+    "count": 21279
+  },
+  "26077": {
+    "name": "Kalamazoo County",
+    "rate": 12.9,
+    "count": 33225
+  },
+  "26081": {
+    "name": "Kent County",
+    "rate": 10.0,
+    "count": 66058
+  },
+  "26087": {
+    "name": "Lapeer County",
+    "rate": 8.0,
+    "count": 7044
+  },
+  "26091": {
+    "name": "Lenawee County",
+    "rate": 11.8,
+    "count": 11053
+  },
+  "26093": {
+    "name": "Livingston County",
+    "rate": 4.4,
+    "count": 8582
+  },
+  "26099": {
+    "name": "Macomb County",
+    "rate": 11.9,
+    "count": 104907
+  },
+  "26103": {
+    "name": "Marquette County",
+    "rate": 14.3,
+    "count": 9028
+  },
+  "26111": {
+    "name": "Midland County",
+    "rate": 10.6,
+    "count": 8745
+  },
+  "26115": {
+    "name": "Monroe County",
+    "rate": 7.5,
+    "count": 11524
+  },
+  "26117": {
+    "name": "Montcalm County",
+    "rate": 14.5,
+    "count": 9678
+  },
+  "26121": {
+    "name": "Muskegon County",
+    "rate": 16.7,
+    "count": 28841
+  },
+  "26125": {
+    "name": "Oakland County",
+    "rate": 7.3,
+    "count": 93597
+  },
+  "26139": {
+    "name": "Ottawa County",
+    "rate": 7.5,
+    "count": 22394
+  },
+  "26145": {
+    "name": "Saginaw County",
+    "rate": 17.8,
+    "count": 32377
+  },
+  "26147": {
+    "name": "St. Clair County",
+    "rate": 10.5,
+    "count": 16657
+  },
+  "26155": {
+    "name": "Shiawassee County",
+    "rate": 10.1,
+    "count": 6744
+  },
+  "26159": {
+    "name": "Van Buren County",
+    "rate": 11.5,
+    "count": 8672
+  },
+  "26161": {
+    "name": "Washtenaw County",
+    "rate": 12.2,
+    "count": 42988
+  },
+  "26163": {
+    "name": "Wayne County",
+    "rate": 19.0,
+    "count": 332248
+  },
+  "27003": {
+    "name": "Anoka County",
+    "rate": 6.7,
+    "count": 25311
+  },
+  "27013": {
+    "name": "Blue Earth County",
+    "rate": 14.0,
+    "count": 9292
+  },
+  "27019": {
+    "name": "Carver County",
+    "rate": 5.1,
+    "count": 5745
+  },
+  "27027": {
+    "name": "Clay County",
+    "rate": 11.5,
+    "count": 7409
+  },
+  "27035": {
+    "name": "Crow Wing County",
+    "rate": 9.3,
+    "count": 6318
+  },
+  "27037": {
+    "name": "Dakota County",
+    "rate": 7.7,
+    "count": 34946
+  },
+  "27053": {
+    "name": "Hennepin County",
+    "rate": 9.5,
+    "count": 119935
+  },
+  "27109": {
+    "name": "Olmsted County",
+    "rate": 6.9,
+    "count": 11394
+  },
+  "27123": {
+    "name": "Ramsey County",
+    "rate": 10.2,
+    "count": 53725
+  },
+  "27131": {
+    "name": "Rice County",
+    "rate": 5.2,
+    "count": 3276
+  },
+  "27137": {
+    "name": "St. Louis County",
+    "rate": 13.6,
+    "count": 26441
+  },
+  "27139": {
+    "name": "Scott County",
+    "rate": 6.0,
+    "count": 9402
+  },
+  "27141": {
+    "name": "Sherburne County",
+    "rate": 6.1,
+    "count": 6196
+  },
+  "27145": {
+    "name": "Stearns County",
+    "rate": 13.4,
+    "count": 21222
+  },
+  "27163": {
+    "name": "Washington County",
+    "rate": 4.8,
+    "count": 13569
+  },
+  "27171": {
+    "name": "Wright County",
+    "rate": 6.1,
+    "count": 9434
+  },
+  "28033": {
+    "name": "DeSoto County",
+    "rate": 10.7,
+    "count": 21043
+  },
+  "28035": {
+    "name": "Forrest County",
+    "rate": 25.0,
+    "count": 18345
+  },
+  "28047": {
+    "name": "Harrison County",
+    "rate": 19.5,
+    "count": 41350
+  },
+  "28049": {
+    "name": "Hinds County",
+    "rate": 17.5,
+    "count": 35580
+  },
+  "28059": {
+    "name": "Jackson County",
+    "rate": 10.4,
+    "count": 15193
+  },
+  "28067": {
+    "name": "Jones County",
+    "rate": 23.7,
+    "count": 15469
+  },
+  "28073": {
+    "name": "Lamar County",
+    "rate": 18.0,
+    "count": 12058
+  },
+  "28075": {
+    "name": "Lauderdale County",
+    "rate": 21.5,
+    "count": 14550
+  },
+  "28081": {
+    "name": "Lee County",
+    "rate": 12.1,
+    "count": 10034
+  },
+  "28089": {
+    "name": "Madison County",
+    "rate": 10.3,
+    "count": 11849
+  },
+  "28121": {
+    "name": "Rankin County",
+    "rate": 12.9,
+    "count": 20482
+  },
+  "29019": {
+    "name": "Boone County",
+    "rate": 13.4,
+    "count": 24135
+  },
+  "29021": {
+    "name": "Buchanan County",
+    "rate": 14.5,
+    "count": 11555
+  },
+  "29031": {
+    "name": "Cape Girardeau County",
+    "rate": 8.6,
+    "count": 6902
+  },
+  "29037": {
+    "name": "Cass County",
+    "rate": 7.6,
+    "count": 8670
+  },
+  "29043": {
+    "name": "Christian County",
+    "rate": 9.8,
+    "count": 9408
+  },
+  "29047": {
+    "name": "Clay County",
+    "rate": 6.7,
+    "count": 17510
+  },
+  "29051": {
+    "name": "Cole County",
+    "rate": 9.6,
+    "count": 7159
+  },
+  "29071": {
+    "name": "Franklin County",
+    "rate": 7.8,
+    "count": 8276
+  },
+  "29077": {
+    "name": "Greene County",
+    "rate": 13.6,
+    "count": 40679
+  },
+  "29095": {
+    "name": "Jackson County",
+    "rate": 11.0,
+    "count": 79287
+  },
+  "29097": {
+    "name": "Jasper County",
+    "rate": 14.1,
+    "count": 17604
+  },
+  "29099": {
+    "name": "Jefferson County",
+    "rate": 8.9,
+    "count": 20488
+  },
+  "29113": {
+    "name": "Lincoln County",
+    "rate": 10.3,
+    "count": 6779
+  },
+  "29165": {
+    "name": "Platte County",
+    "rate": 5.4,
+    "count": 6077
+  },
+  "29183": {
+    "name": "St. Charles County",
+    "rate": 5.4,
+    "count": 22897
+  },
+  "29187": {
+    "name": "St. Francois County",
+    "rate": 12.1,
+    "count": 7525
+  },
+  "29189": {
+    "name": "St. Louis County",
+    "rate": 8.9,
+    "count": 86715
+  },
+  "29510": {
+    "name": "St. Louis city",
+    "rate": 21.4,
+    "count": 57542
+  },
+  "30013": {
+    "name": "Cascade County",
+    "rate": 8.7,
+    "count": 7219
+  },
+  "30029": {
+    "name": "Flathead County",
+    "rate": 10.5,
+    "count": 12053
+  },
+  "30031": {
+    "name": "Gallatin County",
+    "rate": 7.7,
+    "count": 9638
+  },
+  "30049": {
+    "name": "Lewis and Clark County",
+    "rate": 6.0,
+    "count": 4404
+  },
+  "30063": {
+    "name": "Missoula County",
+    "rate": 11.8,
+    "count": 14244
+  },
+  "30111": {
+    "name": "Yellowstone County",
+    "rate": 7.8,
+    "count": 13320
+  },
+  "31055": {
+    "name": "Douglas County",
+    "rate": 9.7,
+    "count": 57558
+  },
+  "31109": {
+    "name": "Lancaster County",
+    "rate": 12.8,
+    "count": 40882
+  },
+  "31153": {
+    "name": "Sarpy County",
+    "rate": 6.0,
+    "count": 12393
+  },
+  "32003": {
+    "name": "Clark County",
+    "rate": 12.2,
+    "count": 291496
+  },
+  "32019": {
+    "name": "Lyon County",
+    "rate": 9.2,
+    "count": 5917
+  },
+  "32031": {
+    "name": "Washoe County",
+    "rate": 8.7,
+    "count": 43559
+  },
+  "33001": {
+    "name": "Belknap County",
+    "rate": 8.2,
+    "count": 5197
+  },
+  "33005": {
+    "name": "Cheshire County",
+    "rate": 8.4,
+    "count": 6292
+  },
+  "33009": {
+    "name": "Grafton County",
+    "rate": 9.4,
+    "count": 8127
+  },
+  "33011": {
+    "name": "Hillsborough County",
+    "rate": 6.2,
+    "count": 26492
+  },
+  "33013": {
+    "name": "Merrimack County",
+    "rate": 6.0,
+    "count": 9198
+  },
+  "33015": {
+    "name": "Rockingham County",
+    "rate": 3.5,
+    "count": 11118
+  },
+  "33017": {
+    "name": "Strafford County",
+    "rate": 6.1,
+    "count": 7717
+  },
+  "34001": {
+    "name": "Atlantic County",
+    "rate": 8.2,
+    "count": 22531
+  },
+  "34003": {
+    "name": "Bergen County",
+    "rate": 6.4,
+    "count": 61983
+  },
+  "34005": {
+    "name": "Burlington County",
+    "rate": 5.6,
+    "count": 26464
+  },
+  "34007": {
+    "name": "Camden County",
+    "rate": 9.9,
+    "count": 52602
+  },
+  "34009": {
+    "name": "Cape May County",
+    "rate": 5.4,
+    "count": 4976
+  },
+  "34011": {
+    "name": "Cumberland County",
+    "rate": 18.0,
+    "count": 27402
+  },
+  "34013": {
+    "name": "Essex County",
+    "rate": 12.5,
+    "count": 109650
+  },
+  "34015": {
+    "name": "Gloucester County",
+    "rate": 6.4,
+    "count": 19642
+  },
+  "34017": {
+    "name": "Hudson County",
+    "rate": 13.5,
+    "count": 98022
+  },
+  "34019": {
+    "name": "Hunterdon County",
+    "rate": 3.2,
+    "count": 4077
+  },
+  "34021": {
+    "name": "Mercer County",
+    "rate": 9.7,
+    "count": 36890
+  },
+  "34023": {
+    "name": "Middlesex County",
+    "rate": 6.7,
+    "count": 56961
+  },
+  "34025": {
+    "name": "Monmouth County",
+    "rate": 6.4,
+    "count": 41597
+  },
+  "34027": {
+    "name": "Morris County",
+    "rate": 4.1,
+    "count": 21173
+  },
+  "34029": {
+    "name": "Ocean County",
+    "rate": 10.5,
+    "count": 70292
+  },
+  "34031": {
+    "name": "Passaic County",
+    "rate": 11.9,
+    "count": 62579
+  },
+  "34033": {
+    "name": "Salem County",
+    "rate": 9.7,
+    "count": 6311
+  },
+  "34035": {
+    "name": "Somerset County",
+    "rate": 5.9,
+    "count": 20681
+  },
+  "34037": {
+    "name": "Sussex County",
+    "rate": 6.7,
+    "count": 9846
+  },
+  "34039": {
+    "name": "Union County",
+    "rate": 9.5,
+    "count": 56635
+  },
+  "34041": {
+    "name": "Warren County",
+    "rate": 6.4,
+    "count": 7172
+  },
+  "35001": {
+    "name": "Bernalillo County",
+    "rate": 13.4,
+    "count": 88275
+  },
+  "35013": {
+    "name": "Do\u00f1a Ana County",
+    "rate": 16.3,
+    "count": 36597
+  },
+  "35025": {
+    "name": "Lea County",
+    "rate": 20.6,
+    "count": 14767
+  },
+  "35031": {
+    "name": "McKinley County",
+    "rate": 32.3,
+    "count": 21859
+  },
+  "35035": {
+    "name": "Otero County",
+    "rate": 16.8,
+    "count": 11316
+  },
+  "35043": {
+    "name": "Sandoval County",
+    "rate": 6.4,
+    "count": 10221
+  },
+  "35045": {
+    "name": "San Juan County",
+    "rate": 18.8,
+    "count": 22476
+  },
+  "35049": {
+    "name": "Santa Fe County",
+    "rate": 12.5,
+    "count": 19399
+  },
+  "35061": {
+    "name": "Valencia County",
+    "rate": 14.6,
+    "count": 11817
+  },
+  "36001": {
+    "name": "Albany County",
+    "rate": 11.4,
+    "count": 34799
+  },
+  "36005": {
+    "name": "Bronx County",
+    "rate": 27.6,
+    "count": 381272
+  },
+  "36007": {
+    "name": "Broome County",
+    "rate": 15.3,
+    "count": 28204
+  },
+  "36009": {
+    "name": "Cattaraugus County",
+    "rate": 15.1,
+    "count": 10980
+  },
+  "36011": {
+    "name": "Cayuga County",
+    "rate": 11.8,
+    "count": 8442
+  },
+  "36013": {
+    "name": "Chautauqua County",
+    "rate": 13.3,
+    "count": 15785
+  },
+  "36015": {
+    "name": "Chemung County",
+    "rate": 14.5,
+    "count": 11230
+  },
+  "36019": {
+    "name": "Clinton County",
+    "rate": 16.9,
+    "count": 12231
+  },
+  "36027": {
+    "name": "Dutchess County",
+    "rate": 10.4,
+    "count": 29651
+  },
+  "36029": {
+    "name": "Erie County",
+    "rate": 13.9,
+    "count": 128555
+  },
+  "36045": {
+    "name": "Jefferson County",
+    "rate": 18.6,
+    "count": 19899
+  },
+  "36047": {
+    "name": "Kings County",
+    "rate": 17.9,
+    "count": 470635
+  },
+  "36053": {
+    "name": "Madison County",
+    "rate": 8.5,
+    "count": 5215
+  },
+  "36055": {
+    "name": "Monroe County",
+    "rate": 13.6,
+    "count": 98711
+  },
+  "36059": {
+    "name": "Nassau County",
+    "rate": 6.0,
+    "count": 82352
+  },
+  "36061": {
+    "name": "New York County",
+    "rate": 16.2,
+    "count": 261174
+  },
+  "36063": {
+    "name": "Niagara County",
+    "rate": 13.8,
+    "count": 28223
+  },
+  "36065": {
+    "name": "Oneida County",
+    "rate": 13.6,
+    "count": 29205
+  },
+  "36067": {
+    "name": "Onondaga County",
+    "rate": 12.1,
+    "count": 53854
+  },
+  "36069": {
+    "name": "Ontario County",
+    "rate": 8.8,
+    "count": 9592
+  },
+  "36071": {
+    "name": "Orange County",
+    "rate": 16.4,
+    "count": 67097
+  },
+  "36075": {
+    "name": "Oswego County",
+    "rate": 14.6,
+    "count": 16656
+  },
+  "36079": {
+    "name": "Putnam County",
+    "rate": 8.0,
+    "count": 7810
+  },
+  "36081": {
+    "name": "Queens County",
+    "rate": 13.5,
+    "count": 314539
+  },
+  "36083": {
+    "name": "Rensselaer County",
+    "rate": 9.2,
+    "count": 14089
+  },
+  "36085": {
+    "name": "Richmond County",
+    "rate": 13.1,
+    "count": 64420
+  },
+  "36087": {
+    "name": "Rockland County",
+    "rate": 16.7,
+    "count": 58796
+  },
+  "36089": {
+    "name": "St. Lawrence County",
+    "rate": 14.9,
+    "count": 14355
+  },
+  "36091": {
+    "name": "Saratoga County",
+    "rate": 6.4,
+    "count": 15125
+  },
+  "36093": {
+    "name": "Schenectady County",
+    "rate": 14.0,
+    "count": 22125
+  },
+  "36101": {
+    "name": "Steuben County",
+    "rate": 13.9,
+    "count": 12524
+  },
+  "36103": {
+    "name": "Suffolk County",
+    "rate": 6.1,
+    "count": 93241
+  },
+  "36105": {
+    "name": "Sullivan County",
+    "rate": 20.5,
+    "count": 15962
+  },
+  "36109": {
+    "name": "Tompkins County",
+    "rate": 16.6,
+    "count": 14671
+  },
+  "36111": {
+    "name": "Ulster County",
+    "rate": 13.3,
+    "count": 23290
+  },
+  "36113": {
+    "name": "Warren County",
+    "rate": 10.9,
+    "count": 6967
+  },
+  "36117": {
+    "name": "Wayne County",
+    "rate": 8.2,
+    "count": 7407
+  },
+  "36119": {
+    "name": "Westchester County",
+    "rate": 8.3,
+    "count": 81809
+  },
+  "37001": {
+    "name": "Alamance County",
+    "rate": 10.3,
+    "count": 18496
+  },
+  "37019": {
+    "name": "Brunswick County",
+    "rate": 11.7,
+    "count": 20360
+  },
+  "37021": {
+    "name": "Buncombe County",
+    "rate": 12.2,
+    "count": 33000
+  },
+  "37023": {
+    "name": "Burke County",
+    "rate": 13.7,
+    "count": 11845
+  },
+  "37025": {
+    "name": "Cabarrus County",
+    "rate": 7.2,
+    "count": 17733
+  },
+  "37027": {
+    "name": "Caldwell County",
+    "rate": 16.4,
+    "count": 13169
+  },
+  "37031": {
+    "name": "Carteret County",
+    "rate": 9.4,
+    "count": 6541
+  },
+  "37035": {
+    "name": "Catawba County",
+    "rate": 13.4,
+    "count": 22533
+  },
+  "37037": {
+    "name": "Chatham County",
+    "rate": 5.4,
+    "count": 4576
+  },
+  "37045": {
+    "name": "Cleveland County",
+    "rate": 17.4,
+    "count": 17664
+  },
+  "37049": {
+    "name": "Craven County",
+    "rate": 10.7,
+    "count": 10742
+  },
+  "37051": {
+    "name": "Cumberland County",
+    "rate": 16.9,
+    "count": 53999
+  },
+  "37057": {
+    "name": "Davidson County",
+    "rate": 10.9,
+    "count": 19516
+  },
+  "37063": {
+    "name": "Durham County",
+    "rate": 9.8,
+    "count": 32856
+  },
+  "37067": {
+    "name": "Forsyth County",
+    "rate": 13.2,
+    "count": 51611
+  },
+  "37069": {
+    "name": "Franklin County",
+    "rate": 11.3,
+    "count": 9157
+  },
+  "37071": {
+    "name": "Gaston County",
+    "rate": 12.8,
+    "count": 31094
+  },
+  "37081": {
+    "name": "Guilford County",
+    "rate": 12.3,
+    "count": 65951
+  },
+  "37085": {
+    "name": "Harnett County",
+    "rate": 12.8,
+    "count": 18838
+  },
+  "37089": {
+    "name": "Henderson County",
+    "rate": 8.5,
+    "count": 10275
+  },
+  "37097": {
+    "name": "Iredell County",
+    "rate": 8.9,
+    "count": 18728
+  },
+  "37101": {
+    "name": "Johnston County",
+    "rate": 7.0,
+    "count": 17687
+  },
+  "37105": {
+    "name": "Lee County",
+    "rate": 11.2,
+    "count": 7810
+  },
+  "37109": {
+    "name": "Lincoln County",
+    "rate": 7.8,
+    "count": 7678
+  },
+  "37119": {
+    "name": "Mecklenburg County",
+    "rate": 11.8,
+    "count": 143434
+  },
+  "37125": {
+    "name": "Moore County",
+    "rate": 8.3,
+    "count": 9068
+  },
+  "37127": {
+    "name": "Nash County",
+    "rate": 18.7,
+    "count": 18299
+  },
+  "37129": {
+    "name": "New Hanover County",
+    "rate": 13.1,
+    "count": 31603
+  },
+  "37133": {
+    "name": "Onslow County",
+    "rate": 9.4,
+    "count": 18456
+  },
+  "37135": {
+    "name": "Orange County",
+    "rate": 11.3,
+    "count": 15848
+  },
+  "37141": {
+    "name": "Pender County",
+    "rate": 7.3,
+    "count": 5157
+  },
+  "37147": {
+    "name": "Pitt County",
+    "rate": 12.9,
+    "count": 22693
+  },
+  "37151": {
+    "name": "Randolph County",
+    "rate": 14.4,
+    "count": 21240
+  },
+  "37155": {
+    "name": "Robeson County",
+    "rate": 28.1,
+    "count": 32758
+  },
+  "37157": {
+    "name": "Rockingham County",
+    "rate": 15.8,
+    "count": 14754
+  },
+  "37159": {
+    "name": "Rowan County",
+    "rate": 10.5,
+    "count": 15792
+  },
+  "37161": {
+    "name": "Rutherford County",
+    "rate": 13.9,
+    "count": 8959
+  },
+  "37167": {
+    "name": "Stanly County",
+    "rate": 10.1,
+    "count": 6812
+  },
+  "37171": {
+    "name": "Surry County",
+    "rate": 16.3,
+    "count": 11552
+  },
+  "37179": {
+    "name": "Union County",
+    "rate": 7.1,
+    "count": 18679
+  },
+  "37183": {
+    "name": "Wake County",
+    "rate": 8.5,
+    "count": 104316
+  },
+  "37191": {
+    "name": "Wayne County",
+    "rate": 14.1,
+    "count": 16665
+  },
+  "37193": {
+    "name": "Wilkes County",
+    "rate": 20.1,
+    "count": 13067
+  },
+  "37195": {
+    "name": "Wilson County",
+    "rate": 16.2,
+    "count": 12946
+  },
+  "38015": {
+    "name": "Burleigh County",
+    "rate": 5.7,
+    "count": 5643
+  },
+  "38017": {
+    "name": "Cass County",
+    "rate": 7.9,
+    "count": 15294
+  },
+  "38035": {
+    "name": "Grand Forks County",
+    "rate": 11.1,
+    "count": 7759
+  },
+  "38101": {
+    "name": "Ward County",
+    "rate": 6.6,
+    "count": 4356
+  },
+  "39003": {
+    "name": "Allen County",
+    "rate": 16.8,
+    "count": 16608
+  },
+  "39007": {
+    "name": "Ashtabula County",
+    "rate": 16.7,
+    "count": 15617
+  },
+  "39013": {
+    "name": "Belmont County",
+    "rate": 19.5,
+    "count": 11948
+  },
+  "39017": {
+    "name": "Butler County",
+    "rate": 10.6,
+    "count": 40758
+  },
+  "39023": {
+    "name": "Clark County",
+    "rate": 16.0,
+    "count": 21221
+  },
+  "39025": {
+    "name": "Clermont County",
+    "rate": 8.2,
+    "count": 17600
+  },
+  "39029": {
+    "name": "Columbiana County",
+    "rate": 15.6,
+    "count": 14954
+  },
+  "39035": {
+    "name": "Cuyahoga County",
+    "rate": 14.6,
+    "count": 176120
+  },
+  "39041": {
+    "name": "Delaware County",
+    "rate": 4.2,
+    "count": 9961
+  },
+  "39043": {
+    "name": "Erie County",
+    "rate": 13.1,
+    "count": 9477
+  },
+  "39045": {
+    "name": "Fairfield County",
+    "rate": 10.2,
+    "count": 16895
+  },
+  "39049": {
+    "name": "Franklin County",
+    "rate": 14.9,
+    "count": 197450
+  },
+  "39055": {
+    "name": "Geauga County",
+    "rate": 5.5,
+    "count": 5154
+  },
+  "39057": {
+    "name": "Greene County",
+    "rate": 8.4,
+    "count": 13914
+  },
+  "39061": {
+    "name": "Hamilton County",
+    "rate": 13.6,
+    "count": 110535
+  },
+  "39063": {
+    "name": "Hancock County",
+    "rate": 7.0,
+    "count": 5119
+  },
+  "39085": {
+    "name": "Lake County",
+    "rate": 7.4,
+    "count": 16990
+  },
+  "39089": {
+    "name": "Licking County",
+    "rate": 9.2,
+    "count": 16795
+  },
+  "39093": {
+    "name": "Lorain County",
+    "rate": 11.4,
+    "count": 35900
+  },
+  "39095": {
+    "name": "Lucas County",
+    "rate": 16.0,
+    "count": 66199
+  },
+  "39099": {
+    "name": "Mahoning County",
+    "rate": 16.2,
+    "count": 35425
+  },
+  "39101": {
+    "name": "Marion County",
+    "rate": 18.2,
+    "count": 10757
+  },
+  "39103": {
+    "name": "Medina County",
+    "rate": 5.9,
+    "count": 10882
+  },
+  "39109": {
+    "name": "Miami County",
+    "rate": 8.3,
+    "count": 9270
+  },
+  "39113": {
+    "name": "Montgomery County",
+    "rate": 13.8,
+    "count": 72176
+  },
+  "39119": {
+    "name": "Muskingum County",
+    "rate": 16.1,
+    "count": 13726
+  },
+  "39133": {
+    "name": "Portage County",
+    "rate": 13.3,
+    "count": 20460
+  },
+  "39139": {
+    "name": "Richland County",
+    "rate": 14.2,
+    "count": 16792
+  },
+  "39141": {
+    "name": "Ross County",
+    "rate": 8.9,
+    "count": 6289
+  },
+  "39145": {
+    "name": "Scioto County",
+    "rate": 17.1,
+    "count": 11528
+  },
+  "39151": {
+    "name": "Stark County",
+    "rate": 12.3,
+    "count": 45037
+  },
+  "39153": {
+    "name": "Summit County",
+    "rate": 12.4,
+    "count": 65640
+  },
+  "39155": {
+    "name": "Trumbull County",
+    "rate": 15.4,
+    "count": 30105
+  },
+  "39157": {
+    "name": "Tuscarawas County",
+    "rate": 9.4,
+    "count": 8561
+  },
+  "39159": {
+    "name": "Union County",
+    "rate": 6.9,
+    "count": 4889
+  },
+  "39165": {
+    "name": "Warren County",
+    "rate": 5.0,
+    "count": 12725
+  },
+  "39169": {
+    "name": "Wayne County",
+    "rate": 6.1,
+    "count": 6862
+  },
+  "39173": {
+    "name": "Wood County",
+    "rate": 12.0,
+    "count": 15216
+  },
+  "40017": {
+    "name": "Canadian County",
+    "rate": 8.5,
+    "count": 15766
+  },
+  "40027": {
+    "name": "Cleveland County",
+    "rate": 13.2,
+    "count": 38583
+  },
+  "40031": {
+    "name": "Comanche County",
+    "rate": 17.7,
+    "count": 19931
+  },
+  "40037": {
+    "name": "Creek County",
+    "rate": 11.6,
+    "count": 8545
+  },
+  "40101": {
+    "name": "Muskogee County",
+    "rate": 20.8,
+    "count": 13065
+  },
+  "40109": {
+    "name": "Oklahoma County",
+    "rate": 13.7,
+    "count": 110329
+  },
+  "40119": {
+    "name": "Payne County",
+    "rate": 20.4,
+    "count": 15265
+  },
+  "40125": {
+    "name": "Pottawatomie County",
+    "rate": 17.1,
+    "count": 12222
+  },
+  "40131": {
+    "name": "Rogers County",
+    "rate": 8.0,
+    "count": 7977
+  },
+  "40143": {
+    "name": "Tulsa County",
+    "rate": 12.5,
+    "count": 86296
+  },
+  "40145": {
+    "name": "Wagoner County",
+    "rate": 10.2,
+    "count": 9447
+  },
+  "41003": {
+    "name": "Benton County",
+    "rate": 16.6,
+    "count": 14906
+  },
+  "41005": {
+    "name": "Clackamas County",
+    "rate": 7.6,
+    "count": 32051
+  },
+  "41017": {
+    "name": "Deschutes County",
+    "rate": 7.0,
+    "count": 14834
+  },
+  "41019": {
+    "name": "Douglas County",
+    "rate": 15.1,
+    "count": 16652
+  },
+  "41029": {
+    "name": "Jackson County",
+    "rate": 14.2,
+    "count": 31034
+  },
+  "41033": {
+    "name": "Josephine County",
+    "rate": 14.9,
+    "count": 12984
+  },
+  "41035": {
+    "name": "Klamath County",
+    "rate": 18.4,
+    "count": 12639
+  },
+  "41039": {
+    "name": "Lane County",
+    "rate": 15.8,
+    "count": 58891
+  },
+  "41043": {
+    "name": "Linn County",
+    "rate": 13.3,
+    "count": 17458
+  },
+  "41047": {
+    "name": "Marion County",
+    "rate": 13.7,
+    "count": 47407
+  },
+  "41051": {
+    "name": "Multnomah County",
+    "rate": 12.4,
+    "count": 96419
+  },
+  "41053": {
+    "name": "Polk County",
+    "rate": 10.0,
+    "count": 8819
+  },
+  "41059": {
+    "name": "Umatilla County",
+    "rate": 10.5,
+    "count": 8215
+  },
+  "41067": {
+    "name": "Washington County",
+    "rate": 7.1,
+    "count": 43171
+  },
+  "41071": {
+    "name": "Yamhill County",
+    "rate": 13.8,
+    "count": 14411
+  },
+  "42001": {
+    "name": "Adams County",
+    "rate": 7.6,
+    "count": 7850
+  },
+  "42003": {
+    "name": "Allegheny County",
+    "rate": 11.4,
+    "count": 135561
+  },
+  "42005": {
+    "name": "Armstrong County",
+    "rate": 11.5,
+    "count": 7268
+  },
+  "42007": {
+    "name": "Beaver County",
+    "rate": 11.2,
+    "count": 18335
+  },
+  "42011": {
+    "name": "Berks County",
+    "rate": 10.6,
+    "count": 45254
+  },
+  "42013": {
+    "name": "Blair County",
+    "rate": 13.5,
+    "count": 15556
+  },
+  "42017": {
+    "name": "Bucks County",
+    "rate": 5.4,
+    "count": 34489
+  },
+  "42019": {
+    "name": "Butler County",
+    "rate": 7.0,
+    "count": 13546
+  },
+  "42021": {
+    "name": "Cambria County",
+    "rate": 13.9,
+    "count": 17076
+  },
+  "42025": {
+    "name": "Carbon County",
+    "rate": 13.2,
+    "count": 8613
+  },
+  "42027": {
+    "name": "Centre County",
+    "rate": 14.2,
+    "count": 18942
+  },
+  "42029": {
+    "name": "Chester County",
+    "rate": 6.2,
+    "count": 33813
+  },
+  "42033": {
+    "name": "Clearfield County",
+    "rate": 12.3,
+    "count": 8956
+  },
+  "42037": {
+    "name": "Columbia County",
+    "rate": 13.4,
+    "count": 8310
+  },
+  "42039": {
+    "name": "Crawford County",
+    "rate": 14.5,
+    "count": 11155
+  },
+  "42041": {
+    "name": "Cumberland County",
+    "rate": 7.0,
+    "count": 18189
+  },
+  "42043": {
+    "name": "Dauphin County",
+    "rate": 10.6,
+    "count": 30657
+  },
+  "42045": {
+    "name": "Delaware County",
+    "rate": 8.2,
+    "count": 46003
+  },
+  "42049": {
+    "name": "Erie County",
+    "rate": 15.4,
+    "count": 39101
+  },
+  "42051": {
+    "name": "Fayette County",
+    "rate": 18.3,
+    "count": 21860
+  },
+  "42055": {
+    "name": "Franklin County",
+    "rate": 10.1,
+    "count": 15957
+  },
+  "42063": {
+    "name": "Indiana County",
+    "rate": 16.6,
+    "count": 13010
+  },
+  "42069": {
+    "name": "Lackawanna County",
+    "rate": 17.2,
+    "count": 35772
+  },
+  "42071": {
+    "name": "Lancaster County",
+    "rate": 7.6,
+    "count": 41333
+  },
+  "42073": {
+    "name": "Lawrence County",
+    "rate": 8.6,
+    "count": 7010
+  },
+  "42075": {
+    "name": "Lebanon County",
+    "rate": 8.4,
+    "count": 11897
+  },
+  "42077": {
+    "name": "Lehigh County",
+    "rate": 11.0,
+    "count": 41127
+  },
+  "42079": {
+    "name": "Luzerne County",
+    "rate": 15.1,
+    "count": 48525
+  },
+  "42081": {
+    "name": "Lycoming County",
+    "rate": 15.2,
+    "count": 16239
+  },
+  "42085": {
+    "name": "Mercer County",
+    "rate": 11.3,
+    "count": 11390
+  },
+  "42089": {
+    "name": "Monroe County",
+    "rate": 10.3,
+    "count": 16957
+  },
+  "42091": {
+    "name": "Montgomery County",
+    "rate": 4.5,
+    "count": 38324
+  },
+  "42095": {
+    "name": "Northampton County",
+    "rate": 9.6,
+    "count": 29838
+  },
+  "42097": {
+    "name": "Northumberland County",
+    "rate": 14.7,
+    "count": 12671
+  },
+  "42101": {
+    "name": "Philadelphia County",
+    "rate": 20.4,
+    "count": 313532
+  },
+  "42107": {
+    "name": "Schuylkill County",
+    "rate": 14.6,
+    "count": 20129
+  },
+  "42111": {
+    "name": "Somerset County",
+    "rate": 12.2,
+    "count": 8280
+  },
+  "42125": {
+    "name": "Washington County",
+    "rate": 10.3,
+    "count": 21261
+  },
+  "42129": {
+    "name": "Westmoreland County",
+    "rate": 10.4,
+    "count": 35609
+  },
+  "42133": {
+    "name": "York County",
+    "rate": 7.8,
+    "count": 36311
+  },
+  "44003": {
+    "name": "Kent County",
+    "rate": 7.3,
+    "count": 12478
+  },
+  "44005": {
+    "name": "Newport County",
+    "rate": 5.0,
+    "count": 3956
+  },
+  "44007": {
+    "name": "Providence County",
+    "rate": 11.6,
+    "count": 75849
+  },
+  "44009": {
+    "name": "Washington County",
+    "rate": 6.9,
+    "count": 8445
+  },
+  "45003": {
+    "name": "Aiken County",
+    "rate": 13.0,
+    "count": 23364
+  },
+  "45007": {
+    "name": "Anderson County",
+    "rate": 13.8,
+    "count": 29802
+  },
+  "45013": {
+    "name": "Beaufort County",
+    "rate": 9.1,
+    "count": 17846
+  },
+  "45015": {
+    "name": "Berkeley County",
+    "rate": 11.2,
+    "count": 30231
+  },
+  "45019": {
+    "name": "Charleston County",
+    "rate": 10.9,
+    "count": 46449
+  },
+  "45035": {
+    "name": "Dorchester County",
+    "rate": 8.0,
+    "count": 14063
+  },
+  "45041": {
+    "name": "Florence County",
+    "rate": 17.1,
+    "count": 23130
+  },
+  "45043": {
+    "name": "Georgetown County",
+    "rate": 13.0,
+    "count": 8468
+  },
+  "45045": {
+    "name": "Greenville County",
+    "rate": 11.0,
+    "count": 62824
+  },
+  "45047": {
+    "name": "Greenwood County",
+    "rate": 11.6,
+    "count": 7754
+  },
+  "45051": {
+    "name": "Horry County",
+    "rate": 13.3,
+    "count": 55617
+  },
+  "45055": {
+    "name": "Kershaw County",
+    "rate": 16.8,
+    "count": 12190
+  },
+  "45057": {
+    "name": "Lancaster County",
+    "rate": 10.9,
+    "count": 12312
+  },
+  "45059": {
+    "name": "Laurens County",
+    "rate": 20.8,
+    "count": 14606
+  },
+  "45063": {
+    "name": "Lexington County",
+    "rate": 9.9,
+    "count": 31069
+  },
+  "45073": {
+    "name": "Oconee County",
+    "rate": 14.7,
+    "count": 12223
+  },
+  "45075": {
+    "name": "Orangeburg County",
+    "rate": 20.3,
+    "count": 16091
+  },
+  "45077": {
+    "name": "Pickens County",
+    "rate": 19.3,
+    "count": 24881
+  },
+  "45079": {
+    "name": "Richland County",
+    "rate": 13.3,
+    "count": 54734
+  },
+  "45083": {
+    "name": "Spartanburg County",
+    "rate": 11.9,
+    "count": 44403
+  },
+  "45085": {
+    "name": "Sumter County",
+    "rate": 18.6,
+    "count": 19000
+  },
+  "45091": {
+    "name": "York County",
+    "rate": 8.0,
+    "count": 24302
+  },
+  "46083": {
+    "name": "Lincoln County",
+    "rate": 3.6,
+    "count": 2719
+  },
+  "46099": {
+    "name": "Minnehaha County",
+    "rate": 12.4,
+    "count": 25693
+  },
+  "46103": {
+    "name": "Pennington County",
+    "rate": 11.6,
+    "count": 13085
+  },
+  "47001": {
+    "name": "Anderson County",
+    "rate": 11.4,
+    "count": 9259
+  },
+  "47009": {
+    "name": "Blount County",
+    "rate": 9.7,
+    "count": 13808
+  },
+  "47011": {
+    "name": "Bradley County",
+    "rate": 12.0,
+    "count": 13574
+  },
+  "47035": {
+    "name": "Cumberland County",
+    "rate": 12.1,
+    "count": 7953
+  },
+  "47037": {
+    "name": "Davidson County",
+    "rate": 12.7,
+    "count": 92421
+  },
+  "47059": {
+    "name": "Greene County",
+    "rate": 10.2,
+    "count": 7391
+  },
+  "47063": {
+    "name": "Hamblen County",
+    "rate": 24.2,
+    "count": 16424
+  },
+  "47065": {
+    "name": "Hamilton County",
+    "rate": 13.0,
+    "count": 49462
+  },
+  "47093": {
+    "name": "Knox County",
+    "rate": 11.8,
+    "count": 58720
+  },
+  "47113": {
+    "name": "Madison County",
+    "rate": 17.4,
+    "count": 16622
+  },
+  "47119": {
+    "name": "Maury County",
+    "rate": 10.5,
+    "count": 12237
+  },
+  "47125": {
+    "name": "Montgomery County",
+    "rate": 10.3,
+    "count": 25106
+  },
+  "47141": {
+    "name": "Putnam County",
+    "rate": 12.3,
+    "count": 10201
+  },
+  "47147": {
+    "name": "Robertson County",
+    "rate": 8.4,
+    "count": 6614
+  },
+  "47149": {
+    "name": "Rutherford County",
+    "rate": 10.8,
+    "count": 40577
+  },
+  "47155": {
+    "name": "Sevier County",
+    "rate": 7.3,
+    "count": 7289
+  },
+  "47157": {
+    "name": "Shelby County",
+    "rate": 16.2,
+    "count": 144818
+  },
+  "47163": {
+    "name": "Sullivan County",
+    "rate": 14.1,
+    "count": 22785
+  },
+  "47165": {
+    "name": "Sumner County",
+    "rate": 7.6,
+    "count": 16133
+  },
+  "47179": {
+    "name": "Washington County",
+    "rate": 14.2,
+    "count": 19347
+  },
+  "47187": {
+    "name": "Williamson County",
+    "rate": 3.6,
+    "count": 9666
+  },
+  "47189": {
+    "name": "Wilson County",
+    "rate": 6.6,
+    "count": 11366
+  },
+  "48005": {
+    "name": "Angelina County",
+    "rate": 21.3,
+    "count": 18218
+  },
+  "48021": {
+    "name": "Bastrop County",
+    "rate": 8.3,
+    "count": 9611
+  },
+  "48027": {
+    "name": "Bell County",
+    "rate": 14.1,
+    "count": 55624
+  },
+  "48029": {
+    "name": "Bexar County",
+    "rate": 13.3,
+    "count": 283044
+  },
+  "48037": {
+    "name": "Bowie County",
+    "rate": 17.9,
+    "count": 15487
+  },
+  "48039": {
+    "name": "Brazoria County",
+    "rate": 10.2,
+    "count": 41531
+  },
+  "48041": {
+    "name": "Brazos County",
+    "rate": 23.3,
+    "count": 53317
+  },
+  "48061": {
+    "name": "Cameron County",
+    "rate": 17.7,
+    "count": 76211
+  },
+  "48085": {
+    "name": "Collin County",
+    "rate": 6.1,
+    "count": 78950
+  },
+  "48091": {
+    "name": "Comal County",
+    "rate": 6.7,
+    "count": 13787
+  },
+  "48099": {
+    "name": "Coryell County",
+    "rate": 9.4,
+    "count": 6323
+  },
+  "48113": {
+    "name": "Dallas County",
+    "rate": 12.3,
+    "count": 323614
+  },
+  "48121": {
+    "name": "Denton County",
+    "rate": 6.9,
+    "count": 72731
+  },
+  "48135": {
+    "name": "Ector County",
+    "rate": 15.5,
+    "count": 26698
+  },
+  "48139": {
+    "name": "Ellis County",
+    "rate": 6.8,
+    "count": 16113
+  },
+  "48141": {
+    "name": "El Paso County",
+    "rate": 17.6,
+    "count": 152153
+  },
+  "48157": {
+    "name": "Fort Bend County",
+    "rate": 7.6,
+    "count": 73822
+  },
+  "48167": {
+    "name": "Galveston County",
+    "rate": 11.7,
+    "count": 43076
+  },
+  "48181": {
+    "name": "Grayson County",
+    "rate": 13.3,
+    "count": 20080
+  },
+  "48183": {
+    "name": "Gregg County",
+    "rate": 19.7,
+    "count": 24126
+  },
+  "48187": {
+    "name": "Guadalupe County",
+    "rate": 7.2,
+    "count": 14253
+  },
+  "48201": {
+    "name": "Harris County",
+    "rate": 14.2,
+    "count": 709643
+  },
+  "48203": {
+    "name": "Harrison County",
+    "rate": 10.8,
+    "count": 7499
+  },
+  "48209": {
+    "name": "Hays County",
+    "rate": 10.2,
+    "count": 30303
+  },
+  "48213": {
+    "name": "Henderson County",
+    "rate": 11.1,
+    "count": 9630
+  },
+  "48215": {
+    "name": "Hidalgo County",
+    "rate": 24.1,
+    "count": 219685
+  },
+  "48221": {
+    "name": "Hood County",
+    "rate": 8.4,
+    "count": 5877
+  },
+  "48231": {
+    "name": "Hunt County",
+    "rate": 15.7,
+    "count": 18659
+  },
+  "48245": {
+    "name": "Jefferson County",
+    "rate": 16.8,
+    "count": 40268
+  },
+  "48251": {
+    "name": "Johnson County",
+    "rate": 12.8,
+    "count": 27489
+  },
+  "48257": {
+    "name": "Kaufman County",
+    "rate": 9.5,
+    "count": 19792
+  },
+  "48291": {
+    "name": "Liberty County",
+    "rate": 10.9,
+    "count": 12635
+  },
+  "48303": {
+    "name": "Lubbock County",
+    "rate": 16.5,
+    "count": 52104
+  },
+  "48309": {
+    "name": "McLennan County",
+    "rate": 16.6,
+    "count": 43733
+  },
+  "48329": {
+    "name": "Midland County",
+    "rate": 11.0,
+    "count": 20603
+  },
+  "48339": {
+    "name": "Montgomery County",
+    "rate": 11.0,
+    "count": 85588
+  },
+  "48347": {
+    "name": "Nacogdoches County",
+    "rate": 19.8,
+    "count": 11980
+  },
+  "48355": {
+    "name": "Nueces County",
+    "rate": 13.7,
+    "count": 47263
+  },
+  "48361": {
+    "name": "Orange County",
+    "rate": 13.0,
+    "count": 11133
+  },
+  "48367": {
+    "name": "Parker County",
+    "rate": 8.2,
+    "count": 14921
+  },
+  "48375": {
+    "name": "Potter County",
+    "rate": 17.7,
+    "count": 18913
+  },
+  "48381": {
+    "name": "Randall County",
+    "rate": 6.8,
+    "count": 10130
+  },
+  "48397": {
+    "name": "Rockwall County",
+    "rate": 6.8,
+    "count": 9562
+  },
+  "48409": {
+    "name": "San Patricio County",
+    "rate": 16.4,
+    "count": 11646
+  },
+  "48423": {
+    "name": "Smith County",
+    "rate": 12.6,
+    "count": 30846
+  },
+  "48427": {
+    "name": "Starr County",
+    "rate": 24.4,
+    "count": 16067
+  },
+  "48439": {
+    "name": "Tarrant County",
+    "rate": 10.9,
+    "count": 243367
+  },
+  "48441": {
+    "name": "Taylor County",
+    "rate": 12.5,
+    "count": 18076
+  },
+  "48451": {
+    "name": "Tom Green County",
+    "rate": 11.5,
+    "count": 13349
+  },
+  "48453": {
+    "name": "Travis County",
+    "rate": 10.7,
+    "count": 145696
+  },
+  "48467": {
+    "name": "Van Zandt County",
+    "rate": 6.0,
+    "count": 3899
+  },
+  "48469": {
+    "name": "Victoria County",
+    "rate": 13.0,
+    "count": 11805
+  },
+  "48471": {
+    "name": "Walker County",
+    "rate": 17.1,
+    "count": 11514
+  },
+  "48473": {
+    "name": "Waller County",
+    "rate": 10.5,
+    "count": 6913
+  },
+  "48479": {
+    "name": "Webb County",
+    "rate": 20.3,
+    "count": 56306
+  },
+  "48485": {
+    "name": "Wichita County",
+    "rate": 12.5,
+    "count": 14825
+  },
+  "48491": {
+    "name": "Williamson County",
+    "rate": 6.4,
+    "count": 47771
+  },
+  "48497": {
+    "name": "Wise County",
+    "rate": 10.2,
+    "count": 8404
+  },
+  "49003": {
+    "name": "Box Elder County",
+    "rate": 5.4,
+    "count": 3534
+  },
+  "49005": {
+    "name": "Cache County",
+    "rate": 11.2,
+    "count": 15554
+  },
+  "49011": {
+    "name": "Davis County",
+    "rate": 7.3,
+    "count": 27539
+  },
+  "49021": {
+    "name": "Iron County",
+    "rate": 11.3,
+    "count": 7472
+  },
+  "49035": {
+    "name": "Salt Lake County",
+    "rate": 8.0,
+    "count": 96327
+  },
+  "49045": {
+    "name": "Tooele County",
+    "rate": 9.8,
+    "count": 8458
+  },
+  "49049": {
+    "name": "Utah County",
+    "rate": 9.5,
+    "count": 70434
+  },
+  "49053": {
+    "name": "Washington County",
+    "rate": 9.2,
+    "count": 19336
+  },
+  "49057": {
+    "name": "Weber County",
+    "rate": 8.5,
+    "count": 23243
+  },
+  "50007": {
+    "name": "Chittenden County",
+    "rate": 11.2,
+    "count": 17712
+  },
+  "51003": {
+    "name": "Albemarle County",
+    "rate": 9.2,
+    "count": 10356
+  },
+  "51013": {
+    "name": "Arlington County",
+    "rate": 6.6,
+    "count": 15847
+  },
+  "51015": {
+    "name": "Augusta County",
+    "rate": 11.2,
+    "count": 8705
+  },
+  "51019": {
+    "name": "Bedford County",
+    "rate": 9.7,
+    "count": 7991
+  },
+  "51041": {
+    "name": "Chesterfield County",
+    "rate": 5.5,
+    "count": 21620
+  },
+  "51059": {
+    "name": "Fairfax County",
+    "rate": 5.8,
+    "count": 67483
+  },
+  "51061": {
+    "name": "Fauquier County",
+    "rate": 4.5,
+    "count": 3389
+  },
+  "51069": {
+    "name": "Frederick County",
+    "rate": 8.4,
+    "count": 8299
+  },
+  "51085": {
+    "name": "Hanover County",
+    "rate": 6.1,
+    "count": 6967
+  },
+  "51087": {
+    "name": "Henrico County",
+    "rate": 10.3,
+    "count": 34898
+  },
+  "51095": {
+    "name": "James City County",
+    "rate": 10.1,
+    "count": 8294
+  },
+  "51107": {
+    "name": "Loudoun County",
+    "rate": 3.4,
+    "count": 15283
+  },
+  "51121": {
+    "name": "Montgomery County",
+    "rate": 19.5,
+    "count": 17066
+  },
+  "51153": {
+    "name": "Prince William County",
+    "rate": 5.4,
+    "count": 27070
+  },
+  "51161": {
+    "name": "Roanoke County",
+    "rate": 6.1,
+    "count": 5782
+  },
+  "51165": {
+    "name": "Rockingham County",
+    "rate": 9.7,
+    "count": 8463
+  },
+  "51177": {
+    "name": "Spotsylvania County",
+    "rate": 10.2,
+    "count": 15782
+  },
+  "51179": {
+    "name": "Stafford County",
+    "rate": 5.5,
+    "count": 9204
+  },
+  "51199": {
+    "name": "York County",
+    "rate": 3.5,
+    "count": 2438
+  },
+  "51510": {
+    "name": "Alexandria city",
+    "rate": 7.8,
+    "count": 12435
+  },
+  "51550": {
+    "name": "Chesapeake city",
+    "rate": 7.8,
+    "count": 19576
+  },
+  "51650": {
+    "name": "Hampton city",
+    "rate": 14.3,
+    "count": 19084
+  },
+  "51680": {
+    "name": "Lynchburg city",
+    "rate": 18.8,
+    "count": 13279
+  },
+  "51700": {
+    "name": "Newport News city",
+    "rate": 12.5,
+    "count": 22010
+  },
+  "51710": {
+    "name": "Norfolk city",
+    "rate": 12.1,
+    "count": 25757
+  },
+  "51740": {
+    "name": "Portsmouth city",
+    "rate": 14.7,
+    "count": 13855
+  },
+  "51760": {
+    "name": "Richmond city",
+    "rate": 16.8,
+    "count": 38091
+  },
+  "51770": {
+    "name": "Roanoke city",
+    "rate": 21.2,
+    "count": 20460
+  },
+  "51800": {
+    "name": "Suffolk city",
+    "rate": 10.8,
+    "count": 10490
+  },
+  "51810": {
+    "name": "Virginia Beach city",
+    "rate": 5.8,
+    "count": 25770
+  },
+  "53005": {
+    "name": "Benton County",
+    "rate": 13.9,
+    "count": 30751
+  },
+  "53007": {
+    "name": "Chelan County",
+    "rate": 12.4,
+    "count": 10049
+  },
+  "53009": {
+    "name": "Clallam County",
+    "rate": 12.3,
+    "count": 9378
+  },
+  "53011": {
+    "name": "Clark County",
+    "rate": 8.2,
+    "count": 43261
+  },
+  "53015": {
+    "name": "Cowlitz County",
+    "rate": 13.5,
+    "count": 15406
+  },
+  "53021": {
+    "name": "Franklin County",
+    "rate": 11.2,
+    "count": 11174
+  },
+  "53025": {
+    "name": "Grant County",
+    "rate": 20.7,
+    "count": 21689
+  },
+  "53027": {
+    "name": "Grays Harbor County",
+    "rate": 11.8,
+    "count": 8918
+  },
+  "53029": {
+    "name": "Island County",
+    "rate": 11.3,
+    "count": 9465
+  },
+  "53033": {
+    "name": "King County",
+    "rate": 9.1,
+    "count": 209619
+  },
+  "53035": {
+    "name": "Kitsap County",
+    "rate": 7.9,
+    "count": 21867
+  },
+  "53041": {
+    "name": "Lewis County",
+    "rate": 13.3,
+    "count": 11567
+  },
+  "53045": {
+    "name": "Mason County",
+    "rate": 10.7,
+    "count": 7441
+  },
+  "53053": {
+    "name": "Pierce County",
+    "rate": 8.1,
+    "count": 74873
+  },
+  "53057": {
+    "name": "Skagit County",
+    "rate": 7.9,
+    "count": 10342
+  },
+  "53061": {
+    "name": "Snohomish County",
+    "rate": 9.4,
+    "count": 80785
+  },
+  "53063": {
+    "name": "Spokane County",
+    "rate": 12.5,
+    "count": 68210
+  },
+  "53067": {
+    "name": "Thurston County",
+    "rate": 9.8,
+    "count": 29370
+  },
+  "53073": {
+    "name": "Whatcom County",
+    "rate": 14.2,
+    "count": 32928
+  },
+  "53077": {
+    "name": "Yakima County",
+    "rate": 17.0,
+    "count": 43481
+  },
+  "54003": {
+    "name": "Berkeley County",
+    "rate": 6.2,
+    "count": 8538
+  },
+  "54011": {
+    "name": "Cabell County",
+    "rate": 15.4,
+    "count": 13334
+  },
+  "54033": {
+    "name": "Harrison County",
+    "rate": 10.0,
+    "count": 6304
+  },
+  "54039": {
+    "name": "Kanawha County",
+    "rate": 15.0,
+    "count": 25240
+  },
+  "54061": {
+    "name": "Monongalia County",
+    "rate": 16.8,
+    "count": 17062
+  },
+  "54081": {
+    "name": "Raleigh County",
+    "rate": 23.5,
+    "count": 16059
+  },
+  "54107": {
+    "name": "Wood County",
+    "rate": 15.2,
+    "count": 12365
+  },
+  "55009": {
+    "name": "Brown County",
+    "rate": 9.8,
+    "count": 26436
+  },
+  "55017": {
+    "name": "Chippewa County",
+    "rate": 9.3,
+    "count": 6081
+  },
+  "55025": {
+    "name": "Dane County",
+    "rate": 11.0,
+    "count": 62996
+  },
+  "55027": {
+    "name": "Dodge County",
+    "rate": 6.0,
+    "count": 5044
+  },
+  "55035": {
+    "name": "Eau Claire County",
+    "rate": 12.7,
+    "count": 13256
+  },
+  "55039": {
+    "name": "Fond du Lac County",
+    "rate": 6.7,
+    "count": 6753
+  },
+  "55055": {
+    "name": "Jefferson County",
+    "rate": 7.3,
+    "count": 6146
+  },
+  "55059": {
+    "name": "Kenosha County",
+    "rate": 6.8,
+    "count": 11152
+  },
+  "55063": {
+    "name": "La Crosse County",
+    "rate": 14.0,
+    "count": 16208
+  },
+  "55071": {
+    "name": "Manitowoc County",
+    "rate": 8.3,
+    "count": 6705
+  },
+  "55073": {
+    "name": "Marathon County",
+    "rate": 7.8,
+    "count": 10781
+  },
+  "55079": {
+    "name": "Milwaukee County",
+    "rate": 16.9,
+    "count": 153236
+  },
+  "55087": {
+    "name": "Outagamie County",
+    "rate": 7.9,
+    "count": 15240
+  },
+  "55089": {
+    "name": "Ozaukee County",
+    "rate": 8.3,
+    "count": 7694
+  },
+  "55097": {
+    "name": "Portage County",
+    "rate": 9.6,
+    "count": 6556
+  },
+  "55101": {
+    "name": "Racine County",
+    "rate": 9.1,
+    "count": 17663
+  },
+  "55105": {
+    "name": "Rock County",
+    "rate": 8.9,
+    "count": 14573
+  },
+  "55109": {
+    "name": "St. Croix County",
+    "rate": 5.1,
+    "count": 4958
+  },
+  "55111": {
+    "name": "Sauk County",
+    "rate": 8.8,
+    "count": 5845
+  },
+  "55117": {
+    "name": "Sheboygan County",
+    "rate": 7.2,
+    "count": 8192
+  },
+  "55127": {
+    "name": "Walworth County",
+    "rate": 7.0,
+    "count": 7215
+  },
+  "55131": {
+    "name": "Washington County",
+    "rate": 5.6,
+    "count": 7793
+  },
+  "55133": {
+    "name": "Waukesha County",
+    "rate": 4.7,
+    "count": 19276
+  },
+  "55139": {
+    "name": "Winnebago County",
+    "rate": 9.7,
+    "count": 16342
+  },
+  "55141": {
+    "name": "Wood County",
+    "rate": 10.5,
+    "count": 7707
+  },
+  "56021": {
+    "name": "Laramie County",
+    "rate": 8.8,
+    "count": 8919
+  },
+  "56025": {
+    "name": "Natrona County",
+    "rate": 13.2,
+    "count": 10368
+  },
+  "72013": {
+    "name": "Arecibo Municipio",
+    "rate": 43.7,
+    "count": 36966
+  },
+  "72021": {
+    "name": "Bayam\u00f3n Municipio",
+    "rate": 24.5,
+    "count": 43497
+  },
+  "72025": {
+    "name": "Caguas Municipio",
+    "rate": 30.9,
+    "count": 38225
+  },
+  "72031": {
+    "name": "Carolina Municipio",
+    "rate": 26.8,
+    "count": 40052
+  },
+  "72061": {
+    "name": "Guaynabo Municipio",
+    "rate": 22.6,
+    "count": 19675
+  },
+  "72097": {
+    "name": "Mayag\u00fcez Municipio",
+    "rate": 50.0,
+    "count": 33845
+  },
+  "72113": {
+    "name": "Ponce Municipio",
+    "rate": 49.5,
+    "count": 61346
+  },
+  "72127": {
+    "name": "San Juan Municipio",
+    "rate": 32.2,
+    "count": 105297
+  },
+  "72135": {
+    "name": "Toa Alta Municipio",
+    "rate": 18.1,
+    "count": 11840
+  },
+  "72137": {
+    "name": "Toa Baja Municipio",
+    "rate": 30.2,
+    "count": 21344
+  },
+  "72139": {
+    "name": "Trujillo Alto Municipio",
+    "rate": 26.7,
+    "count": 17629
+  }
+}

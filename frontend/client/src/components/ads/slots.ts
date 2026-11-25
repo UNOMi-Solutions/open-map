@@ -26,5 +26,14 @@ export const AD_SLOTS = {
   infeed: env.VITE_ADSENSE_SLOT_INFEED ?? "",
 };
 
+/**
+ * Local/demo preview: with VITE_AD_PREVIEW=true, slots without an ID render a dashed placeholder
+ * at the real size (and name the variable to set) instead of nothing. Never enable in production.
+ */
+export const AD_PREVIEW: boolean = env.VITE_AD_PREVIEW === "true";
+
+/** True when a slot will draw something (a real unit, or a preview placeholder). */
+export const adSlotActive = (slot: string) => Boolean(slot) || AD_PREVIEW;
+
 export const ADSENSE_CLIENT: string =
   env.VITE_ADSENSE_CLIENT ?? "ca-pub-4397282403486242";

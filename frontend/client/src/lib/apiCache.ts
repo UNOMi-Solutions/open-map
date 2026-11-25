@@ -23,16 +23,21 @@ export const CACHE_TTL = {
   LIVE_HAZARDS: 60 * 60 * 1000,
   /** Air quality — refresh more often. */
   AIR_QUALITY: 2 * 60 * 60 * 1000,
+  /** Groundwater measurements — refresh a few times per day. */
+  GROUNDWATER: 12 * 60 * 60 * 1000,
+  /** Invasive species occurrence data. */
+  INVASIVE_SPECIES: 24 * 60 * 60 * 1000,
   /** Politics - refreshes infrequently */
   POLITICS: 24 * 60 * 60 * 1000,
   /** Census ACS economic estimates. */
   ECONOMICS: 24 * 60 * 60 * 1000,
   TEST: 24 * 60,
   /** NOISE POLLUTION - refreshes infrequently on a multi-year cycle */
-  /** NOISE POLLUTION - infrequently on a multi-year cycle */
   NOISE_TRANSPORTATION: 7 * 24 * 60 * 60 * 1000,
   /** BTS rural access to intercity transportation — multi-year release cycle. */
   RURAL_ACCESS: 30 * 24 * 60 * 60 * 1000,
+  /** NASA GIBS layer metadata — NASA publishes a new day of imagery roughly daily. */
+  NASA_LAYERS: 6 * 60 * 60 * 1000,
 } as const;
 
 function storageKey(key: string): string {
