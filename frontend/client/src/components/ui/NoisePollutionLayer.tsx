@@ -89,13 +89,14 @@ const NoisePollutionLayer = ({
   useEffect(() => {
     if (!meta) return;
 
-    meta.services.forEach((s) =>
-      console.log(
-        s.region,
-        s.fullExtent,
-        toBounds(s.fullExtent)?.toBBoxString() ?? "NO BOUNDS",
-      ),
-    );
+    // logging helper
+    // meta.services.forEach((s) =>
+    //   console.log(
+    //     s.region,
+    //     s.fullExtent,
+    //     toBounds(s.fullExtent)?.toBBoxString() ?? "NO BOUNDS",
+    //   ),
+    // );
     // one tile layer per service
     tilesRef.current = meta.services.flatMap((svc) =>
       boundsFor(svc.region, svc.fullExtent).map((bounds) =>

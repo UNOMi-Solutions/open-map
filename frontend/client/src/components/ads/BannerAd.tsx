@@ -30,6 +30,7 @@ export default function BannerAd({
       className={className}
       wrapperStyle={style}
       style={{ display: "block", width: "100%", minHeight: 90 }}
+      preview={{ size: "Responsive banner, about 728×90", envVar: "VITE_ADSENSE_SLOT_BANNER", minHeight: 90 }}
     />
   );
 }
