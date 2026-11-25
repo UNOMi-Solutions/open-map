@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Router } from "express";
 import { requireEnv } from "../lib/requireEnv.js";
+import { getSNP500Companies } from "../lib/s&p500.js";
 import { getUsBillionaireProfiles } from "../lib/rtbBillionaires.js";
 
 const router = Router();
@@ -358,6 +359,11 @@ async function fetchCountyUnemployment(apiKey, censusApiKey, startYear, endYear)
 
 router.get("/test", (req, res) => {
   res.json({ response: "Success: Viewing Economic Data" });
+});
+
+router.get("/sp500", async (req, res) => {
+  const companies = await getSNP500Companies();
+  res.json({ count: companies.length, companies });
 });
 
 router.get("/billionaires", async (req, res) => {

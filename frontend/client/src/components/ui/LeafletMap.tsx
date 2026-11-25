@@ -124,6 +124,7 @@ import PresidentMarker from "./PresidentMarker";
 import CongressionalDistrictsLayer from "./CongressionalDistrictsLayer";
 import HouseMarkers from "./HouseMarkers";
 import BillionaireMarkers from "./BillionaireMarkers";
+import SP500Markers from "./SP500Markers";
 import SupremeCourtMarkers from "./SupremeCourtMarkers";
 import ElectoralCollegeStatesLayer from "./ElectoralCollegeStatesLayer";
 import AlprCameraMarkers from "./AlprCameraMarkers";
@@ -2559,6 +2560,7 @@ export default function LeafletMap({
 
         {politicalLayerIds.includes("senators") && <SenatorMarkers setLoading={setLoading}/>}
         {politicalLayerIds.includes("billionaires") && <BillionaireMarkers setLoading={setLoading}/>}
+        {politicalLayerIds.includes("sp500") && <SP500Markers setLoading={setLoading}/>}
         {politicalLayerIds.includes("governors") && <GovernorMarkers />}
         {(politicalLayerIds.includes("president") ||
           politicalLayerIds.includes("vice-president")) && (
