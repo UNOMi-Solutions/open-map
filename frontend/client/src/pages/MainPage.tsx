@@ -264,6 +264,14 @@ export default function MainPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  // Dams filters
+  const [socialPovertyYear, setSocialPovertyYear] = useState<number>(2024);
+  const [medianIncomeYear, setMedianIncomeYear] = useState<number>(2024);
+  const [selectedDamHazard, setSelectedDamHazard] = useState<string>("all");
+  const [selectedDamYear, setSelectedDamYear] = useState<string>("all");
+  const [selectedInvasiveYear, setSelectedInvasiveYear] = useState<string>("all");
+  const [selectedGroundwaterYear, setSelectedGroundwaterYear] =
+    useState<string>("all");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
   // Display name from the account settings page; empty until the user sets one.
@@ -1120,6 +1128,7 @@ export default function MainPage() {
                   showMassShootings={selectedLayers.includes("mass-shootings")}
 
                   showConsentAgeData={showConsentAgeData}
+                  showArsonData={selectedLayers.includes("arson")}
                   showAlprCameras={selectedLayers.includes("alpr-cameras")}
                   alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
@@ -1158,6 +1167,23 @@ export default function MainPage() {
                     return id ? Number(id.slice("dr-cat:".length)) : null;
                   })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showPovertyRate={selectedLayers.includes("poverty-rate")}
+                  socialPovertyYear={socialPovertyYear}
+                  showMedianIncome={selectedLayers.includes("median-income")}
+                  medianIncomeYear={medianIncomeYear}
+                  showDams={selectedLayers.includes("dams")}
+                  selectedDamHazard={selectedDamHazard}
+                  selectedDamYear={selectedDamYear}
+                  showGroundwaterLevels={selectedLayers.includes("groundwater-levels")}
+                  selectedGroundwaterYear={selectedGroundwaterYear}
+                  showInvasiveSpecies={selectedLayers.includes("invasive-species")}
+                  showInvasivePlants={selectedLayers.includes("invasive-plants")}
+                  showInvasiveInsects={selectedLayers.includes("invasive-insects")}
+                  showInvasiveMammals={selectedLayers.includes("invasive-mammals")}
+                  showInvasiveReptiles={selectedLayers.includes("invasive-reptiles")}
+                  showInvasiveBirds={selectedLayers.includes("invasive-birds")}
+                  showInvasiveAmphibians={selectedLayers.includes("invasive-amphibians")}
+                  selectedInvasiveYear={selectedInvasiveYear}
                   showNoisePollution={selectedLayers.includes("noise-pollution")}
                   showRuralAccess={selectedLayers.includes("rural-access") }
                   showBreastCancerIncidence={selectedLayers.includes("breast-cancer")}
@@ -1318,6 +1344,19 @@ export default function MainPage() {
 
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
+                  selectedDamHazard={selectedDamHazard}
+                  socialPovertyYear={socialPovertyYear}
+                  onSocialPovertyYearChange={setSocialPovertyYear}
+                  medianIncomeYear={medianIncomeYear}
+                  onMedianIncomeYearChange={setMedianIncomeYear}
+                  onSelectedDamHazardChange={setSelectedDamHazard}
+                  selectedDamYear={selectedDamYear}
+                  onSelectedDamYearChange={setSelectedDamYear}
+
+                  selectedInvasiveYear={selectedInvasiveYear}
+                  onSelectedInvasiveYearChange={setSelectedInvasiveYear}
+                  selectedGroundwaterYear={selectedGroundwaterYear}
+                  onSelectedGroundwaterYearChange={setSelectedGroundwaterYear}
                   povertyYear={povertyYear}
                   povertyLatestYear={povertyLatestYear}
                   povertyAvailableYears={povertyAvailableYears}

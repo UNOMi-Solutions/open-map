@@ -52,8 +52,17 @@ import HeartDiseaseMortalityMarkers from "./HeartDiseaseMortalityMarkers";
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
+//Groundwater levels data
+import PovertyRateLayer from "./PovertyRateLayer";
+import MedianIncomeLayer from "./MedianIncomeLayer";
+import GroundwaterMarkers from "./GroundwaterMarkers";
+
+//Invasive Species data
+import InvasiveSpeciesMarkers from "./InvasiveSpeciesMarkers";
 // Noise pollution data
 import NoisePollutionLayer from "./NoisePollutionLayer";
+
+import DamMarkers from "./DamMarkers";
 
 // Rural access to intercity transportation (BTS)
 import RuralAccessChoropleth from "./RuralAccessChoropleth";
@@ -64,6 +73,24 @@ import NasaLayers from "./NasaLayers";
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
+//Invasive Plants data
+import InvasivePlantMarkers from "./InvasivePlantMarkers";
+
+//Invasive Insects data
+import InvasiveInsectMarkers from "./InvasiveInsectMarkers";
+
+//Invasive Mammal data
+import InvasiveMammalMarkers from "./InvasiveMammalMarkers";
+
+//Invasive Reptile data
+import InvasiveReptileMarkers from "./InvasiveReptileMarkers";
+
+//Invasive Bird data
+import InvasiveBirdMarkers from "./InvasiveBirdMarkers";
+
+//Invasive Amphibians data
+import InvasiveAmphibianMarkers from "./InvasiveAmphibianMarkers";
+
 // Police Killing Data
 import PoliceKillings from "./PoliceKillings";
 import PoliceShootings from "./PoliceShootings";
@@ -72,6 +99,7 @@ import PoliceShootings from "./PoliceShootings";
 import ArrestMarkers from "./ArrestMarkers";
 import MissingPersons from "./MissingPersons";
 import ConsentAge from "./ConsentAge";
+import ArsonMap from "./ArsonMap";
 
 // GHG emissions facilities data
 import GhgEmissionsMarkers from "./GhgEmissionsMarkers";
@@ -402,6 +430,7 @@ export default function LeafletMap({
   showMassShootings = false,
 
   showConsentAgeData = false,
+  showArsonData = false,
   showAlprCameras = false,
   alprFlockOnly = false,
 
@@ -410,6 +439,23 @@ export default function LeafletMap({
   showOilDrillingLocations = false,
   showHeartDiseaseMortality = false,
   showAirQuality = false,
+  showDams = false,
+  selectedDamHazard = "all",
+  selectedDamYear = "all",
+  showPovertyRate = false,
+  socialPovertyYear = 2024,
+  showMedianIncome = false,
+  medianIncomeYear = 2024,
+  showGroundwaterLevels = false,
+  selectedGroundwaterYear = "all",
+  showInvasiveSpecies = false,
+  showInvasivePlants = false,
+  showInvasiveInsects = false,
+  showInvasiveMammals = false,
+  showInvasiveReptiles = false,
+  showInvasiveBirds = false,
+  showInvasiveAmphibians = false,
+  selectedInvasiveYear = "all",
   showNoisePollution = false,
   showRuralAccess = false,
   showBreastCancerIncidence = false,
@@ -479,14 +525,20 @@ export default function LeafletMap({
   showArrestData?: boolean;
 
   showMissingPersonsData?: boolean;
+  missingPersonQ?: string;
+  missingPersonYear?: any;
 
   /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
   showMassShootings?: boolean;
+<<<<<<< HEAD
 
   showNaturalDisasterIncidents?: boolean;
   naturalDisasterIncidentTypes?: string[];
 
+=======
+>>>>>>> origin/main
   showConsentAgeData?: boolean;
+  showArsonData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
   showAlprCameras?: boolean;
   alprFlockOnly?: boolean;
@@ -494,6 +546,23 @@ export default function LeafletMap({
   showOilDrillingLocations?: boolean;
   showHeartDiseaseMortality?: boolean;
   showAirQuality?: boolean;
+  showDams?: boolean;
+  selectedDamHazard?: string;
+  selectedDamYear?: string;
+  showPovertyRate?: boolean;
+  socialPovertyYear?: number;
+  showMedianIncome?: boolean;
+  medianIncomeYear?: number;
+  showGroundwaterLevels?: boolean;
+  selectedGroundwaterYear: string;
+  showInvasiveSpecies?: boolean;
+  showInvasivePlants?: boolean;
+  showInvasiveInsects?: boolean;
+  showInvasiveMammals?: boolean;
+  showInvasiveReptiles?: boolean;
+  showInvasiveBirds?: boolean;
+  showInvasiveAmphibians?: boolean;
+  selectedInvasiveYear?: string;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
   showRuralAccess?: boolean;
@@ -2332,6 +2401,15 @@ export default function LeafletMap({
           />
         )}
 
+        {/* Dams */}
+        {showDams && (
+          <DamMarkers
+            setLoading={setLoading}
+            selectedHazard={selectedDamHazard}
+            selectedYear={selectedDamYear}
+          />
+        )}
+
         {/* Noise pollution - loads image tile map for selected area */}
         {showNoisePollution && <NoisePollutionLayer/>}
 
@@ -2359,6 +2437,77 @@ export default function LeafletMap({
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
+        )}
+
+        {/* Social: Poverty Rate */}
+        {showPovertyRate && (
+          <PovertyRateLayer
+            year={socialPovertyYear}
+            setLoading={setLoading}
+          />
+        )}
+
+        {/* Social: Median Household Income */}
+        {showMedianIncome && (
+          <MedianIncomeLayer
+            year={medianIncomeYear}
+            setLoading={setLoading}
+          />
+        )}
+
+        {/* Groundwater levels */}
+        {showGroundwaterLevels && (
+          <GroundwaterMarkers
+            setLoading={setLoading}
+            selectedYear={selectedGroundwaterYear}
+          />
+        )}
+
+        {/* Invasive species */}
+        {showInvasiveSpecies && (
+          <InvasiveSpeciesMarkers setLoading={setLoading} selectedYear={selectedInvasiveYear}/>
+        )}
+
+        {showInvasivePlants && (
+          <InvasivePlantMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveInsects && (
+          <InvasiveInsectMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveMammals && (
+          <InvasiveMammalMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveReptiles && (
+          <InvasiveReptileMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveBirds && (
+          <InvasiveBirdMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveAmphibians && (
+          <InvasiveAmphibianMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
         )}
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}
@@ -2413,6 +2562,7 @@ export default function LeafletMap({
         )}
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
+        {showArsonData && <ArsonMap arrestCategory={arrestCategory} />}
 
         <ZoomControl position="topright" />
       </MapContainer>

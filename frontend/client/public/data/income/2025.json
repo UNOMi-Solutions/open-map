@@ -1,0 +1,3454 @@
+{
+  "01003": {
+    "name": "Baldwin County",
+    "income": 81409
+  },
+  "01015": {
+    "name": "Calhoun County",
+    "income": 56689
+  },
+  "01043": {
+    "name": "Cullman County",
+    "income": 66624
+  },
+  "01049": {
+    "name": "DeKalb County",
+    "income": 58314
+  },
+  "01051": {
+    "name": "Elmore County",
+    "income": 80261
+  },
+  "01055": {
+    "name": "Etowah County",
+    "income": 63551
+  },
+  "01069": {
+    "name": "Houston County",
+    "income": 66191
+  },
+  "01073": {
+    "name": "Jefferson County",
+    "income": 70896
+  },
+  "01077": {
+    "name": "Lauderdale County",
+    "income": 63617
+  },
+  "01081": {
+    "name": "Lee County",
+    "income": 67312
+  },
+  "01083": {
+    "name": "Limestone County",
+    "income": 89736
+  },
+  "01089": {
+    "name": "Madison County",
+    "income": 90428
+  },
+  "01095": {
+    "name": "Marshall County",
+    "income": 69956
+  },
+  "01097": {
+    "name": "Mobile County",
+    "income": 63668
+  },
+  "01101": {
+    "name": "Montgomery County",
+    "income": 69763
+  },
+  "01103": {
+    "name": "Morgan County",
+    "income": 66750
+  },
+  "01115": {
+    "name": "St. Clair County",
+    "income": 72403
+  },
+  "01117": {
+    "name": "Shelby County",
+    "income": 107009
+  },
+  "01121": {
+    "name": "Talladega County",
+    "income": 58953
+  },
+  "01125": {
+    "name": "Tuscaloosa County",
+    "income": 65500
+  },
+  "01127": {
+    "name": "Walker County",
+    "income": 61038
+  },
+  "02020": {
+    "name": "Anchorage Municipality",
+    "income": 101717
+  },
+  "02090": {
+    "name": "Fairbanks North Star Borough",
+    "income": 91347
+  },
+  "02170": {
+    "name": "Matanuska-Susitna Borough",
+    "income": 101425
+  },
+  "04001": {
+    "name": "Apache County",
+    "income": 41315
+  },
+  "04003": {
+    "name": "Cochise County",
+    "income": 71422
+  },
+  "04005": {
+    "name": "Coconino County",
+    "income": 78848
+  },
+  "04013": {
+    "name": "Maricopa County",
+    "income": 92169
+  },
+  "04015": {
+    "name": "Mohave County",
+    "income": 57663
+  },
+  "04017": {
+    "name": "Navajo County",
+    "income": 62473
+  },
+  "04019": {
+    "name": "Pima County",
+    "income": 74364
+  },
+  "04021": {
+    "name": "Pinal County",
+    "income": 80083
+  },
+  "04025": {
+    "name": "Yavapai County",
+    "income": 69848
+  },
+  "04027": {
+    "name": "Yuma County",
+    "income": 62526
+  },
+  "05007": {
+    "name": "Benton County",
+    "income": 98150
+  },
+  "05031": {
+    "name": "Craighead County",
+    "income": 63388
+  },
+  "05045": {
+    "name": "Faulkner County",
+    "income": 74828
+  },
+  "05051": {
+    "name": "Garland County",
+    "income": 59320
+  },
+  "05069": {
+    "name": "Jefferson County",
+    "income": 55147
+  },
+  "05085": {
+    "name": "Lonoke County",
+    "income": 79621
+  },
+  "05119": {
+    "name": "Pulaski County",
+    "income": 67437
+  },
+  "05125": {
+    "name": "Saline County",
+    "income": 80730
+  },
+  "05131": {
+    "name": "Sebastian County",
+    "income": 64693
+  },
+  "05143": {
+    "name": "Washington County",
+    "income": 77524
+  },
+  "05145": {
+    "name": "White County",
+    "income": 63837
+  },
+  "06001": {
+    "name": "Alameda County",
+    "income": 127749
+  },
+  "06007": {
+    "name": "Butte County",
+    "income": 70117
+  },
+  "06013": {
+    "name": "Contra Costa County",
+    "income": 130988
+  },
+  "06017": {
+    "name": "El Dorado County",
+    "income": 114782
+  },
+  "06019": {
+    "name": "Fresno County",
+    "income": 74293
+  },
+  "06023": {
+    "name": "Humboldt County",
+    "income": 72177
+  },
+  "06025": {
+    "name": "Imperial County",
+    "income": 66517
+  },
+  "06029": {
+    "name": "Kern County",
+    "income": 74621
+  },
+  "06031": {
+    "name": "Kings County",
+    "income": 77703
+  },
+  "06033": {
+    "name": "Lake County",
+    "income": 57302
+  },
+  "06037": {
+    "name": "Los Angeles County",
+    "income": 92404
+  },
+  "06039": {
+    "name": "Madera County",
+    "income": 77128
+  },
+  "06041": {
+    "name": "Marin County",
+    "income": 136002
+  },
+  "06045": {
+    "name": "Mendocino County",
+    "income": 69201
+  },
+  "06047": {
+    "name": "Merced County",
+    "income": 74487
+  },
+  "06053": {
+    "name": "Monterey County",
+    "income": 103771
+  },
+  "06055": {
+    "name": "Napa County",
+    "income": 124372
+  },
+  "06057": {
+    "name": "Nevada County",
+    "income": 91073
+  },
+  "06059": {
+    "name": "Orange County",
+    "income": 122729
+  },
+  "06061": {
+    "name": "Placer County",
+    "income": 125927
+  },
+  "06065": {
+    "name": "Riverside County",
+    "income": 97825
+  },
+  "06067": {
+    "name": "Sacramento County",
+    "income": 97061
+  },
+  "06069": {
+    "name": "San Benito County",
+    "income": 109633
+  },
+  "06071": {
+    "name": "San Bernardino County",
+    "income": 91143
+  },
+  "06073": {
+    "name": "San Diego County",
+    "income": 110941
+  },
+  "06075": {
+    "name": "San Francisco County",
+    "income": 141519
+  },
+  "06077": {
+    "name": "San Joaquin County",
+    "income": 95680
+  },
+  "06079": {
+    "name": "San Luis Obispo County",
+    "income": 97393
+  },
+  "06081": {
+    "name": "San Mateo County",
+    "income": 154620
+  },
+  "06083": {
+    "name": "Santa Barbara County",
+    "income": 102279
+  },
+  "06085": {
+    "name": "Santa Clara County",
+    "income": 169499
+  },
+  "06087": {
+    "name": "Santa Cruz County",
+    "income": 111563
+  },
+  "06089": {
+    "name": "Shasta County",
+    "income": 73050
+  },
+  "06095": {
+    "name": "Solano County",
+    "income": 101985
+  },
+  "06097": {
+    "name": "Sonoma County",
+    "income": 104477
+  },
+  "06099": {
+    "name": "Stanislaus County",
+    "income": 84432
+  },
+  "06101": {
+    "name": "Sutter County",
+    "income": 74432
+  },
+  "06103": {
+    "name": "Tehama County",
+    "income": 75222
+  },
+  "06107": {
+    "name": "Tulare County",
+    "income": 75307
+  },
+  "06111": {
+    "name": "Ventura County",
+    "income": 113344
+  },
+  "06113": {
+    "name": "Yolo County",
+    "income": 94794
+  },
+  "06115": {
+    "name": "Yuba County",
+    "income": 74751
+  },
+  "08001": {
+    "name": "Adams County",
+    "income": 98978
+  },
+  "08005": {
+    "name": "Arapahoe County",
+    "income": 104765
+  },
+  "08013": {
+    "name": "Boulder County",
+    "income": 101646
+  },
+  "08014": {
+    "name": "Broomfield County",
+    "income": 126242
+  },
+  "08031": {
+    "name": "Denver County",
+    "income": 93850
+  },
+  "08035": {
+    "name": "Douglas County",
+    "income": 153800
+  },
+  "08041": {
+    "name": "El Paso County",
+    "income": 98391
+  },
+  "08059": {
+    "name": "Jefferson County",
+    "income": 111669
+  },
+  "08069": {
+    "name": "Larimer County",
+    "income": 92392
+  },
+  "08077": {
+    "name": "Mesa County",
+    "income": 82490
+  },
+  "08101": {
+    "name": "Pueblo County",
+    "income": 66237
+  },
+  "08123": {
+    "name": "Weld County",
+    "income": 105608
+  },
+  "09110": {
+    "name": "Capitol Planning Region",
+    "income": 94174
+  },
+  "09120": {
+    "name": "Greater Bridgeport Planning Region",
+    "income": 93325
+  },
+  "09130": {
+    "name": "Lower Connecticut River Valley Planning Region",
+    "income": 115696
+  },
+  "09140": {
+    "name": "Naugatuck Valley Planning Region",
+    "income": 90194
+  },
+  "09150": {
+    "name": "Northeastern Connecticut Planning Region",
+    "income": 93974
+  },
+  "09160": {
+    "name": "Northwest Hills Planning Region",
+    "income": 100299
+  },
+  "09170": {
+    "name": "South Central Connecticut Planning Region",
+    "income": 95071
+  },
+  "09180": {
+    "name": "Southeastern Connecticut Planning Region",
+    "income": 93267
+  },
+  "09190": {
+    "name": "Western Connecticut Planning Region",
+    "income": 135222
+  },
+  "10001": {
+    "name": "Kent County",
+    "income": 82100
+  },
+  "10003": {
+    "name": "New Castle County",
+    "income": 100097
+  },
+  "10005": {
+    "name": "Sussex County",
+    "income": 86839
+  },
+  "11001": {
+    "name": "District of Columbia",
+    "income": 109505
+  },
+  "12001": {
+    "name": "Alachua County",
+    "income": 68444
+  },
+  "12005": {
+    "name": "Bay County",
+    "income": 78653
+  },
+  "12009": {
+    "name": "Brevard County",
+    "income": 80032
+  },
+  "12011": {
+    "name": "Broward County",
+    "income": 85780
+  },
+  "12015": {
+    "name": "Charlotte County",
+    "income": 76067
+  },
+  "12017": {
+    "name": "Citrus County",
+    "income": 58370
+  },
+  "12019": {
+    "name": "Clay County",
+    "income": 85377
+  },
+  "12021": {
+    "name": "Collier County",
+    "income": 103044
+  },
+  "12023": {
+    "name": "Columbia County",
+    "income": 60814
+  },
+  "12031": {
+    "name": "Duval County",
+    "income": 75082
+  },
+  "12033": {
+    "name": "Escambia County",
+    "income": 71673
+  },
+  "12035": {
+    "name": "Flagler County",
+    "income": 81865
+  },
+  "12053": {
+    "name": "Hernando County",
+    "income": 75907
+  },
+  "12055": {
+    "name": "Highlands County",
+    "income": 53966
+  },
+  "12057": {
+    "name": "Hillsborough County",
+    "income": 87717
+  },
+  "12061": {
+    "name": "Indian River County",
+    "income": 80319
+  },
+  "12069": {
+    "name": "Lake County",
+    "income": 80076
+  },
+  "12071": {
+    "name": "Lee County",
+    "income": 85191
+  },
+  "12073": {
+    "name": "Leon County",
+    "income": 65980
+  },
+  "12081": {
+    "name": "Manatee County",
+    "income": 92037
+  },
+  "12083": {
+    "name": "Marion County",
+    "income": 63917
+  },
+  "12085": {
+    "name": "Martin County",
+    "income": 97367
+  },
+  "12086": {
+    "name": "Miami-Dade County",
+    "income": 77859
+  },
+  "12087": {
+    "name": "Monroe County",
+    "income": 99421
+  },
+  "12089": {
+    "name": "Nassau County",
+    "income": 96465
+  },
+  "12091": {
+    "name": "Okaloosa County",
+    "income": 86023
+  },
+  "12095": {
+    "name": "Orange County",
+    "income": 84508
+  },
+  "12097": {
+    "name": "Osceola County",
+    "income": 88559
+  },
+  "12099": {
+    "name": "Palm Beach County",
+    "income": 90359
+  },
+  "12101": {
+    "name": "Pasco County",
+    "income": 81367
+  },
+  "12103": {
+    "name": "Pinellas County",
+    "income": 79764
+  },
+  "12105": {
+    "name": "Polk County",
+    "income": 65722
+  },
+  "12107": {
+    "name": "Putnam County",
+    "income": 56706
+  },
+  "12109": {
+    "name": "St. Johns County",
+    "income": 118758
+  },
+  "12111": {
+    "name": "St. Lucie County",
+    "income": 80197
+  },
+  "12113": {
+    "name": "Santa Rosa County",
+    "income": 104921
+  },
+  "12115": {
+    "name": "Sarasota County",
+    "income": 84581
+  },
+  "12117": {
+    "name": "Seminole County",
+    "income": 91186
+  },
+  "12119": {
+    "name": "Sumter County",
+    "income": 77576
+  },
+  "12127": {
+    "name": "Volusia County",
+    "income": 73444
+  },
+  "12131": {
+    "name": "Walton County",
+    "income": 86393
+  },
+  "13013": {
+    "name": "Barrow County",
+    "income": 86081
+  },
+  "13015": {
+    "name": "Bartow County",
+    "income": 92677
+  },
+  "13021": {
+    "name": "Bibb County",
+    "income": 56221
+  },
+  "13031": {
+    "name": "Bulloch County",
+    "income": 58876
+  },
+  "13045": {
+    "name": "Carroll County",
+    "income": 81823
+  },
+  "13047": {
+    "name": "Catoosa County",
+    "income": 75593
+  },
+  "13051": {
+    "name": "Chatham County",
+    "income": 80265
+  },
+  "13057": {
+    "name": "Cherokee County",
+    "income": 110942
+  },
+  "13059": {
+    "name": "Clarke County",
+    "income": 60149
+  },
+  "13063": {
+    "name": "Clayton County",
+    "income": 66847
+  },
+  "13067": {
+    "name": "Cobb County",
+    "income": 112068
+  },
+  "13073": {
+    "name": "Columbia County",
+    "income": 110035
+  },
+  "13077": {
+    "name": "Coweta County",
+    "income": 103243
+  },
+  "13089": {
+    "name": "DeKalb County",
+    "income": 83272
+  },
+  "13095": {
+    "name": "Dougherty County",
+    "income": 43519
+  },
+  "13097": {
+    "name": "Douglas County",
+    "income": 75530
+  },
+  "13103": {
+    "name": "Effingham County",
+    "income": 104448
+  },
+  "13113": {
+    "name": "Fayette County",
+    "income": 106747
+  },
+  "13115": {
+    "name": "Floyd County",
+    "income": 65851
+  },
+  "13117": {
+    "name": "Forsyth County",
+    "income": 150187
+  },
+  "13121": {
+    "name": "Fulton County",
+    "income": 100084
+  },
+  "13127": {
+    "name": "Glynn County",
+    "income": 67552
+  },
+  "13135": {
+    "name": "Gwinnett County",
+    "income": 94643
+  },
+  "13139": {
+    "name": "Hall County",
+    "income": 86361
+  },
+  "13151": {
+    "name": "Henry County",
+    "income": 88653
+  },
+  "13153": {
+    "name": "Houston County",
+    "income": 77087
+  },
+  "13157": {
+    "name": "Jackson County",
+    "income": 97082
+  },
+  "13179": {
+    "name": "Liberty County",
+    "income": 64714
+  },
+  "13185": {
+    "name": "Lowndes County",
+    "income": 63985
+  },
+  "13215": {
+    "name": "Muscogee County",
+    "income": 57674
+  },
+  "13217": {
+    "name": "Newton County",
+    "income": 86919
+  },
+  "13223": {
+    "name": "Paulding County",
+    "income": 101430
+  },
+  "13245": {
+    "name": "Richmond County",
+    "income": 55307
+  },
+  "13247": {
+    "name": "Rockdale County",
+    "income": 64445
+  },
+  "13255": {
+    "name": "Spalding County",
+    "income": 60411
+  },
+  "13285": {
+    "name": "Troup County",
+    "income": 67121
+  },
+  "13295": {
+    "name": "Walker County",
+    "income": 76204
+  },
+  "13297": {
+    "name": "Walton County",
+    "income": 98338
+  },
+  "13313": {
+    "name": "Whitfield County",
+    "income": 69394
+  },
+  "15001": {
+    "name": "Hawaii County",
+    "income": 81794
+  },
+  "15003": {
+    "name": "Honolulu County",
+    "income": 112244
+  },
+  "15007": {
+    "name": "Kauai County",
+    "income": 109522
+  },
+  "15009": {
+    "name": "Maui County",
+    "income": 104006
+  },
+  "16001": {
+    "name": "Ada County",
+    "income": 100464
+  },
+  "16005": {
+    "name": "Bannock County",
+    "income": 67393
+  },
+  "16019": {
+    "name": "Bonneville County",
+    "income": 91884
+  },
+  "16027": {
+    "name": "Canyon County",
+    "income": 84366
+  },
+  "16055": {
+    "name": "Kootenai County",
+    "income": 84672
+  },
+  "16083": {
+    "name": "Twin Falls County",
+    "income": 85895
+  },
+  "17019": {
+    "name": "Champaign County",
+    "income": 58892
+  },
+  "17031": {
+    "name": "Cook County",
+    "income": 87711
+  },
+  "17037": {
+    "name": "DeKalb County",
+    "income": 73940
+  },
+  "17043": {
+    "name": "DuPage County",
+    "income": 114835
+  },
+  "17089": {
+    "name": "Kane County",
+    "income": 110764
+  },
+  "17091": {
+    "name": "Kankakee County",
+    "income": 73951
+  },
+  "17093": {
+    "name": "Kendall County",
+    "income": 122346
+  },
+  "17097": {
+    "name": "Lake County",
+    "income": 106382
+  },
+  "17099": {
+    "name": "LaSalle County",
+    "income": 72194
+  },
+  "17111": {
+    "name": "McHenry County",
+    "income": 111100
+  },
+  "17113": {
+    "name": "McLean County",
+    "income": 81950
+  },
+  "17115": {
+    "name": "Macon County",
+    "income": 60878
+  },
+  "17119": {
+    "name": "Madison County",
+    "income": 80071
+  },
+  "17143": {
+    "name": "Peoria County",
+    "income": 70156
+  },
+  "17161": {
+    "name": "Rock Island County",
+    "income": 68484
+  },
+  "17163": {
+    "name": "St. Clair County",
+    "income": 77554
+  },
+  "17167": {
+    "name": "Sangamon County",
+    "income": 78974
+  },
+  "17179": {
+    "name": "Tazewell County",
+    "income": 82239
+  },
+  "17183": {
+    "name": "Vermilion County",
+    "income": 60064
+  },
+  "17197": {
+    "name": "Will County",
+    "income": 111749
+  },
+  "17199": {
+    "name": "Williamson County",
+    "income": 68823
+  },
+  "17201": {
+    "name": "Winnebago County",
+    "income": 70879
+  },
+  "18003": {
+    "name": "Allen County",
+    "income": 71917
+  },
+  "18005": {
+    "name": "Bartholomew County",
+    "income": 82961
+  },
+  "18011": {
+    "name": "Boone County",
+    "income": 122754
+  },
+  "18019": {
+    "name": "Clark County",
+    "income": 74995
+  },
+  "18035": {
+    "name": "Delaware County",
+    "income": 53422
+  },
+  "18039": {
+    "name": "Elkhart County",
+    "income": 73432
+  },
+  "18043": {
+    "name": "Floyd County",
+    "income": 79439
+  },
+  "18053": {
+    "name": "Grant County",
+    "income": 57453
+  },
+  "18057": {
+    "name": "Hamilton County",
+    "income": 129844
+  },
+  "18059": {
+    "name": "Hancock County",
+    "income": 100044
+  },
+  "18063": {
+    "name": "Hendricks County",
+    "income": 102045
+  },
+  "18067": {
+    "name": "Howard County",
+    "income": 65835
+  },
+  "18081": {
+    "name": "Johnson County",
+    "income": 91631
+  },
+  "18085": {
+    "name": "Kosciusko County",
+    "income": 79416
+  },
+  "18089": {
+    "name": "Lake County",
+    "income": 72301
+  },
+  "18091": {
+    "name": "LaPorte County",
+    "income": 68394
+  },
+  "18095": {
+    "name": "Madison County",
+    "income": 64267
+  },
+  "18097": {
+    "name": "Marion County",
+    "income": 70664
+  },
+  "18105": {
+    "name": "Monroe County",
+    "income": 63601
+  },
+  "18109": {
+    "name": "Morgan County",
+    "income": 77126
+  },
+  "18127": {
+    "name": "Porter County",
+    "income": 90246
+  },
+  "18141": {
+    "name": "St. Joseph County",
+    "income": 67143
+  },
+  "18157": {
+    "name": "Tippecanoe County",
+    "income": 65411
+  },
+  "18163": {
+    "name": "Vanderburgh County",
+    "income": 64753
+  },
+  "18167": {
+    "name": "Vigo County",
+    "income": 61835
+  },
+  "18173": {
+    "name": "Warrick County",
+    "income": 102043
+  },
+  "18177": {
+    "name": "Wayne County",
+    "income": 65494
+  },
+  "19013": {
+    "name": "Black Hawk County",
+    "income": 72056
+  },
+  "19049": {
+    "name": "Dallas County",
+    "income": 109834
+  },
+  "19061": {
+    "name": "Dubuque County",
+    "income": 71774
+  },
+  "19103": {
+    "name": "Johnson County",
+    "income": 76928
+  },
+  "19113": {
+    "name": "Linn County",
+    "income": 79127
+  },
+  "19153": {
+    "name": "Polk County",
+    "income": 83191
+  },
+  "19155": {
+    "name": "Pottawattamie County",
+    "income": 71342
+  },
+  "19163": {
+    "name": "Scott County",
+    "income": 72798
+  },
+  "19169": {
+    "name": "Story County",
+    "income": 70327
+  },
+  "19193": {
+    "name": "Woodbury County",
+    "income": 77589
+  },
+  "20015": {
+    "name": "Butler County",
+    "income": 94427
+  },
+  "20045": {
+    "name": "Douglas County",
+    "income": 74520
+  },
+  "20091": {
+    "name": "Johnson County",
+    "income": 110275
+  },
+  "20103": {
+    "name": "Leavenworth County",
+    "income": 101379
+  },
+  "20161": {
+    "name": "Riley County",
+    "income": 70800
+  },
+  "20173": {
+    "name": "Sedgwick County",
+    "income": 72244
+  },
+  "20177": {
+    "name": "Shawnee County",
+    "income": 72306
+  },
+  "20209": {
+    "name": "Wyandotte County",
+    "income": 69998
+  },
+  "21015": {
+    "name": "Boone County",
+    "income": 104064
+  },
+  "21029": {
+    "name": "Bullitt County",
+    "income": 81416
+  },
+  "21037": {
+    "name": "Campbell County",
+    "income": 85287
+  },
+  "21047": {
+    "name": "Christian County",
+    "income": 53395
+  },
+  "21059": {
+    "name": "Daviess County",
+    "income": 67512
+  },
+  "21067": {
+    "name": "Fayette County",
+    "income": 72639
+  },
+  "21093": {
+    "name": "Hardin County",
+    "income": 72239
+  },
+  "21111": {
+    "name": "Jefferson County",
+    "income": 72509
+  },
+  "21117": {
+    "name": "Kenton County",
+    "income": 85809
+  },
+  "21145": {
+    "name": "McCracken County",
+    "income": 54286
+  },
+  "21151": {
+    "name": "Madison County",
+    "income": 66722
+  },
+  "21185": {
+    "name": "Oldham County",
+    "income": 114703
+  },
+  "21199": {
+    "name": "Pulaski County",
+    "income": 55330
+  },
+  "21227": {
+    "name": "Warren County",
+    "income": 64871
+  },
+  "22005": {
+    "name": "Ascension Parish",
+    "income": 83603
+  },
+  "22015": {
+    "name": "Bossier Parish",
+    "income": 69458
+  },
+  "22017": {
+    "name": "Caddo Parish",
+    "income": 54666
+  },
+  "22019": {
+    "name": "Calcasieu Parish",
+    "income": 66724
+  },
+  "22033": {
+    "name": "East Baton Rouge Parish",
+    "income": 64335
+  },
+  "22045": {
+    "name": "Iberia Parish",
+    "income": 46186
+  },
+  "22051": {
+    "name": "Jefferson Parish",
+    "income": 65705
+  },
+  "22055": {
+    "name": "Lafayette Parish",
+    "income": 75430
+  },
+  "22057": {
+    "name": "Lafourche Parish",
+    "income": 66602
+  },
+  "22063": {
+    "name": "Livingston Parish",
+    "income": 76278
+  },
+  "22071": {
+    "name": "Orleans Parish",
+    "income": 66464
+  },
+  "22073": {
+    "name": "Ouachita Parish",
+    "income": 49487
+  },
+  "22079": {
+    "name": "Rapides Parish",
+    "income": 64544
+  },
+  "22097": {
+    "name": "St. Landry Parish",
+    "income": 48586
+  },
+  "22103": {
+    "name": "St. Tammany Parish",
+    "income": 91492
+  },
+  "22105": {
+    "name": "Tangipahoa Parish",
+    "income": 59330
+  },
+  "22109": {
+    "name": "Terrebonne Parish",
+    "income": 61870
+  },
+  "23001": {
+    "name": "Androscoggin County",
+    "income": 72366
+  },
+  "23003": {
+    "name": "Aroostook County",
+    "income": 60497
+  },
+  "23005": {
+    "name": "Cumberland County",
+    "income": 102801
+  },
+  "23011": {
+    "name": "Kennebec County",
+    "income": 77958
+  },
+  "23019": {
+    "name": "Penobscot County",
+    "income": 76490
+  },
+  "23031": {
+    "name": "York County",
+    "income": 95257
+  },
+  "24001": {
+    "name": "Allegany County",
+    "income": 66605
+  },
+  "24003": {
+    "name": "Anne Arundel County",
+    "income": 132337
+  },
+  "24005": {
+    "name": "Baltimore County",
+    "income": 97481
+  },
+  "24009": {
+    "name": "Calvert County",
+    "income": 130167
+  },
+  "24013": {
+    "name": "Carroll County",
+    "income": 126958
+  },
+  "24015": {
+    "name": "Cecil County",
+    "income": 91880
+  },
+  "24017": {
+    "name": "Charles County",
+    "income": 124802
+  },
+  "24021": {
+    "name": "Frederick County",
+    "income": 126144
+  },
+  "24025": {
+    "name": "Harford County",
+    "income": 119348
+  },
+  "24027": {
+    "name": "Howard County",
+    "income": 150379
+  },
+  "24031": {
+    "name": "Montgomery County",
+    "income": 133729
+  },
+  "24033": {
+    "name": "Prince George's County",
+    "income": 105189
+  },
+  "24037": {
+    "name": "St. Mary's County",
+    "income": 129089
+  },
+  "24043": {
+    "name": "Washington County",
+    "income": 76300
+  },
+  "24045": {
+    "name": "Wicomico County",
+    "income": 67848
+  },
+  "24510": {
+    "name": "Baltimore city",
+    "income": 63058
+  },
+  "25001": {
+    "name": "Barnstable County",
+    "income": 100561
+  },
+  "25003": {
+    "name": "Berkshire County",
+    "income": 86084
+  },
+  "25005": {
+    "name": "Bristol County",
+    "income": 95389
+  },
+  "25009": {
+    "name": "Essex County",
+    "income": 105599
+  },
+  "25011": {
+    "name": "Franklin County",
+    "income": 78513
+  },
+  "25013": {
+    "name": "Hampden County",
+    "income": 71209
+  },
+  "25015": {
+    "name": "Hampshire County",
+    "income": 96020
+  },
+  "25017": {
+    "name": "Middlesex County",
+    "income": 131725
+  },
+  "25021": {
+    "name": "Norfolk County",
+    "income": 131451
+  },
+  "25023": {
+    "name": "Plymouth County",
+    "income": 112731
+  },
+  "25025": {
+    "name": "Suffolk County",
+    "income": 100265
+  },
+  "25027": {
+    "name": "Worcester County",
+    "income": 99598
+  },
+  "26005": {
+    "name": "Allegan County",
+    "income": 82203
+  },
+  "26017": {
+    "name": "Bay County",
+    "income": 66214
+  },
+  "26021": {
+    "name": "Berrien County",
+    "income": 73126
+  },
+  "26025": {
+    "name": "Calhoun County",
+    "income": 64880
+  },
+  "26037": {
+    "name": "Clinton County",
+    "income": 94563
+  },
+  "26045": {
+    "name": "Eaton County",
+    "income": 86824
+  },
+  "26049": {
+    "name": "Genesee County",
+    "income": 66305
+  },
+  "26055": {
+    "name": "Grand Traverse County",
+    "income": 81114
+  },
+  "26065": {
+    "name": "Ingham County",
+    "income": 71857
+  },
+  "26067": {
+    "name": "Ionia County",
+    "income": 80655
+  },
+  "26073": {
+    "name": "Isabella County",
+    "income": 61839
+  },
+  "26075": {
+    "name": "Jackson County",
+    "income": 75221
+  },
+  "26077": {
+    "name": "Kalamazoo County",
+    "income": 72002
+  },
+  "26081": {
+    "name": "Kent County",
+    "income": 82790
+  },
+  "26087": {
+    "name": "Lapeer County",
+    "income": 89862
+  },
+  "26091": {
+    "name": "Lenawee County",
+    "income": 72779
+  },
+  "26093": {
+    "name": "Livingston County",
+    "income": 111895
+  },
+  "26099": {
+    "name": "Macomb County",
+    "income": 79856
+  },
+  "26103": {
+    "name": "Marquette County",
+    "income": 75004
+  },
+  "26111": {
+    "name": "Midland County",
+    "income": 85595
+  },
+  "26115": {
+    "name": "Monroe County",
+    "income": 85229
+  },
+  "26117": {
+    "name": "Montcalm County",
+    "income": 67746
+  },
+  "26121": {
+    "name": "Muskegon County",
+    "income": 67089
+  },
+  "26125": {
+    "name": "Oakland County",
+    "income": 102395
+  },
+  "26139": {
+    "name": "Ottawa County",
+    "income": 98452
+  },
+  "26145": {
+    "name": "Saginaw County",
+    "income": 65039
+  },
+  "26147": {
+    "name": "St. Clair County",
+    "income": 69885
+  },
+  "26155": {
+    "name": "Shiawassee County",
+    "income": 66206
+  },
+  "26159": {
+    "name": "Van Buren County",
+    "income": 73327
+  },
+  "26161": {
+    "name": "Washtenaw County",
+    "income": 89052
+  },
+  "26163": {
+    "name": "Wayne County",
+    "income": 62344
+  },
+  "27003": {
+    "name": "Anoka County",
+    "income": 110551
+  },
+  "27013": {
+    "name": "Blue Earth County",
+    "income": 75036
+  },
+  "27019": {
+    "name": "Carver County",
+    "income": 120290
+  },
+  "27027": {
+    "name": "Clay County",
+    "income": 87990
+  },
+  "27035": {
+    "name": "Crow Wing County",
+    "income": 79789
+  },
+  "27037": {
+    "name": "Dakota County",
+    "income": 116271
+  },
+  "27053": {
+    "name": "Hennepin County",
+    "income": 96850
+  },
+  "27109": {
+    "name": "Olmsted County",
+    "income": 96025
+  },
+  "27123": {
+    "name": "Ramsey County",
+    "income": 87120
+  },
+  "27131": {
+    "name": "Rice County",
+    "income": 83512
+  },
+  "27137": {
+    "name": "St. Louis County",
+    "income": 72648
+  },
+  "27139": {
+    "name": "Scott County",
+    "income": 111117
+  },
+  "27141": {
+    "name": "Sherburne County",
+    "income": 105009
+  },
+  "27145": {
+    "name": "Stearns County",
+    "income": 82088
+  },
+  "27163": {
+    "name": "Washington County",
+    "income": 128288
+  },
+  "27171": {
+    "name": "Wright County",
+    "income": 117715
+  },
+  "28033": {
+    "name": "DeSoto County",
+    "income": 83179
+  },
+  "28035": {
+    "name": "Forrest County",
+    "income": 55888
+  },
+  "28047": {
+    "name": "Harrison County",
+    "income": 61081
+  },
+  "28049": {
+    "name": "Hinds County",
+    "income": 50613
+  },
+  "28059": {
+    "name": "Jackson County",
+    "income": 72406
+  },
+  "28067": {
+    "name": "Jones County",
+    "income": 50180
+  },
+  "28073": {
+    "name": "Lamar County",
+    "income": 79488
+  },
+  "28075": {
+    "name": "Lauderdale County",
+    "income": 62959
+  },
+  "28081": {
+    "name": "Lee County",
+    "income": 66453
+  },
+  "28089": {
+    "name": "Madison County",
+    "income": 80136
+  },
+  "28121": {
+    "name": "Rankin County",
+    "income": 88227
+  },
+  "29019": {
+    "name": "Boone County",
+    "income": 75062
+  },
+  "29021": {
+    "name": "Buchanan County",
+    "income": 65393
+  },
+  "29031": {
+    "name": "Cape Girardeau County",
+    "income": 72338
+  },
+  "29037": {
+    "name": "Cass County",
+    "income": 95117
+  },
+  "29043": {
+    "name": "Christian County",
+    "income": 88994
+  },
+  "29047": {
+    "name": "Clay County",
+    "income": 87356
+  },
+  "29051": {
+    "name": "Cole County",
+    "income": 81840
+  },
+  "29071": {
+    "name": "Franklin County",
+    "income": 80123
+  },
+  "29077": {
+    "name": "Greene County",
+    "income": 63864
+  },
+  "29095": {
+    "name": "Jackson County",
+    "income": 76150
+  },
+  "29097": {
+    "name": "Jasper County",
+    "income": 63918
+  },
+  "29099": {
+    "name": "Jefferson County",
+    "income": 90660
+  },
+  "29113": {
+    "name": "Lincoln County",
+    "income": 86558
+  },
+  "29165": {
+    "name": "Platte County",
+    "income": 91548
+  },
+  "29183": {
+    "name": "St. Charles County",
+    "income": 109525
+  },
+  "29187": {
+    "name": "St. Francois County",
+    "income": 61710
+  },
+  "29189": {
+    "name": "St. Louis County",
+    "income": 88358
+  },
+  "29510": {
+    "name": "St. Louis city",
+    "income": 60150
+  },
+  "30013": {
+    "name": "Cascade County",
+    "income": 68205
+  },
+  "30029": {
+    "name": "Flathead County",
+    "income": 77769
+  },
+  "30031": {
+    "name": "Gallatin County",
+    "income": 102218
+  },
+  "30049": {
+    "name": "Lewis and Clark County",
+    "income": 90040
+  },
+  "30063": {
+    "name": "Missoula County",
+    "income": 77141
+  },
+  "30111": {
+    "name": "Yellowstone County",
+    "income": 81618
+  },
+  "31055": {
+    "name": "Douglas County",
+    "income": 83408
+  },
+  "31109": {
+    "name": "Lancaster County",
+    "income": 81626
+  },
+  "31153": {
+    "name": "Sarpy County",
+    "income": 103852
+  },
+  "32003": {
+    "name": "Clark County",
+    "income": 82187
+  },
+  "32019": {
+    "name": "Lyon County",
+    "income": 92815
+  },
+  "32031": {
+    "name": "Washoe County",
+    "income": 92468
+  },
+  "33001": {
+    "name": "Belknap County",
+    "income": 95302
+  },
+  "33005": {
+    "name": "Cheshire County",
+    "income": 87069
+  },
+  "33009": {
+    "name": "Grafton County",
+    "income": 92490
+  },
+  "33011": {
+    "name": "Hillsborough County",
+    "income": 113111
+  },
+  "33013": {
+    "name": "Merrimack County",
+    "income": 98759
+  },
+  "33015": {
+    "name": "Rockingham County",
+    "income": 132330
+  },
+  "33017": {
+    "name": "Strafford County",
+    "income": 100563
+  },
+  "34001": {
+    "name": "Atlantic County",
+    "income": 85427
+  },
+  "34003": {
+    "name": "Bergen County",
+    "income": 125237
+  },
+  "34005": {
+    "name": "Burlington County",
+    "income": 107505
+  },
+  "34007": {
+    "name": "Camden County",
+    "income": 92433
+  },
+  "34009": {
+    "name": "Cape May County",
+    "income": 96626
+  },
+  "34011": {
+    "name": "Cumberland County",
+    "income": 69768
+  },
+  "34013": {
+    "name": "Essex County",
+    "income": 90739
+  },
+  "34015": {
+    "name": "Gloucester County",
+    "income": 110279
+  },
+  "34017": {
+    "name": "Hudson County",
+    "income": 101853
+  },
+  "34019": {
+    "name": "Hunterdon County",
+    "income": 149524
+  },
+  "34021": {
+    "name": "Mercer County",
+    "income": 101328
+  },
+  "34023": {
+    "name": "Middlesex County",
+    "income": 119307
+  },
+  "34025": {
+    "name": "Monmouth County",
+    "income": 130795
+  },
+  "34027": {
+    "name": "Morris County",
+    "income": 147109
+  },
+  "34029": {
+    "name": "Ocean County",
+    "income": 93389
+  },
+  "34031": {
+    "name": "Passaic County",
+    "income": 92418
+  },
+  "34033": {
+    "name": "Salem County",
+    "income": 89554
+  },
+  "34035": {
+    "name": "Somerset County",
+    "income": 138150
+  },
+  "34037": {
+    "name": "Sussex County",
+    "income": 119977
+  },
+  "34039": {
+    "name": "Union County",
+    "income": 110336
+  },
+  "34041": {
+    "name": "Warren County",
+    "income": 98574
+  },
+  "35001": {
+    "name": "Bernalillo County",
+    "income": 75904
+  },
+  "35013": {
+    "name": "Do\u00f1a Ana County",
+    "income": 68321
+  },
+  "35025": {
+    "name": "Lea County",
+    "income": 72941
+  },
+  "35031": {
+    "name": "McKinley County",
+    "income": 49681
+  },
+  "35035": {
+    "name": "Otero County",
+    "income": 62052
+  },
+  "35043": {
+    "name": "Sandoval County",
+    "income": 97880
+  },
+  "35045": {
+    "name": "San Juan County",
+    "income": 62487
+  },
+  "35049": {
+    "name": "Santa Fe County",
+    "income": 85401
+  },
+  "35061": {
+    "name": "Valencia County",
+    "income": 73245
+  },
+  "36001": {
+    "name": "Albany County",
+    "income": 86704
+  },
+  "36005": {
+    "name": "Bronx County",
+    "income": 48029
+  },
+  "36007": {
+    "name": "Broome County",
+    "income": 64999
+  },
+  "36009": {
+    "name": "Cattaraugus County",
+    "income": 62434
+  },
+  "36011": {
+    "name": "Cayuga County",
+    "income": 65626
+  },
+  "36013": {
+    "name": "Chautauqua County",
+    "income": 67227
+  },
+  "36015": {
+    "name": "Chemung County",
+    "income": 67037
+  },
+  "36019": {
+    "name": "Clinton County",
+    "income": 65079
+  },
+  "36027": {
+    "name": "Dutchess County",
+    "income": 101957
+  },
+  "36029": {
+    "name": "Erie County",
+    "income": 78655
+  },
+  "36045": {
+    "name": "Jefferson County",
+    "income": 64149
+  },
+  "36047": {
+    "name": "Kings County",
+    "income": 84688
+  },
+  "36053": {
+    "name": "Madison County",
+    "income": 86423
+  },
+  "36055": {
+    "name": "Monroe County",
+    "income": 77061
+  },
+  "36059": {
+    "name": "Nassau County",
+    "income": 151086
+  },
+  "36061": {
+    "name": "New York County",
+    "income": 115464
+  },
+  "36063": {
+    "name": "Niagara County",
+    "income": 72388
+  },
+  "36065": {
+    "name": "Oneida County",
+    "income": 75454
+  },
+  "36067": {
+    "name": "Onondaga County",
+    "income": 80373
+  },
+  "36069": {
+    "name": "Ontario County",
+    "income": 85370
+  },
+  "36071": {
+    "name": "Orange County",
+    "income": 92414
+  },
+  "36075": {
+    "name": "Oswego County",
+    "income": 74192
+  },
+  "36079": {
+    "name": "Putnam County",
+    "income": 121106
+  },
+  "36081": {
+    "name": "Queens County",
+    "income": 88018
+  },
+  "36083": {
+    "name": "Rensselaer County",
+    "income": 91152
+  },
+  "36085": {
+    "name": "Richmond County",
+    "income": 96050
+  },
+  "36087": {
+    "name": "Rockland County",
+    "income": 106866
+  },
+  "36089": {
+    "name": "St. Lawrence County",
+    "income": 64426
+  },
+  "36091": {
+    "name": "Saratoga County",
+    "income": 103108
+  },
+  "36093": {
+    "name": "Schenectady County",
+    "income": 86556
+  },
+  "36101": {
+    "name": "Steuben County",
+    "income": 68164
+  },
+  "36103": {
+    "name": "Suffolk County",
+    "income": 130136
+  },
+  "36105": {
+    "name": "Sullivan County",
+    "income": 66629
+  },
+  "36109": {
+    "name": "Tompkins County",
+    "income": 72432
+  },
+  "36111": {
+    "name": "Ulster County",
+    "income": 85802
+  },
+  "36113": {
+    "name": "Warren County",
+    "income": 80577
+  },
+  "36117": {
+    "name": "Wayne County",
+    "income": 81458
+  },
+  "36119": {
+    "name": "Westchester County",
+    "income": 121407
+  },
+  "37001": {
+    "name": "Alamance County",
+    "income": 75630
+  },
+  "37019": {
+    "name": "Brunswick County",
+    "income": 84019
+  },
+  "37021": {
+    "name": "Buncombe County",
+    "income": 78729
+  },
+  "37023": {
+    "name": "Burke County",
+    "income": 59746
+  },
+  "37025": {
+    "name": "Cabarrus County",
+    "income": 94882
+  },
+  "37027": {
+    "name": "Caldwell County",
+    "income": 48534
+  },
+  "37031": {
+    "name": "Carteret County",
+    "income": 78144
+  },
+  "37035": {
+    "name": "Catawba County",
+    "income": 69579
+  },
+  "37037": {
+    "name": "Chatham County",
+    "income": 109261
+  },
+  "37045": {
+    "name": "Cleveland County",
+    "income": 63554
+  },
+  "37049": {
+    "name": "Craven County",
+    "income": 70429
+  },
+  "37051": {
+    "name": "Cumberland County",
+    "income": 62823
+  },
+  "37057": {
+    "name": "Davidson County",
+    "income": 69842
+  },
+  "37063": {
+    "name": "Durham County",
+    "income": 90595
+  },
+  "37067": {
+    "name": "Forsyth County",
+    "income": 72082
+  },
+  "37069": {
+    "name": "Franklin County",
+    "income": 75233
+  },
+  "37071": {
+    "name": "Gaston County",
+    "income": 77890
+  },
+  "37081": {
+    "name": "Guilford County",
+    "income": 72424
+  },
+  "37085": {
+    "name": "Harnett County",
+    "income": 77669
+  },
+  "37089": {
+    "name": "Henderson County",
+    "income": 77906
+  },
+  "37097": {
+    "name": "Iredell County",
+    "income": 79506
+  },
+  "37101": {
+    "name": "Johnston County",
+    "income": 95277
+  },
+  "37105": {
+    "name": "Lee County",
+    "income": 64743
+  },
+  "37109": {
+    "name": "Lincoln County",
+    "income": 87339
+  },
+  "37119": {
+    "name": "Mecklenburg County",
+    "income": 92175
+  },
+  "37125": {
+    "name": "Moore County",
+    "income": 84611
+  },
+  "37127": {
+    "name": "Nash County",
+    "income": 61724
+  },
+  "37129": {
+    "name": "New Hanover County",
+    "income": 84349
+  },
+  "37133": {
+    "name": "Onslow County",
+    "income": 78573
+  },
+  "37135": {
+    "name": "Orange County",
+    "income": 101212
+  },
+  "37141": {
+    "name": "Pender County",
+    "income": 87684
+  },
+  "37147": {
+    "name": "Pitt County",
+    "income": 67258
+  },
+  "37151": {
+    "name": "Randolph County",
+    "income": 66642
+  },
+  "37155": {
+    "name": "Robeson County",
+    "income": 46990
+  },
+  "37157": {
+    "name": "Rockingham County",
+    "income": 68298
+  },
+  "37159": {
+    "name": "Rowan County",
+    "income": 72179
+  },
+  "37161": {
+    "name": "Rutherford County",
+    "income": 64479
+  },
+  "37167": {
+    "name": "Stanly County",
+    "income": 75086
+  },
+  "37171": {
+    "name": "Surry County",
+    "income": 61060
+  },
+  "37179": {
+    "name": "Union County",
+    "income": 112262
+  },
+  "37183": {
+    "name": "Wake County",
+    "income": 105023
+  },
+  "37191": {
+    "name": "Wayne County",
+    "income": 67587
+  },
+  "37193": {
+    "name": "Wilkes County",
+    "income": 52959
+  },
+  "37195": {
+    "name": "Wilson County",
+    "income": 61787
+  },
+  "38015": {
+    "name": "Burleigh County",
+    "income": 96958
+  },
+  "38017": {
+    "name": "Cass County",
+    "income": 82267
+  },
+  "38035": {
+    "name": "Grand Forks County",
+    "income": 78363
+  },
+  "38101": {
+    "name": "Ward County",
+    "income": 74372
+  },
+  "39003": {
+    "name": "Allen County",
+    "income": 68092
+  },
+  "39007": {
+    "name": "Ashtabula County",
+    "income": 54641
+  },
+  "39013": {
+    "name": "Belmont County",
+    "income": 56574
+  },
+  "39017": {
+    "name": "Butler County",
+    "income": 86266
+  },
+  "39023": {
+    "name": "Clark County",
+    "income": 64512
+  },
+  "39025": {
+    "name": "Clermont County",
+    "income": 88436
+  },
+  "39029": {
+    "name": "Columbiana County",
+    "income": 54807
+  },
+  "39035": {
+    "name": "Cuyahoga County",
+    "income": 70540
+  },
+  "39041": {
+    "name": "Delaware County",
+    "income": 132143
+  },
+  "39043": {
+    "name": "Erie County",
+    "income": 65341
+  },
+  "39045": {
+    "name": "Fairfield County",
+    "income": 81532
+  },
+  "39049": {
+    "name": "Franklin County",
+    "income": 78495
+  },
+  "39055": {
+    "name": "Geauga County",
+    "income": 110500
+  },
+  "39057": {
+    "name": "Greene County",
+    "income": 88640
+  },
+  "39061": {
+    "name": "Hamilton County",
+    "income": 78622
+  },
+  "39063": {
+    "name": "Hancock County",
+    "income": 76920
+  },
+  "39085": {
+    "name": "Lake County",
+    "income": 83485
+  },
+  "39089": {
+    "name": "Licking County",
+    "income": 83867
+  },
+  "39093": {
+    "name": "Lorain County",
+    "income": 77145
+  },
+  "39095": {
+    "name": "Lucas County",
+    "income": 65591
+  },
+  "39099": {
+    "name": "Mahoning County",
+    "income": 65853
+  },
+  "39101": {
+    "name": "Marion County",
+    "income": 64398
+  },
+  "39103": {
+    "name": "Medina County",
+    "income": 90900
+  },
+  "39109": {
+    "name": "Miami County",
+    "income": 80092
+  },
+  "39113": {
+    "name": "Montgomery County",
+    "income": 70560
+  },
+  "39119": {
+    "name": "Muskingum County",
+    "income": 63500
+  },
+  "39133": {
+    "name": "Portage County",
+    "income": 82390
+  },
+  "39139": {
+    "name": "Richland County",
+    "income": 61144
+  },
+  "39141": {
+    "name": "Ross County",
+    "income": 76466
+  },
+  "39145": {
+    "name": "Scioto County",
+    "income": 60710
+  },
+  "39151": {
+    "name": "Stark County",
+    "income": 72507
+  },
+  "39153": {
+    "name": "Summit County",
+    "income": 74148
+  },
+  "39155": {
+    "name": "Trumbull County",
+    "income": 61291
+  },
+  "39157": {
+    "name": "Tuscarawas County",
+    "income": 68869
+  },
+  "39159": {
+    "name": "Union County",
+    "income": 107899
+  },
+  "39165": {
+    "name": "Warren County",
+    "income": 116965
+  },
+  "39169": {
+    "name": "Wayne County",
+    "income": 76864
+  },
+  "39173": {
+    "name": "Wood County",
+    "income": 74763
+  },
+  "40017": {
+    "name": "Canadian County",
+    "income": 93049
+  },
+  "40027": {
+    "name": "Cleveland County",
+    "income": 77474
+  },
+  "40031": {
+    "name": "Comanche County",
+    "income": 61892
+  },
+  "40037": {
+    "name": "Creek County",
+    "income": 67395
+  },
+  "40101": {
+    "name": "Muskogee County",
+    "income": 54824
+  },
+  "40109": {
+    "name": "Oklahoma County",
+    "income": 70556
+  },
+  "40119": {
+    "name": "Payne County",
+    "income": 64630
+  },
+  "40125": {
+    "name": "Pottawatomie County",
+    "income": 58550
+  },
+  "40131": {
+    "name": "Rogers County",
+    "income": 84568
+  },
+  "40143": {
+    "name": "Tulsa County",
+    "income": 71580
+  },
+  "40145": {
+    "name": "Wagoner County",
+    "income": 87210
+  },
+  "41003": {
+    "name": "Benton County",
+    "income": 79408
+  },
+  "41005": {
+    "name": "Clackamas County",
+    "income": 108584
+  },
+  "41017": {
+    "name": "Deschutes County",
+    "income": 102162
+  },
+  "41019": {
+    "name": "Douglas County",
+    "income": 64885
+  },
+  "41029": {
+    "name": "Jackson County",
+    "income": 76054
+  },
+  "41033": {
+    "name": "Josephine County",
+    "income": 58098
+  },
+  "41035": {
+    "name": "Klamath County",
+    "income": 62584
+  },
+  "41039": {
+    "name": "Lane County",
+    "income": 74401
+  },
+  "41043": {
+    "name": "Linn County",
+    "income": 73408
+  },
+  "41047": {
+    "name": "Marion County",
+    "income": 85168
+  },
+  "41051": {
+    "name": "Multnomah County",
+    "income": 86502
+  },
+  "41053": {
+    "name": "Polk County",
+    "income": 89557
+  },
+  "41059": {
+    "name": "Umatilla County",
+    "income": 81194
+  },
+  "41067": {
+    "name": "Washington County",
+    "income": 113548
+  },
+  "41071": {
+    "name": "Yamhill County",
+    "income": 91318
+  },
+  "42001": {
+    "name": "Adams County",
+    "income": 85915
+  },
+  "42003": {
+    "name": "Allegheny County",
+    "income": 80928
+  },
+  "42005": {
+    "name": "Armstrong County",
+    "income": 70033
+  },
+  "42007": {
+    "name": "Beaver County",
+    "income": 73886
+  },
+  "42011": {
+    "name": "Berks County",
+    "income": 82220
+  },
+  "42013": {
+    "name": "Blair County",
+    "income": 70074
+  },
+  "42017": {
+    "name": "Bucks County",
+    "income": 118093
+  },
+  "42019": {
+    "name": "Butler County",
+    "income": 95577
+  },
+  "42021": {
+    "name": "Cambria County",
+    "income": 57518
+  },
+  "42025": {
+    "name": "Carbon County",
+    "income": 74021
+  },
+  "42027": {
+    "name": "Centre County",
+    "income": 74675
+  },
+  "42029": {
+    "name": "Chester County",
+    "income": 132672
+  },
+  "42033": {
+    "name": "Clearfield County",
+    "income": 61839
+  },
+  "42037": {
+    "name": "Columbia County",
+    "income": 66576
+  },
+  "42039": {
+    "name": "Crawford County",
+    "income": 61847
+  },
+  "42041": {
+    "name": "Cumberland County",
+    "income": 94223
+  },
+  "42043": {
+    "name": "Dauphin County",
+    "income": 83425
+  },
+  "42045": {
+    "name": "Delaware County",
+    "income": 94400
+  },
+  "42049": {
+    "name": "Erie County",
+    "income": 59684
+  },
+  "42051": {
+    "name": "Fayette County",
+    "income": 58733
+  },
+  "42055": {
+    "name": "Franklin County",
+    "income": 76449
+  },
+  "42063": {
+    "name": "Indiana County",
+    "income": 62391
+  },
+  "42069": {
+    "name": "Lackawanna County",
+    "income": 64553
+  },
+  "42071": {
+    "name": "Lancaster County",
+    "income": 87505
+  },
+  "42073": {
+    "name": "Lawrence County",
+    "income": 72010
+  },
+  "42075": {
+    "name": "Lebanon County",
+    "income": 82607
+  },
+  "42077": {
+    "name": "Lehigh County",
+    "income": 90028
+  },
+  "42079": {
+    "name": "Luzerne County",
+    "income": 68360
+  },
+  "42081": {
+    "name": "Lycoming County",
+    "income": 67193
+  },
+  "42085": {
+    "name": "Mercer County",
+    "income": 67251
+  },
+  "42089": {
+    "name": "Monroe County",
+    "income": 90106
+  },
+  "42091": {
+    "name": "Montgomery County",
+    "income": 122925
+  },
+  "42095": {
+    "name": "Northampton County",
+    "income": 91363
+  },
+  "42097": {
+    "name": "Northumberland County",
+    "income": 62001
+  },
+  "42101": {
+    "name": "Philadelphia County",
+    "income": 67398
+  },
+  "42107": {
+    "name": "Schuylkill County",
+    "income": 66109
+  },
+  "42111": {
+    "name": "Somerset County",
+    "income": 63194
+  },
+  "42125": {
+    "name": "Washington County",
+    "income": 81312
+  },
+  "42129": {
+    "name": "Westmoreland County",
+    "income": 74094
+  },
+  "42133": {
+    "name": "York County",
+    "income": 93337
+  },
+  "44003": {
+    "name": "Kent County",
+    "income": 92665
+  },
+  "44005": {
+    "name": "Newport County",
+    "income": 111458
+  },
+  "44007": {
+    "name": "Providence County",
+    "income": 83587
+  },
+  "44009": {
+    "name": "Washington County",
+    "income": 104286
+  },
+  "45003": {
+    "name": "Aiken County",
+    "income": 74224
+  },
+  "45007": {
+    "name": "Anderson County",
+    "income": 74972
+  },
+  "45013": {
+    "name": "Beaufort County",
+    "income": 88495
+  },
+  "45015": {
+    "name": "Berkeley County",
+    "income": 90805
+  },
+  "45019": {
+    "name": "Charleston County",
+    "income": 93482
+  },
+  "45035": {
+    "name": "Dorchester County",
+    "income": 95584
+  },
+  "45041": {
+    "name": "Florence County",
+    "income": 59748
+  },
+  "45043": {
+    "name": "Georgetown County",
+    "income": 78285
+  },
+  "45045": {
+    "name": "Greenville County",
+    "income": 76421
+  },
+  "45047": {
+    "name": "Greenwood County",
+    "income": 61641
+  },
+  "45051": {
+    "name": "Horry County",
+    "income": 71086
+  },
+  "45055": {
+    "name": "Kershaw County",
+    "income": 74340
+  },
+  "45057": {
+    "name": "Lancaster County",
+    "income": 75717
+  },
+  "45059": {
+    "name": "Laurens County",
+    "income": 54867
+  },
+  "45063": {
+    "name": "Lexington County",
+    "income": 79018
+  },
+  "45073": {
+    "name": "Oconee County",
+    "income": 66679
+  },
+  "45075": {
+    "name": "Orangeburg County",
+    "income": 54634
+  },
+  "45077": {
+    "name": "Pickens County",
+    "income": 63233
+  },
+  "45079": {
+    "name": "Richland County",
+    "income": 75531
+  },
+  "45083": {
+    "name": "Spartanburg County",
+    "income": 69361
+  },
+  "45085": {
+    "name": "Sumter County",
+    "income": 63029
+  },
+  "45091": {
+    "name": "York County",
+    "income": 90879
+  },
+  "46083": {
+    "name": "Lincoln County",
+    "income": 101278
+  },
+  "46099": {
+    "name": "Minnehaha County",
+    "income": 81840
+  },
+  "46103": {
+    "name": "Pennington County",
+    "income": 83530
+  },
+  "47001": {
+    "name": "Anderson County",
+    "income": 67440
+  },
+  "47009": {
+    "name": "Blount County",
+    "income": 77806
+  },
+  "47011": {
+    "name": "Bradley County",
+    "income": 76018
+  },
+  "47035": {
+    "name": "Cumberland County",
+    "income": 60364
+  },
+  "47037": {
+    "name": "Davidson County",
+    "income": 85273
+  },
+  "47059": {
+    "name": "Greene County",
+    "income": 59708
+  },
+  "47063": {
+    "name": "Hamblen County",
+    "income": 58176
+  },
+  "47065": {
+    "name": "Hamilton County",
+    "income": 80345
+  },
+  "47093": {
+    "name": "Knox County",
+    "income": 82645
+  },
+  "47113": {
+    "name": "Madison County",
+    "income": 68186
+  },
+  "47119": {
+    "name": "Maury County",
+    "income": 83823
+  },
+  "47125": {
+    "name": "Montgomery County",
+    "income": 78393
+  },
+  "47141": {
+    "name": "Putnam County",
+    "income": 63302
+  },
+  "47147": {
+    "name": "Robertson County",
+    "income": 74935
+  },
+  "47149": {
+    "name": "Rutherford County",
+    "income": 88845
+  },
+  "47155": {
+    "name": "Sevier County",
+    "income": 68736
+  },
+  "47157": {
+    "name": "Shelby County",
+    "income": 68976
+  },
+  "47163": {
+    "name": "Sullivan County",
+    "income": 64545
+  },
+  "47165": {
+    "name": "Sumner County",
+    "income": 96545
+  },
+  "47179": {
+    "name": "Washington County",
+    "income": 66476
+  },
+  "47187": {
+    "name": "Williamson County",
+    "income": 154303
+  },
+  "47189": {
+    "name": "Wilson County",
+    "income": 113994
+  },
+  "48005": {
+    "name": "Angelina County",
+    "income": 56870
+  },
+  "48021": {
+    "name": "Bastrop County",
+    "income": 86139
+  },
+  "48027": {
+    "name": "Bell County",
+    "income": 74636
+  },
+  "48029": {
+    "name": "Bexar County",
+    "income": 75216
+  },
+  "48037": {
+    "name": "Bowie County",
+    "income": 63002
+  },
+  "48039": {
+    "name": "Brazoria County",
+    "income": 101780
+  },
+  "48041": {
+    "name": "Brazos County",
+    "income": 63343
+  },
+  "48061": {
+    "name": "Cameron County",
+    "income": 62542
+  },
+  "48085": {
+    "name": "Collin County",
+    "income": 127266
+  },
+  "48091": {
+    "name": "Comal County",
+    "income": 107958
+  },
+  "48099": {
+    "name": "Coryell County",
+    "income": 70641
+  },
+  "48113": {
+    "name": "Dallas County",
+    "income": 80377
+  },
+  "48121": {
+    "name": "Denton County",
+    "income": 118139
+  },
+  "48135": {
+    "name": "Ector County",
+    "income": 82967
+  },
+  "48139": {
+    "name": "Ellis County",
+    "income": 105184
+  },
+  "48141": {
+    "name": "El Paso County",
+    "income": 61683
+  },
+  "48157": {
+    "name": "Fort Bend County",
+    "income": 119526
+  },
+  "48167": {
+    "name": "Galveston County",
+    "income": 97045
+  },
+  "48181": {
+    "name": "Grayson County",
+    "income": 74372
+  },
+  "48183": {
+    "name": "Gregg County",
+    "income": 65862
+  },
+  "48187": {
+    "name": "Guadalupe County",
+    "income": 97115
+  },
+  "48201": {
+    "name": "Harris County",
+    "income": 78500
+  },
+  "48203": {
+    "name": "Harrison County",
+    "income": 69094
+  },
+  "48209": {
+    "name": "Hays County",
+    "income": 103294
+  },
+  "48213": {
+    "name": "Henderson County",
+    "income": 69543
+  },
+  "48215": {
+    "name": "Hidalgo County",
+    "income": 55872
+  },
+  "48221": {
+    "name": "Hood County",
+    "income": 81781
+  },
+  "48231": {
+    "name": "Hunt County",
+    "income": 81367
+  },
+  "48245": {
+    "name": "Jefferson County",
+    "income": 65242
+  },
+  "48251": {
+    "name": "Johnson County",
+    "income": 84380
+  },
+  "48257": {
+    "name": "Kaufman County",
+    "income": 109009
+  },
+  "48291": {
+    "name": "Liberty County",
+    "income": 76976
+  },
+  "48303": {
+    "name": "Lubbock County",
+    "income": 64859
+  },
+  "48309": {
+    "name": "McLennan County",
+    "income": 68857
+  },
+  "48329": {
+    "name": "Midland County",
+    "income": 101524
+  },
+  "48339": {
+    "name": "Montgomery County",
+    "income": 100651
+  },
+  "48347": {
+    "name": "Nacogdoches County",
+    "income": 51657
+  },
+  "48355": {
+    "name": "Nueces County",
+    "income": 74838
+  },
+  "48361": {
+    "name": "Orange County",
+    "income": 75873
+  },
+  "48367": {
+    "name": "Parker County",
+    "income": 112252
+  },
+  "48375": {
+    "name": "Potter County",
+    "income": 60047
+  },
+  "48381": {
+    "name": "Randall County",
+    "income": 86365
+  },
+  "48397": {
+    "name": "Rockwall County",
+    "income": 126469
+  },
+  "48409": {
+    "name": "San Patricio County",
+    "income": 64838
+  },
+  "48423": {
+    "name": "Smith County",
+    "income": 77350
+  },
+  "48427": {
+    "name": "Starr County",
+    "income": 41216
+  },
+  "48439": {
+    "name": "Tarrant County",
+    "income": 88795
+  },
+  "48441": {
+    "name": "Taylor County",
+    "income": 74645
+  },
+  "48451": {
+    "name": "Tom Green County",
+    "income": 70033
+  },
+  "48453": {
+    "name": "Travis County",
+    "income": 101946
+  },
+  "48467": {
+    "name": "Van Zandt County",
+    "income": 76017
+  },
+  "48469": {
+    "name": "Victoria County",
+    "income": 69947
+  },
+  "48471": {
+    "name": "Walker County",
+    "income": 56993
+  },
+  "48473": {
+    "name": "Waller County",
+    "income": 98311
+  },
+  "48479": {
+    "name": "Webb County",
+    "income": 67990
+  },
+  "48485": {
+    "name": "Wichita County",
+    "income": 66199
+  },
+  "48491": {
+    "name": "Williamson County",
+    "income": 108816
+  },
+  "48497": {
+    "name": "Wise County",
+    "income": 100742
+  },
+  "49003": {
+    "name": "Box Elder County",
+    "income": 91746
+  },
+  "49005": {
+    "name": "Cache County",
+    "income": 80156
+  },
+  "49011": {
+    "name": "Davis County",
+    "income": 110409
+  },
+  "49021": {
+    "name": "Iron County",
+    "income": 76247
+  },
+  "49035": {
+    "name": "Salt Lake County",
+    "income": 100309
+  },
+  "49045": {
+    "name": "Tooele County",
+    "income": 112613
+  },
+  "49049": {
+    "name": "Utah County",
+    "income": 108964
+  },
+  "49053": {
+    "name": "Washington County",
+    "income": 85424
+  },
+  "49057": {
+    "name": "Weber County",
+    "income": 92547
+  },
+  "50007": {
+    "name": "Chittenden County",
+    "income": 99327
+  },
+  "51003": {
+    "name": "Albemarle County",
+    "income": 112847
+  },
+  "51013": {
+    "name": "Arlington County",
+    "income": 144789
+  },
+  "51015": {
+    "name": "Augusta County",
+    "income": 82121
+  },
+  "51019": {
+    "name": "Bedford County",
+    "income": 84164
+  },
+  "51041": {
+    "name": "Chesterfield County",
+    "income": 110719
+  },
+  "51059": {
+    "name": "Fairfax County",
+    "income": 160091
+  },
+  "51061": {
+    "name": "Fauquier County",
+    "income": 149192
+  },
+  "51069": {
+    "name": "Frederick County",
+    "income": 97830
+  },
+  "51085": {
+    "name": "Hanover County",
+    "income": 109772
+  },
+  "51087": {
+    "name": "Henrico County",
+    "income": 95956
+  },
+  "51095": {
+    "name": "James City County",
+    "income": 123513
+  },
+  "51107": {
+    "name": "Loudoun County",
+    "income": 193191
+  },
+  "51121": {
+    "name": "Montgomery County",
+    "income": 68822
+  },
+  "51153": {
+    "name": "Prince William County",
+    "income": 148353
+  },
+  "51161": {
+    "name": "Roanoke County",
+    "income": 94128
+  },
+  "51165": {
+    "name": "Rockingham County",
+    "income": 76446
+  },
+  "51177": {
+    "name": "Spotsylvania County",
+    "income": 110021
+  },
+  "51179": {
+    "name": "Stafford County",
+    "income": 155461
+  },
+  "51199": {
+    "name": "York County",
+    "income": 123443
+  },
+  "51510": {
+    "name": "Alexandria city",
+    "income": 113650
+  },
+  "51550": {
+    "name": "Chesapeake city",
+    "income": 98104
+  },
+  "51650": {
+    "name": "Hampton city",
+    "income": 67032
+  },
+  "51680": {
+    "name": "Lynchburg city",
+    "income": 64396
+  },
+  "51700": {
+    "name": "Newport News city",
+    "income": 69032
+  },
+  "51710": {
+    "name": "Norfolk city",
+    "income": 72596
+  },
+  "51740": {
+    "name": "Portsmouth city",
+    "income": 72869
+  },
+  "51760": {
+    "name": "Richmond city",
+    "income": 76249
+  },
+  "51770": {
+    "name": "Roanoke city",
+    "income": 57277
+  },
+  "51800": {
+    "name": "Suffolk city",
+    "income": 91705
+  },
+  "51810": {
+    "name": "Virginia Beach city",
+    "income": 101310
+  },
+  "53005": {
+    "name": "Benton County",
+    "income": 93252
+  },
+  "53007": {
+    "name": "Chelan County",
+    "income": 90703
+  },
+  "53009": {
+    "name": "Clallam County",
+    "income": 75846
+  },
+  "53011": {
+    "name": "Clark County",
+    "income": 100950
+  },
+  "53015": {
+    "name": "Cowlitz County",
+    "income": 77813
+  },
+  "53021": {
+    "name": "Franklin County",
+    "income": 93603
+  },
+  "53025": {
+    "name": "Grant County",
+    "income": 74315
+  },
+  "53027": {
+    "name": "Grays Harbor County",
+    "income": 72097
+  },
+  "53029": {
+    "name": "Island County",
+    "income": 88857
+  },
+  "53033": {
+    "name": "King County",
+    "income": 129763
+  },
+  "53035": {
+    "name": "Kitsap County",
+    "income": 101768
+  },
+  "53041": {
+    "name": "Lewis County",
+    "income": 82744
+  },
+  "53045": {
+    "name": "Mason County",
+    "income": 91513
+  },
+  "53053": {
+    "name": "Pierce County",
+    "income": 105393
+  },
+  "53057": {
+    "name": "Skagit County",
+    "income": 91811
+  },
+  "53061": {
+    "name": "Snohomish County",
+    "income": 111269
+  },
+  "53063": {
+    "name": "Spokane County",
+    "income": 81175
+  },
+  "53067": {
+    "name": "Thurston County",
+    "income": 102391
+  },
+  "53073": {
+    "name": "Whatcom County",
+    "income": 87645
+  },
+  "53077": {
+    "name": "Yakima County",
+    "income": 66593
+  },
+  "54003": {
+    "name": "Berkeley County",
+    "income": 86961
+  },
+  "54011": {
+    "name": "Cabell County",
+    "income": 61236
+  },
+  "54033": {
+    "name": "Harrison County",
+    "income": 75786
+  },
+  "54039": {
+    "name": "Kanawha County",
+    "income": 55329
+  },
+  "54061": {
+    "name": "Monongalia County",
+    "income": 69574
+  },
+  "54081": {
+    "name": "Raleigh County",
+    "income": 52650
+  },
+  "54107": {
+    "name": "Wood County",
+    "income": 65486
+  },
+  "55009": {
+    "name": "Brown County",
+    "income": 85131
+  },
+  "55017": {
+    "name": "Chippewa County",
+    "income": 80281
+  },
+  "55025": {
+    "name": "Dane County",
+    "income": 91825
+  },
+  "55027": {
+    "name": "Dodge County",
+    "income": 79286
+  },
+  "55035": {
+    "name": "Eau Claire County",
+    "income": 70577
+  },
+  "55039": {
+    "name": "Fond du Lac County",
+    "income": 78799
+  },
+  "55055": {
+    "name": "Jefferson County",
+    "income": 90768
+  },
+  "55059": {
+    "name": "Kenosha County",
+    "income": 79755
+  },
+  "55063": {
+    "name": "La Crosse County",
+    "income": 72251
+  },
+  "55071": {
+    "name": "Manitowoc County",
+    "income": 79956
+  },
+  "55073": {
+    "name": "Marathon County",
+    "income": 79136
+  },
+  "55079": {
+    "name": "Milwaukee County",
+    "income": 67467
+  },
+  "55087": {
+    "name": "Outagamie County",
+    "income": 85859
+  },
+  "55089": {
+    "name": "Ozaukee County",
+    "income": 92676
+  },
+  "55097": {
+    "name": "Portage County",
+    "income": 81219
+  },
+  "55101": {
+    "name": "Racine County",
+    "income": 82849
+  },
+  "55105": {
+    "name": "Rock County",
+    "income": 81674
+  },
+  "55109": {
+    "name": "St. Croix County",
+    "income": 101965
+  },
+  "55111": {
+    "name": "Sauk County",
+    "income": 79789
+  },
+  "55117": {
+    "name": "Sheboygan County",
+    "income": 81065
+  },
+  "55127": {
+    "name": "Walworth County",
+    "income": 84955
+  },
+  "55131": {
+    "name": "Washington County",
+    "income": 100525
+  },
+  "55133": {
+    "name": "Waukesha County",
+    "income": 104950
+  },
+  "55139": {
+    "name": "Winnebago County",
+    "income": 70624
+  },
+  "55141": {
+    "name": "Wood County",
+    "income": 64508
+  },
+  "56021": {
+    "name": "Laramie County",
+    "income": 83133
+  },
+  "56025": {
+    "name": "Natrona County",
+    "income": 76351
+  },
+  "72013": {
+    "name": "Arecibo Municipio",
+    "income": 24102
+  },
+  "72021": {
+    "name": "Bayam\u00f3n Municipio",
+    "income": 38694
+  },
+  "72025": {
+    "name": "Caguas Municipio",
+    "income": 37445
+  },
+  "72031": {
+    "name": "Carolina Municipio",
+    "income": 38663
+  },
+  "72061": {
+    "name": "Guaynabo Municipio",
+    "income": 58770
+  },
+  "72097": {
+    "name": "Mayag\u00fcez Municipio",
+    "income": 17912
+  },
+  "72113": {
+    "name": "Ponce Municipio",
+    "income": 20382
+  },
+  "72127": {
+    "name": "San Juan Municipio",
+    "income": 33237
+  },
+  "72135": {
+    "name": "Toa Alta Municipio",
+    "income": 52798
+  },
+  "72137": {
+    "name": "Toa Baja Municipio",
+    "income": 33427
+  },
+  "72139": {
+    "name": "Trujillo Alto Municipio",
+    "income": 39900
+  }
+}

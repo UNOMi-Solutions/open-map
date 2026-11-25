@@ -58,10 +58,25 @@ interface NavigationMenuSectionProps {
   onToggleConsentAgeData: () => void;
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
+
+  socialPovertyYear: number;
+  onSocialPovertyYearChange: (year: number) => void;
+  medianIncomeYear: number;
+  onMedianIncomeYearChange: (year: number) => void;
+  selectedDamHazard: string;
+  onSelectedDamHazardChange: (hazard: string) => void;
+  selectedDamYear: string;
+  onSelectedDamYearChange: (year: string) => void;
+
+  selectedGroundwaterYear: string;
+  onSelectedGroundwaterYearChange: (year: string) => void;
+  selectedInvasiveYear: string;
+  onSelectedInvasiveYearChange: (year: string) => void;
   povertyYear: number | null;
   povertyLatestYear: number | null;
   povertyAvailableYears: number[];
   onPovertyYearChange: (year: number | null) => void;
+
   selectedAgeGroupId: string | null;
   onSelectedAgeGroupChange: (ageGroupId: string | null) => void;
   selectedRaceCensusId: string;
@@ -110,10 +125,25 @@ export const NavigationMenuSection = ({
   onToggleConsentAgeData,
   selectedLayers = [],
   onLayerToggle,
+
+  socialPovertyYear,
+  onSocialPovertyYearChange,
+  medianIncomeYear,
+  onMedianIncomeYearChange,
+  selectedDamHazard,
+  onSelectedDamHazardChange,
+  selectedDamYear,
+  onSelectedDamYearChange,
+
+  selectedGroundwaterYear,
+  onSelectedGroundwaterYearChange,
+  selectedInvasiveYear,
+  onSelectedInvasiveYearChange,
   povertyYear,
   povertyLatestYear,
   povertyAvailableYears,
   onPovertyYearChange,
+
   selectedAgeGroupId,
   onSelectedAgeGroupChange,
   selectedRaceCensusId,
@@ -135,8 +165,12 @@ export const NavigationMenuSection = ({
     { id: "data-centers", label: "Data Centers" },
     { id: "national-risk-index", label: "Disaster Risk (FEMA NRI)" },
     { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },
+    { id: "air-quality", label: "Air Quality" },
+    { id: "dams", label: "Dams" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    { id: "groundwater-levels", label: "Groundwater Levels" },
+    { id: "invasive-species-group", label: "Invasive Species" },
     { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
 
     // { id: "toxic-spills", label: "Toxic Spills" },
@@ -326,6 +360,129 @@ export const NavigationMenuSection = ({
                 {item.label}
               </label>
             </div>
+
+                        {/* Dams filters */}
+                        {item.id === "dams" && selectedLayers.includes("dams") && (
+              <div className="ml-8 mt-2 mb-2 space-y-2">
+                <div>
+                  <label className="text-white text-[12px] font-normal [font-family:'Futura PT'] mr-2">
+                    Hazard:
+                  </label>
+                  <select
+                    value={selectedDamHazard}
+                    onChange={(e) => onSelectedDamHazardChange(e.target.value)}
+                    className="bg-white text-black text-[12px] rounded px-2 py-1"
+                  >
+                    <option value="all">All Hazards</option>
+                    <option value="High">High</option>
+                    <option value="Significant">Significant</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+
+                  <div>
+                    <label className="text-white text-[12px] font-normal [font-family:'Futura PT'] mr-2">
+                      Year:
+                    </label>
+                    <select
+                      value={selectedDamYear}
+                      onChange={(e) => onSelectedDamYearChange(e.target.value)}
+                      className="bg-white text-black text-[12px] rounded px-2 py-1"
+                    >
+                      <option value="all">All Years</option>
+                      {Array.from(
+                        { length: new Date().getFullYear() - 1800 + 1 },
+                        (_, i) => new Date().getFullYear() - i
+                      ).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+            {item.id === "groundwater-levels" &&
+              selectedLayers.includes("groundwater-levels") && (
+                <div className="ml-6 mt-2 mb-2">
+                  <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                    Year:
+                  </span>
+                  <select
+                    value={selectedGroundwaterYear}
+                    onChange={(e) =>
+                      onSelectedGroundwaterYearChange(e.target.value)
+                    }
+                    className="bg-white text-black text-[11px] rounded px-2 py-1"
+                  >
+                    <option value="all">All Years</option>
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1970 + 1 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+            {item.id === "invasive-species-group" &&
+              selectedLayers.includes("invasive-species-group") && (
+                <div className="ml-6 mt-2 mb-2">
+                  <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                    Year:
+                  </span>
+
+                  <select
+                    value={selectedInvasiveYear}
+                    onChange={(e) =>
+                      onSelectedInvasiveYearChange(e.target.value)
+                    }
+                    className="bg-white text-black text-[11px] rounded px-2 py-1 mb-2"
+                  >
+                    <option value="all">All Years</option>
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1970 + 1 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+
+                  {[
+                    ["invasive-species", "Aquatic"],
+                    ["invasive-plants", "Plants"],
+                    ["invasive-insects", "Insects"],
+                    ["invasive-reptiles", "Reptiles"],
+                    ["invasive-birds", "Birds"],
+                    ["invasive-amphibians", "Amphibians"],
+                    ["invasive-mammals", "Mammals"],
+                  ].map(([id, label]) => (
+                    <div key={id} className="flex items-center mt-1.5">
+                      <Checkbox
+                        id={id}
+                        className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                        checked={selectedLayers.includes(id)}
+                        onCheckedChange={(checked) =>
+                          onLayerToggle?.(id, checked === true)
+                        }
+                      />
+                      <label
+                        htmlFor={id}
+                        className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+                      >
+                        {label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+
             {renderSubFilters(item.id, subFilters)}
           </div>
         ),
@@ -385,6 +542,8 @@ export const NavigationMenuSection = ({
       id: "most-racist",
       label: "SPLC hate & antigovernment groups (by state HQ)",
     },
+    { id: "poverty-rate", label: "Poverty Rate" },
+    { id: "median-income", label: "Median Household Income" },
   ];
 
   // Census category items
@@ -408,6 +567,7 @@ export const NavigationMenuSection = ({
   const crimeItems = [
     // { id: "homicide", label: "Homicide"},
     // { id: "arrests", label: "Arrests" }
+    { id: "arson", label: "Arson" },
   ];
 
   const politicalTopics = [
@@ -638,6 +798,25 @@ export const NavigationMenuSection = ({
           </AccordionTrigger>
           <AccordionContent className="pt-0 pb-0">
             <div className="ml-4">
+              {crimeItems.map((item) => (
+                <div key={item.id} className="mt-2 flex items-center">
+                  <Checkbox
+                    id={item.id}
+                    checked={selectedLayers.includes(item.id)}
+                    onCheckedChange={(checked) =>
+                      onLayerToggle?.(item.id, checked === true)
+                    }
+                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  />
+                  <label
+                    htmlFor={item.id}
+                    className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                  >
+                    {item.label}
+                  </label>
+                </div>
+              ))}
+
               <div className="mt-2 flex items-center left">
                 <Checkbox
                   id="murder-data"
@@ -971,7 +1150,8 @@ export const NavigationMenuSection = ({
               </div>
 
               {socialMapItems.map((item) => (
-                <div key={item.id} className="mt-2 flex items-center">
+                <div key={item.id} className="mt-2">
+                  <div className="flex items-center">
                   <Checkbox
                     id={`social-${item.id}`}
                     checked={selectedLayers.includes(item.id)}
@@ -986,6 +1166,45 @@ export const NavigationMenuSection = ({
                   >
                     {item.label}
                   </label>
+                </div>
+
+                  {item.id === "poverty-rate" &&
+                    selectedLayers.includes("poverty-rate") && (
+                      <div className="ml-8 mt-2">
+                        <label htmlFor="social-poverty-year" className="text-white text-xs mr-2">
+                          Year:
+                        </label>
+                        <select
+                          id="social-poverty-year"
+                          value={socialPovertyYear}
+                          onChange={(e) => onSocialPovertyYearChange(Number(e.target.value))}
+                          className="bg-slate-800 text-white rounded p-1 text-xs"
+                        >
+                          {[2025, ...Array.from({ length: 25 }, (_, i) => 2024 - i), 1999, 1998, 1997, 1995, 1993, 1989].map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                  {item.id === "median-income" &&
+                    selectedLayers.includes("median-income") && (
+                      <div className="ml-8 mt-2">
+                        <label htmlFor="median-income-year" className="text-white text-xs mr-2">
+                          Year:
+                        </label>
+                        <select
+                          id="median-income-year"
+                          value={medianIncomeYear}
+                          onChange={(e) => onMedianIncomeYearChange(Number(e.target.value))}
+                          className="bg-slate-800 text-white rounded p-1 text-xs"
+                        >
+                          {[2025, ...Array.from({length: 25}, (_, i) => 2024 - i), 1999, 1998, 1997, 1995, 1993, 1989].map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                 </div>
               ))}
             </div>
