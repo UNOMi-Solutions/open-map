@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/LeafletMap";
 
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
+import { NASA_GROUPS, NASA_LAYERS, NASA_PREFIX } from "@/lib/nasaLayers";
 import {
   INCIDENT_MENU_ID,
   INCIDENT_TYPE_IDS,
@@ -34,6 +35,8 @@ interface NavigationMenuSectionProps {
 
   showPoliceKillingData: boolean;
   onTogglePoliceKillingData: () => void;
+  showPoliceShootings: boolean;
+  onTogglePoliceShootings: () => void;
 
   showMurderData: boolean;
   murderCategory: string;
@@ -55,6 +58,25 @@ interface NavigationMenuSectionProps {
   onToggleConsentAgeData: () => void;
   selectedLayers?: string[];
   onLayerToggle?: (layerId: string, checked: boolean) => void;
+
+  socialPovertyYear: number;
+  onSocialPovertyYearChange: (year: number) => void;
+  medianIncomeYear: number;
+  onMedianIncomeYearChange: (year: number) => void;
+  selectedDamHazard: string;
+  onSelectedDamHazardChange: (hazard: string) => void;
+  selectedDamYear: string;
+  onSelectedDamYearChange: (year: string) => void;
+
+  selectedGroundwaterYear: string;
+  onSelectedGroundwaterYearChange: (year: string) => void;
+  selectedInvasiveYear: string;
+  onSelectedInvasiveYearChange: (year: string) => void;
+  povertyYear: number | null;
+  povertyLatestYear: number | null;
+  povertyAvailableYears: number[];
+  onPovertyYearChange: (year: number | null) => void;
+
   selectedAgeGroupId: string | null;
   onSelectedAgeGroupChange: (ageGroupId: string | null) => void;
   selectedRaceCensusId: string;
@@ -80,6 +102,8 @@ export const NavigationMenuSection = ({
 
   showPoliceKillingData,
   onTogglePoliceKillingData,
+  showPoliceShootings,
+  onTogglePoliceShootings,
 
   showMurderData,
   murderCategory,
@@ -101,6 +125,25 @@ export const NavigationMenuSection = ({
   onToggleConsentAgeData,
   selectedLayers = [],
   onLayerToggle,
+
+  socialPovertyYear,
+  onSocialPovertyYearChange,
+  medianIncomeYear,
+  onMedianIncomeYearChange,
+  selectedDamHazard,
+  onSelectedDamHazardChange,
+  selectedDamYear,
+  onSelectedDamYearChange,
+
+  selectedGroundwaterYear,
+  onSelectedGroundwaterYearChange,
+  selectedInvasiveYear,
+  onSelectedInvasiveYearChange,
+  povertyYear,
+  povertyLatestYear,
+  povertyAvailableYears,
+  onPovertyYearChange,
+
   selectedAgeGroupId,
   onSelectedAgeGroupChange,
   selectedRaceCensusId,
@@ -118,14 +161,18 @@ export const NavigationMenuSection = ({
 
   const environmentItems: LayerOption[] = [
     { id: "oil-spills", label: "Oil Spills" },
+    { id: "oil-drilling-locations", label: "Oil Drilling Locations" },
     { id: "data-centers", label: "Data Centers" },
     { id: "national-risk-index", label: "Disaster Risk (FEMA NRI)" },
     { id: INCIDENT_MENU_ID, label: "Natural Disaster Incidents" },
     { id: "air-quality", label: "Air Quality" },
+    { id: "dams", label: "Dams" },
     { id: "ghg-emissions", label: "GHG Emissions" },
     { id: "waste-treatment-disposal", label: "Waste Treatment & Disposal" },
+    { id: "groundwater-levels", label: "Groundwater Levels" },
+    { id: "invasive-species-group", label: "Invasive Species" },
     { id: "noise-pollution", label: "Noise Pollution (Transportation)" },
-    
+
     // { id: "toxic-spills", label: "Toxic Spills" },
     // { id: "toxic-area", label: "Toxic Area" },
   ];
@@ -134,7 +181,7 @@ export const NavigationMenuSection = ({
     ...PATH_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
     ...STORM_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
     ...POINT_INCIDENT_LAYERS.map(({ id, label }) => ({ id, label })),
-    
+
     // { id: "toxic-spills", label: "Toxic Spills" },
     // { id: "toxic-area", label: "Toxic Area" },
   ];
@@ -313,6 +360,129 @@ export const NavigationMenuSection = ({
                 {item.label}
               </label>
             </div>
+
+                        {/* Dams filters */}
+                        {item.id === "dams" && selectedLayers.includes("dams") && (
+              <div className="ml-8 mt-2 mb-2 space-y-2">
+                <div>
+                  <label className="text-white text-[12px] font-normal [font-family:'Futura PT'] mr-2">
+                    Hazard:
+                  </label>
+                  <select
+                    value={selectedDamHazard}
+                    onChange={(e) => onSelectedDamHazardChange(e.target.value)}
+                    className="bg-white text-black text-[12px] rounded px-2 py-1"
+                  >
+                    <option value="all">All Hazards</option>
+                    <option value="High">High</option>
+                    <option value="Significant">Significant</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+
+                  <div>
+                    <label className="text-white text-[12px] font-normal [font-family:'Futura PT'] mr-2">
+                      Year:
+                    </label>
+                    <select
+                      value={selectedDamYear}
+                      onChange={(e) => onSelectedDamYearChange(e.target.value)}
+                      className="bg-white text-black text-[12px] rounded px-2 py-1"
+                    >
+                      <option value="all">All Years</option>
+                      {Array.from(
+                        { length: new Date().getFullYear() - 1800 + 1 },
+                        (_, i) => new Date().getFullYear() - i
+                      ).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+            {item.id === "groundwater-levels" &&
+              selectedLayers.includes("groundwater-levels") && (
+                <div className="ml-6 mt-2 mb-2">
+                  <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                    Year:
+                  </span>
+                  <select
+                    value={selectedGroundwaterYear}
+                    onChange={(e) =>
+                      onSelectedGroundwaterYearChange(e.target.value)
+                    }
+                    className="bg-white text-black text-[11px] rounded px-2 py-1"
+                  >
+                    <option value="all">All Years</option>
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1970 + 1 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+            {item.id === "invasive-species-group" &&
+              selectedLayers.includes("invasive-species-group") && (
+                <div className="ml-6 mt-2 mb-2">
+                  <span className="text-white/70 text-[11px] block mb-1 [font-family:'Futura PT']">
+                    Year:
+                  </span>
+
+                  <select
+                    value={selectedInvasiveYear}
+                    onChange={(e) =>
+                      onSelectedInvasiveYearChange(e.target.value)
+                    }
+                    className="bg-white text-black text-[11px] rounded px-2 py-1 mb-2"
+                  >
+                    <option value="all">All Years</option>
+                    {Array.from(
+                      { length: new Date().getFullYear() - 1970 + 1 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+
+                  {[
+                    ["invasive-species", "Aquatic"],
+                    ["invasive-plants", "Plants"],
+                    ["invasive-insects", "Insects"],
+                    ["invasive-reptiles", "Reptiles"],
+                    ["invasive-birds", "Birds"],
+                    ["invasive-amphibians", "Amphibians"],
+                    ["invasive-mammals", "Mammals"],
+                  ].map(([id, label]) => (
+                    <div key={id} className="flex items-center mt-1.5">
+                      <Checkbox
+                        id={id}
+                        className="h-3.5 w-3.5 border border-white/60 bg-white/10 text-white"
+                        checked={selectedLayers.includes(id)}
+                        onCheckedChange={(checked) =>
+                          onLayerToggle?.(id, checked === true)
+                        }
+                      />
+                      <label
+                        htmlFor={id}
+                        className="ml-2 text-white/90 text-[11px] leading-[100%] [font-family:'Futura PT']"
+                      >
+                        {label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+
             {renderSubFilters(item.id, subFilters)}
           </div>
         ),
@@ -372,6 +542,8 @@ export const NavigationMenuSection = ({
       id: "most-racist",
       label: "SPLC hate & antigovernment groups (by state HQ)",
     },
+    { id: "poverty-rate", label: "Poverty Rate" },
+    { id: "median-income", label: "Median Household Income" },
   ];
 
   // Census category items
@@ -395,6 +567,7 @@ export const NavigationMenuSection = ({
   const crimeItems = [
     // { id: "homicide", label: "Homicide"},
     // { id: "arrests", label: "Arrests" }
+    { id: "arson", label: "Arson" },
   ];
 
   const politicalTopics = [
@@ -402,8 +575,8 @@ export const NavigationMenuSection = ({
     // { id: "mayors", label: "Mayors" },
     { id: "house", label: "House of Representatives" },
     // { id: "supreme-court", label: "Supreme Court" },
-    { id: "president", label: "President" },
-    { id: "vice-president", label: "Vice President" },
+    // { id: "president", label: "President" },
+    // { id: "vice-president", label: "Vice President" },
     // { id: "governors", label: "Governors" },
     { id: "gerrymandering", label: "Jerry Mandering" },
     { id: "red-blue-district", label: "Red/Blue district (House of Representatives)" },
@@ -412,6 +585,8 @@ export const NavigationMenuSection = ({
 
   const wiredPoliticalMapIds = new Set([
     "senators",
+    "billionaires",
+    "sp500",
     "governors",
     "president",
     "vice-president",
@@ -429,7 +604,6 @@ export const NavigationMenuSection = ({
   const collapsedCategories = [
     // { id: "crime", label: "Crime" },
     { id: "health", label: "Health" },
-    { id: "economics", label: "Economics" },
     { id: "social", label: "Social" },
     { id: "politics", label: "Politics" },
   ];
@@ -470,9 +644,9 @@ export const NavigationMenuSection = ({
   const sexSectionDisabled = hasRaceSelection || hasAgeSelection;
 
   return (
-    <div className="absolute inset-0 w-full">
+    <div className="absolute inset-0 flex w-full flex-col">
       <div className="absolute inset-0 bg-[#06012A]/80 pointer-events-none" />
-      <div className="relative z-10">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
       {/* OpenMap Logo */}
       <div className="flex justify-center pt-7">
         <img
@@ -513,7 +687,8 @@ export const NavigationMenuSection = ({
         </button>
       </div>
 
-      <div className="mt-12 px-12 overflow-y-auto overscroll-contain">
+      {/* fills the space under the search box; only the accordion list below scrolls */}
+      <div className="mt-12 flex min-h-0 flex-1 flex-col px-12">
         <h2 className="text-[17px] text-white font-semibold font-futura leading-[100%] text-center">
           Search Categories
         </h2>
@@ -540,10 +715,7 @@ export const NavigationMenuSection = ({
           </button>
         </div>
       {/* Scrollable accordion area */}
-      <div 
-        className="mt-8 ml-6 mr-6 pr-4 overflow-y-auto overscroll-contain"
-        style={{ maxHeight: "calc(100vh - 260px)" }}
-      >
+      <div className="mt-8 ml-6 mr-6 min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 pr-4">
         <Accordion type="multiple" className="w-full">
         <AccordionItem value="environment" className="border-0">
           <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
@@ -556,6 +728,32 @@ export const NavigationMenuSection = ({
           </AccordionTrigger>
           <AccordionContent className="pt-0 pb-0">
             {renderLayerList(environmentItems, environmentSubFilters)}
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="satellite" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Satellite (NASA)
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            {NASA_GROUPS.map((group) => (
+              <div key={group} className="mb-2">
+                <span className="ml-4 text-white/70 text-[11px] block mt-2 [font-family:'Futura PT']">
+                  {group}
+                </span>
+                {renderLayerList(
+                  NASA_LAYERS.filter((l) => l.group === group).map((l) => ({
+                    id: NASA_PREFIX + l.id,
+                    label: l.title,
+                  })),
+                  {},
+                )}
+              </div>
+            ))}
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="transportation" className="border-0">
@@ -599,6 +797,25 @@ export const NavigationMenuSection = ({
           </AccordionTrigger>
           <AccordionContent className="pt-0 pb-0">
             <div className="ml-4">
+              {crimeItems.map((item) => (
+                <div key={item.id} className="mt-2 flex items-center">
+                  <Checkbox
+                    id={item.id}
+                    checked={selectedLayers.includes(item.id)}
+                    onCheckedChange={(checked) =>
+                      onLayerToggle?.(item.id, checked === true)
+                    }
+                    className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  />
+                  <label
+                    htmlFor={item.id}
+                    className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                  >
+                    {item.label}
+                  </label>
+                </div>
+              ))}
+
               <div className="mt-2 flex items-center left">
                 <Checkbox
                   id="murder-data"
@@ -612,7 +829,7 @@ export const NavigationMenuSection = ({
                 <span className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
                   Homicide
                 </span>
-                
+
               </div>
 
                   { (showMurderData) ? <>
@@ -779,7 +996,17 @@ export const NavigationMenuSection = ({
                   Police Killings
                 </span>
               </div>
-              
+              <div className="mt-2 flex items-center">
+                <Checkbox
+                  id="fatal-police-shootings"
+                  checked={showPoliceShootings}
+                  onCheckedChange={onTogglePoliceShootings}
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                />
+                <label htmlFor="fatal-police-shootings" className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura_PT_Book]">
+                  Fatal Police Shootings
+                </label>
+              </div>
             </div>
 
             <div className="ml-4">
@@ -822,6 +1049,111 @@ export const NavigationMenuSection = ({
           </AccordionContent>
         </AccordionItem>
 
+        <AccordionItem value="economy" className="border-0">
+          <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
+            <div className="flex items-center">
+              <ChevronRight className="accordion-arrow" />
+              <span className="text-[20.15px] text-white font-normal font-futura leading-[100%]">
+                Economic
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-0 pb-0">
+            <div className="ml-4">
+              {[
+                { id: "income", label: "Annual Income" },
+                { id: "high-income-households", label: "High-income households ($200k+)" },
+                { id: "unemployment", label: "Unemployment Rate" },
+                { id: "poverty-stricken-areas", label: "Poverty-Stricken Areas" },
+              ].map((item) => (
+                <div key={item.id} className="mt-1.5">
+                  <div className="flex items-center">
+                    <Checkbox
+                      id={`economy-${item.id}`}
+                      className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                      checked={selectedLayers.includes(item.id)}
+                      onCheckedChange={(checked) =>
+                        onLayerToggle?.(item.id, checked === true)
+                      }
+                    />
+                    <label
+                      htmlFor={`economy-${item.id}`}
+                      className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                    >
+                      {item.label}
+                    </label>
+                  </div>
+                  {item.id === "poverty-stricken-areas"
+                    && selectedLayers.includes(item.id) && (
+                      <label className="ml-[31px] mt-2 flex items-center gap-2 text-[11px] text-white/80">
+                        Estimate year
+                        <select
+                          aria-label="Poverty estimate year"
+                          className="rounded-md border border-white/70 bg-[#0c1022] text-white text-[11px] px-2 py-1 outline-none focus:ring-1 focus:ring-white/40"
+                          value={povertyYear == null ? "latest" : String(povertyYear)}
+                          onChange={(event) => {
+                            onPovertyYearChange(
+                              event.target.value === "latest"
+                                ? null
+                                : Number(event.target.value),
+                            );
+                          }}
+                        >
+                          <option value="latest">
+                            {povertyLatestYear == null
+                              ? "Most recent"
+                              : `Most recent (${povertyLatestYear})`}
+                          </option>
+                          {povertyAvailableYears
+                            .filter((year) => year !== povertyLatestYear)
+                            .slice()
+                            .sort((a, b) => b - a)
+                            .map((year) => (
+                              <option className="text-black" key={year} value={year}>
+                                {year}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                    )}
+                </div>
+              ))}
+              <div className="flex items-center mt-1.5">
+                <Checkbox
+                  id="economy-billionaires"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={politicalLayerIds.includes("billionaires")}
+                  onCheckedChange={(checked) =>
+                    onPoliticalLayerToggle("billionaires", checked === true)
+                  }
+                />
+                <label
+                  htmlFor="economy-billionaires"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                >
+                  Billionaires
+                </label>
+              </div>
+              <div className="flex items-center mt-1.5 pb-2">
+                <Checkbox
+                  id="economy-sp500"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={politicalLayerIds.includes("sp500")}
+                  onCheckedChange={(checked) =>
+                    onPoliticalLayerToggle("sp500", checked === true)
+                  }
+                />
+                <label
+                  htmlFor="economy-sp500"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                >
+                  S&amp;P 500 Companies
+                </label>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
         <AccordionItem value="social" className="border-0">
           <AccordionTrigger className="py-3 hover:no-underline accordion-trigger">
             <div className="flex items-center">
@@ -849,7 +1181,8 @@ export const NavigationMenuSection = ({
               </div>
 
               {socialMapItems.map((item) => (
-                <div key={item.id} className="mt-2 flex items-center">
+                <div key={item.id} className="mt-2">
+                  <div className="flex items-center">
                   <Checkbox
                     id={`social-${item.id}`}
                     checked={selectedLayers.includes(item.id)}
@@ -864,6 +1197,45 @@ export const NavigationMenuSection = ({
                   >
                     {item.label}
                   </label>
+                </div>
+
+                  {item.id === "poverty-rate" &&
+                    selectedLayers.includes("poverty-rate") && (
+                      <div className="ml-8 mt-2">
+                        <label htmlFor="social-poverty-year" className="text-white text-xs mr-2">
+                          Year:
+                        </label>
+                        <select
+                          id="social-poverty-year"
+                          value={socialPovertyYear}
+                          onChange={(e) => onSocialPovertyYearChange(Number(e.target.value))}
+                          className="bg-slate-800 text-white rounded p-1 text-xs"
+                        >
+                          {[2025, ...Array.from({ length: 25 }, (_, i) => 2024 - i), 1999, 1998, 1997, 1995, 1993, 1989].map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                  {item.id === "median-income" &&
+                    selectedLayers.includes("median-income") && (
+                      <div className="ml-8 mt-2">
+                        <label htmlFor="median-income-year" className="text-white text-xs mr-2">
+                          Year:
+                        </label>
+                        <select
+                          id="median-income-year"
+                          value={medianIncomeYear}
+                          onChange={(e) => onMedianIncomeYearChange(Number(e.target.value))}
+                          className="bg-slate-800 text-white rounded p-1 text-xs"
+                        >
+                          {[2025, ...Array.from({length: 25}, (_, i) => 2024 - i), 1999, 1998, 1997, 1995, 1993, 1989].map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                 </div>
               ))}
             </div>
@@ -979,65 +1351,44 @@ export const NavigationMenuSection = ({
                   </div>
                 )
               )}
-              {politicalLayerIds.includes("senators") && (
-                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  Two pins per state (current senators). Refresh data:{" "}
-                  <code className="text-white/80">npm run data:senators</code>
-                </p>
-              )}
               {politicalLayerIds.includes("governors") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per state (current governor); green ring on the map. Refresh:{" "}
                   <code className="text-white/80">npm run data:governors</code>
                 </p>
               )}
-              {(politicalLayerIds.includes("president") ||
-                politicalLayerIds.includes("vice-president")) && (
-                <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
-                  President — gold ring (White House). Vice President — silver-blue ring
-                  (Observatory Circle). Turn each on separately or together; president pin
-                  stacks above when they overlap. Refresh:{" "}
-                  <code className="text-white/80">npm run data:president</code>
-                </p>
-              )}
               {politicalLayerIds.includes("red-blue-district") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   119th district shapes (Census); party from current voting members where
                   listed. Vacant seats and non‑R/D members appear slate when &quot;Both&quot;
-                  is selected. Refresh:{" "}
-                  <code className="text-white/80">npm run data:congressional</code>
+                  is selected.
                 </p>
               )}
               {politicalLayerIds.includes("house") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   One pin per voting district (50 states only; 435 apportioned seats).
                   Non-voting delegates (D.C., territories) are excluded. Pin count can
-                  be under 435 when seats are vacant. Refresh:{" "}
-                  <code className="text-white/80">npm run data:congressional</code>
+                  be under 435 when seats are vacant.
                 </p>
               )}
               {politicalLayerIds.includes("supreme-court") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Nine current justices; pins use birth/home-state anchors (spread when
                   multiple share a state). Chief Justice stacks above when overlapping.
-                  Refresh roster:{" "}
-                  <code className="text-white/80">npm run data:scotus</code>
                 </p>
               )}
               {politicalLayerIds.includes("gerrymandering") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   Every current U.S. House district (119th Congress) is drawn from Census shapes
                   so you can see full boundaries—not counties. Violet pins mark educational case
-                  spots; tap a district or pin for details. Cases:{" "}
-                  <code className="text-white/80">client/public/data/gerrymandering.json</code>
+                  spots; tap a district or pin for details.
                 </p>
               )}
               {politicalLayerIds.includes("electoral-college") && (
                 <p className="mt-2 text-white/60 text-[10px] leading-snug max-w-[280px]">
                   2024 presidential results by state: red/blue by statewide winner, darker =
                   larger margin (CNN-style). Contiguous 48 + DC; Alaska &amp; Hawaii same
-                  data in corner insets. Data:{" "}
-                  <code className="text-white/80">client/public/data/electoral-college-2024.json</code>
+                  data in corner insets.
                 </p>
               )}
               {unwiredPoliticalSelections.length > 0 && (

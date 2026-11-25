@@ -81,14 +81,122 @@ body {
 }
 
 .timeline-visible-map .leaflet-bottom.leaflet-right {
-  bottom: 155px;
+  bottom: calc(var(--timeline-height, 170px) + 20px);
+}
+
+/* Map right column (MapRail): legends, then the sponsored unit; scrolls as one and stops above the
+   timeline panel. Empty sections take no space; the ad shows from the lg breakpoint, as before. */
+.map-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 300px;
+  max-height: calc(100vh - 150px - var(--timeline-height, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+}
+.map-rail-legends:empty,
+.map-rail-ad:empty {
+  display: none;
+}
+.map-rail-legends {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.map-rail .nasa-legend {
+  width: auto;
+  max-height: none;
+  overflow: visible;
+  margin: 0;
+}
+.map-rail-ad {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .map-rail-ad:not(:empty) {
+    display: block;
+  }
+}
+.map-rail-ad-card {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(12, 16, 34, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 8px;
+}
+
+/* NASA legend: upper right under the zoom control; one outlined, foldable row per layer */
+.nasa-legend {
+  width: 260px;
+  /* stops above the timeline panel and scrolls instead of running behind it */
+  max-height: calc(100vh - var(--timeline-height, 0px) - 150px);
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 8px;
+}
+.nasa-legend-row {
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin-top: 6px;
+}
+.nasa-legend-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nasa-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+.nasa-legend-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  color: #333;
+}
+.nasa-legend-fold {
+  width: 20px;
+  height: 20px;
+  margin: -2px -4px -2px 0;
+  border-radius: 4px;
+  color: #555;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+}
+.nasa-legend-fold:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.nasa-legend-date {
+  color: #777;
+}
+.nasa-legend-row.is-folded {
+  cursor: pointer;
+}
+.nasa-legend-row.is-folded:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+.nasa-legend-row.is-folded .nasa-legend-details {
+  display: none;
 }
 
 
-/* Oil spill markers: teal-blue pin, no default marker background */
+/* Custom data-point icons are displayed as circular markers. */
+.leaflet-marker-icon.ghg-emissions-marker,
+.leaflet-marker-icon.data-center-marker,
+.leaflet-marker-icon.air-quality-marker,
+.leaflet-marker-icon.waste-treatment-marker,
 .leaflet-marker-icon.oil-spill-marker {
   background: transparent !important;
   border: none !important;
+  border-radius: 50% !important;
+  box-sizing: border-box;
 }
 
 /* Any component classes */

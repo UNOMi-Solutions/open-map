@@ -17,20 +17,27 @@ import SharePopup from "./sections/SharePopup";
 import Profiles from "./sections/Profiles";
 import AccountSettings from "./sections/AccountSettings";
 import EmailChangeVerification from "./sections/EmailChangeVerification";
-import { fetchMe, getAuthToken, setAuthToken, type AccountUser } from "@/lib/apiClient";
+import {
+  ApiError,
+  fetchMe,
+  getAuthToken,
+  setAuthToken,
+  type AccountUser,
+} from "@/lib/apiClient";
 import LeafletMap, {
   ChoroplethMetricKey,
   HouseDistrictPartyMode,
 } from "@/components/ui/LeafletMap";
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { X, UserPlusIcon, SettingsIcon } from "lucide-react";
-import { BannerAd, VideoAd } from "@/components/ads";
+import { AD_SLOTS, BannerAd, VideoAd, adSlotActive } from "@/components/ads";
 
 import {
   HEALTH_ALL_LAYER_IDS,
   HEALTH_WIRED_LAYER_IDS,
 } from "@/lib/health-places";
 import { SPLC_LAYER_IDS } from "@/lib/splc-hate-map";
+import { NASA_PREFIX } from "@/lib/nasaLayers";
 import {
   INCIDENT_FILTER_PREFIXES,
   INCIDENT_MENU_ID,
@@ -43,150 +50,52 @@ import {
 import LoadingBar from "./sections/LoadingBar";
 import AdsterraBanner from "@/components/ads/AdsterraBanner";
 import {
-  formatTimelineDate,
+  snapOnOrBefore,
+  type TimelineDatasetMeta,
   type TimelineDateRange,
 } from "@/lib/timeline";
+import MapTimeline, { type TimelineTrack } from "@/components/ui/MapTimeline";
+import MonetagAd from "@/components/ads/MonetagAd";
 
-interface TimelineRangeControlProps {
-  availableDateRange: TimelineDateRange;
-  selectedRange: TimelineDateRange;
-  onCommit: (range: TimelineDateRange) => void;
+/** Header label for a dataset that does not name itself: "oil-spills" -> "Oil Spills". */
+const timelineLabel = (datasetId: string) =>
+  datasetId
+    .replace(/^economics-/, "")
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+/** Economics and NASA show one date at a time; each keeps its own day on the timeline. */
+const isSingleDateDataset = (datasetId: string, meta?: TimelineDatasetMeta) =>
+  datasetId.startsWith("economics-") || Boolean(meta?.single);
+
+/** Dot, chip and legend-outline colours for single-date datasets, distinct on dark and light. */
+const TIMELINE_COLORS = ["#38bdf8", "#f472b6", "#a3e635", "#fbbf24", "#c084fc", "#fb7185", "#34d399", "#fb923c"];
+
+// Last-used days per dataset, kept in this browser so they survive a reload
+const TIMELINE_DATES_KEY = "openmap.timelineDates";
+function loadSavedTimelineDates(): Record<string, number> {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TIMELINE_DATES_KEY) ?? "{}");
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+function saveTimelineDates(dates: Record<string, number>) {
+  try {
+    localStorage.setItem(TIMELINE_DATES_KEY, JSON.stringify(dates));
+  } catch {
+    // private window or storage blocked: the dates still last for this visit
+  }
 }
 
-function TimelineRangeControl({
-  availableDateRange,
-  selectedRange,
-  onCommit,
-}: TimelineRangeControlProps) {
-  const [draftRange, setDraftRange] = useState(selectedRange);
-  const [isUpdating, startTransition] = useTransition();
-  const dayInMs = 24 * 60 * 60 * 1000;
-  const dateSpan = availableDateRange.end - availableDateRange.start || 1;
-
-  useEffect(() => {
-    setDraftRange(selectedRange);
-  }, [selectedRange.start, selectedRange.end]);
-
-  const commitRange = (range: TimelineDateRange) => {
-    startTransition(() => onCommit(range));
-  };
-
-  const commitDraftRange = () => {
-    if (
-      draftRange.start !== selectedRange.start ||
-      draftRange.end !== selectedRange.end
-    ) {
-      commitRange(draftRange);
-    }
-  };
-
-  const resetRange = () => {
-    setDraftRange(availableDateRange);
-    commitRange(availableDateRange);
-  };
-
-  return (
-    <aside
-      aria-label="Data timeline"
-      className="fixed bottom-5 right-5 z-[3000] w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-[#0c1022]/95 p-4 text-white shadow-2xl backdrop-blur"
-    >
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold">Timeline</h2>
-          {isUpdating && (
-            <span role="status" className="inline-flex items-center gap-1 text-xs text-sky-200">
-              <Loader className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              Updating map
-            </span>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={resetRange}
-          className="text-xs text-sky-300 hover:text-sky-200 disabled:opacity-50"
-          disabled={
-            selectedRange.start === availableDateRange.start &&
-            selectedRange.end === availableDateRange.end
-          }
-        >
-          Reset
-        </button>
-      </div>
-      <div className="mb-1 flex justify-between gap-3 text-xs text-white/80">
-        <span>
-          From <strong>{formatTimelineDate(draftRange.start)}</strong>
-        </span>
-        <span>
-          Through <strong>{formatTimelineDate(draftRange.end)}</strong>
-        </span>
-      </div>
-      <div className="relative my-2 h-6">
-        <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/20" />
-        <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-sky-400"
-          style={{
-            left: `${((draftRange.start - availableDateRange.start) / dateSpan) * 100}%`,
-            right: `${100 - ((draftRange.end - availableDateRange.start) / dateSpan) * 100}%`,
-          }}
-        />
-        <label className="sr-only" htmlFor="timeline-start">
-          Earliest displayed date
-        </label>
-        <input
-          id="timeline-start"
-          aria-label="Earliest displayed date"
-          type="range"
-          min={availableDateRange.start}
-          max={availableDateRange.end}
-          step={dayInMs}
-          value={draftRange.start}
-          disabled={availableDateRange.start === availableDateRange.end}
-          onChange={(event) => {
-            const start = Number(event.target.value);
-            setDraftRange((current) => ({
-              ...current,
-              start: Math.min(start, current.end),
-            }));
-          }}
-          onPointerUp={commitDraftRange}
-          onPointerCancel={commitDraftRange}
-          onKeyUp={commitDraftRange}
-          onBlur={commitDraftRange}
-          className="timeline-range-input"
-        />
-        <label className="sr-only" htmlFor="timeline-end">
-          Latest displayed date
-        </label>
-        <input
-          id="timeline-end"
-          aria-label="Latest displayed date"
-          type="range"
-          min={availableDateRange.start}
-          max={availableDateRange.end}
-          step={dayInMs}
-          value={draftRange.end}
-          disabled={availableDateRange.start === availableDateRange.end}
-          onChange={(event) => {
-            const end = Number(event.target.value);
-            setDraftRange((current) => ({
-              ...current,
-              end: Math.max(end, current.start),
-            }));
-          }}
-          onPointerUp={commitDraftRange}
-          onPointerCancel={commitDraftRange}
-          onKeyUp={commitDraftRange}
-          onBlur={commitDraftRange}
-          className="timeline-range-input"
-        />
-      </div>
-      <div className="mt-1 flex justify-between text-[10px] text-white/50">
-        <span>{formatTimelineDate(availableDateRange.start)}</span>
-        <span>{formatTimelineDate(availableDateRange.end)}</span>
-      </div>
-    </aside>
-  );
-}
+const ECONOMICS_LAYER_IDS = new Set([
+  "income",
+  "high-income-households",
+  "unemployment",
+  "poverty-stricken-areas",
+]);
 
 export default function MainPage() {
   const [progress, setProgress] = useState(0);
@@ -198,6 +107,14 @@ export default function MainPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  // Dams filters
+  const [socialPovertyYear, setSocialPovertyYear] = useState<number>(2024);
+  const [medianIncomeYear, setMedianIncomeYear] = useState<number>(2024);
+  const [selectedDamHazard, setSelectedDamHazard] = useState<string>("all");
+  const [selectedDamYear, setSelectedDamYear] = useState<string>("all");
+  const [selectedInvasiveYear, setSelectedInvasiveYear] = useState<string>("all");
+  const [selectedGroundwaterYear, setSelectedGroundwaterYear] =
+    useState<string>("all");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("joe@gmail.com");
   // Display name from the account settings page; empty until the user sets one.
@@ -205,11 +122,20 @@ export default function MainPage() {
   // Plan key ("premium" | "enterprise" | "agency" | "freeTrial") for the
   // logged-in user, or null when they have no active subscription.
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [accountPlanResolved, setAccountPlanResolved] = useState(
+    () => !getAuthToken(),
+  );
   // Whether the logged-in user's email has been verified. Unverified users
   // cannot subscribe to a paid plan.
   const [isVerified, setIsVerified] = useState(false);
-  // Premium users see no ads. Wire this up to your real subscription flag.
-  const [isPremium] = useState(false);
+  const isPremium = ["premium", "enterprise", "agency"].includes(
+    currentPlan ?? "",
+  );
+  const shouldShowAds = accountPlanResolved && !isPremium;
+  // A placement only draws when its slot has an ID (or VITE_AD_PREVIEW is on), so an unfilled slot
+  // never leaves an empty box over the legends or the timeline
+  const railAdActive = shouldShowAds && adSlotActive(AD_SLOTS.video);
+  const bannerAdActive = shouldShowAds && adSlotActive(AD_SLOTS.banner);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   // Remembers a plan a logged-out user tried to select so we can resume the
   // pricing flow after they log in / sign up.
@@ -226,23 +152,80 @@ export default function MainPage() {
     { id: string; lat: number; lng: number; stateName?: string }[]
   >([]);
   const [selectedLayers, setSelectedLayers] = useState<string[]>([]);
-  const [datasetDateRanges, setDatasetDateRanges] = useState<
-    Record<string, TimelineDateRange>
+  const [povertyYear, setPovertyYear] = useState<number | null>(null);
+  const [povertyLatestYear, setPovertyLatestYear] = useState<number | null>(null);
+  const [povertyAvailableYears, setPovertyAvailableYears] = useState<number[]>([]);
+  // Every dated layer on the map reports its dates here; the timeline panel is built from them.
+  const [timelineDatasets, setTimelineDatasets] = useState<
+    Record<string, { range: TimelineDateRange; meta?: TimelineDatasetMeta }>
   >({});
+  // Span datasets (oil spills, storms, ...) share one range
   const [timelineRange, setTimelineRange] = useState<TimelineDateRange | null>(null);
-  const previousAvailableDateRange = useRef<TimelineDateRange | null>(null);
-  const availableDateRange = useMemo(() => {
-    const ranges = Object.values(datasetDateRanges);
-    if (ranges.length === 0) return null;
-    return {
-      start: Math.min(...ranges.map((range) => range.start)),
-      end: Math.max(...ranges.map((range) => range.end)),
-    };
-  }, [datasetDateRanges]);
+  const previousRangeBounds = useRef<TimelineDateRange | null>(null);
+  // Single-date datasets (economics, NASA) each keep their own day. Entries stay after a layer is
+  // switched off, so switching it back on returns to the day it was last on.
+  const [datasetDates, setDatasetDates] = useState<Record<string, number>>(loadSavedTimelineDates);
+  const [datasetColors, setDatasetColors] = useState<Record<string, string>>({});
+
+  const rangeBounds = useMemo(() => {
+    const ranges = Object.entries(timelineDatasets)
+      .filter(([id, d]) => !isSingleDateDataset(id, d.meta))
+      .map(([, d]) => d.range);
+    return ranges.length
+      ? { start: Math.min(...ranges.map((r) => r.start)), end: Math.max(...ranges.map((r) => r.end)) }
+      : null;
+  }, [timelineDatasets]);
+  const singleIds = Object.keys(timelineDatasets).filter((id) => isSingleDateDataset(id, timelineDatasets[id].meta));
+  const singleIdsKey = singleIds.join("|");
+
+  // Colours: each single-date dataset keeps its colour while it is on; freed colours are reused
+  useEffect(() => {
+    setDatasetColors((current) => {
+      const next: Record<string, string> = {};
+      for (const id of singleIds) if (current[id]) next[id] = current[id];
+      for (const id of singleIds) {
+        if (next[id]) continue;
+        const used = new Set(Object.values(next));
+        next[id] = TIMELINE_COLORS.find((c) => !used.has(c)) ?? TIMELINE_COLORS[Object.keys(next).length % TIMELINE_COLORS.length];
+      }
+      const same = Object.keys(next).length === Object.keys(current).length && Object.keys(next).every((id) => current[id] === next[id]);
+      return same ? current : next;
+    });
+  }, [singleIdsKey]);
+
+  useEffect(() => saveTimelineDates(datasetDates), [datasetDates]);
+
+  // The day each single-date dataset shows: its saved day, else its newest, snapped to real data
+  const timelineTracks = useMemo<TimelineTrack[]>(() => {
+    const tracks: TimelineTrack[] = [];
+    for (const [id, d] of Object.entries(timelineDatasets)) {
+      const label = d.meta?.label ?? timelineLabel(id);
+      if (isSingleDateDataset(id, d.meta)) {
+        const dates = d.meta?.availableDates;
+        const min = dates?.[0] ?? d.range.start;
+        const max = dates?.[dates.length - 1] ?? d.range.end;
+        const saved = datasetDates[id];
+        const date = snapOnOrBefore(dates, Math.min(max, Math.max(min, saved ?? max)));
+        tracks.push({ id, label, color: datasetColors[id], single: true, min, max, availableDates: dates, value: { start: date, end: date } });
+      } else if (rangeBounds && timelineRange) {
+        tracks.push({ id, label, single: false, min: rangeBounds.start, max: rangeBounds.end, value: timelineRange });
+      }
+    }
+    return tracks;
+  }, [timelineDatasets, datasetDates, datasetColors, rangeBounds, timelineRange]);
+
+  // Per-dataset days for the map layers; a new object only when a day actually changes
+  const singleRangesKey = timelineTracks.filter((t) => t.single).map((t) => `${t.id}=${t.value.end}`).join("|");
+  const datasetRanges = useMemo(
+    () => Object.fromEntries(timelineTracks.filter((t) => t.single).map((t) => [t.id, t.value])),
+    [singleRangesKey],
+  );
+  const datasetColorsKey = JSON.stringify(datasetColors);
+  const stableDatasetColors = useMemo(() => datasetColors, [datasetColorsKey]);
 
   const handleDatasetDateRangeChange = useCallback(
-    (datasetId: string, range: TimelineDateRange | null) => {
-      setDatasetDateRanges((current) => {
+    (datasetId: string, range: TimelineDateRange | null, meta?: TimelineDatasetMeta) => {
+      setTimelineDatasets((current) => {
         const existing = current[datasetId];
         if (!range) {
           if (!existing) return current;
@@ -250,40 +233,35 @@ export default function MainPage() {
           delete next[datasetId];
           return next;
         }
-        if (existing?.start === range.start && existing.end === range.end) {
-          return current;
-        }
-        return { ...current, [datasetId]: range };
+        const same =
+          existing?.range.start === range.start &&
+          existing.range.end === range.end &&
+          existing.meta?.label === meta?.label &&
+          existing.meta?.single === meta?.single &&
+          existing.meta?.availableDates?.length === meta?.availableDates?.length;
+        return same ? current : { ...current, [datasetId]: { range, meta } };
       });
     },
     [],
   );
 
+  // Keep the span datasets' range inside their combined dates as layers come and go
   useEffect(() => {
-    const previous = previousAvailableDateRange.current;
-    previousAvailableDateRange.current = availableDateRange;
-
-    if (!availableDateRange) {
+    const previous = previousRangeBounds.current;
+    previousRangeBounds.current = rangeBounds;
+    if (!rangeBounds) {
       setTimelineRange(null);
       return;
     }
     setTimelineRange((current) => {
-      if (
-        !current ||
-        !previous ||
-        (current.start === previous.start && current.end === previous.end)
-      ) {
-        return availableDateRange;
+      if (!current || !previous || (current.start === previous.start && current.end === previous.end)) {
+        return rangeBounds;
       }
-      const clamp = (timestamp: number) =>
-        Math.min(availableDateRange.end, Math.max(availableDateRange.start, timestamp));
+      const clamp = (t: number) => Math.min(rangeBounds.end, Math.max(rangeBounds.start, t));
       const start = clamp(current.start);
-      return {
-        start,
-        end: Math.max(start, clamp(current.end)),
-      };
+      return { start, end: Math.max(start, clamp(current.end)) };
     });
-  }, [availableDateRange]);
+  }, [rangeBounds?.start, rangeBounds?.end]);
 
   const SIDEBAR_WIDTH_OPEN = 430;
   // NEW: sidebar open/close
@@ -301,6 +279,7 @@ export default function MainPage() {
 
   // Props for Displaying Police Killing Data
   const [showPoliceKillingData, setShowPoliceKillingData] = useState(false);
+  const [showPoliceShootings, setShowPoliceShootings] = useState(false);
 
   // Props for displaying homicide data
   const [showMurderData, setShowMurderData] = useState(false);
@@ -325,6 +304,26 @@ export default function MainPage() {
     useState<HouseDistrictPartyMode>("both");
   /** CDC PLACES county choropleth; exclusive with census race/age/sex selection */
   const [healthMetricId, setHealthMetricId] = useState<string | null>(null);
+
+  const handlePovertyDataMeta = useCallback(
+    (latestYear: number, availableYears: number[]) => {
+      setPovertyLatestYear(latestYear);
+      setPovertyAvailableYears(availableYears);
+    },
+    [],
+  );
+  const handleTimelineChange = useCallback(
+    (changes: Record<string, TimelineDateRange>) => {
+      const days: Record<string, number> = {};
+      for (const [id, range] of Object.entries(changes)) {
+        if (isSingleDateDataset(id, timelineDatasets[id]?.meta)) days[id] = range.end;
+        else setTimelineRange(range);
+      }
+      if ("economics-poverty" in days) setPovertyYear(null);
+      if (Object.keys(days).length) setDatasetDates((current) => ({ ...current, ...days }));
+    },
+    [timelineDatasets],
+  );
 
   const toggleMenu = () => setIsMenuOpen((s) => !s);
   const closeMenu = () => setIsMenuOpen(false);
@@ -409,6 +408,7 @@ export default function MainPage() {
     plan: string | null = null,
     verified: boolean = false
   ) => {
+    setAccountPlanResolved(false);
     setIsLoggedIn(true);
     setUserEmail(email);
     setCurrentPlan(plan);
@@ -417,9 +417,12 @@ export default function MainPage() {
     // The login/verify responses don't carry every account field (e.g. the
     // display name), so pull the full record once the token is stored.
     fetchMe()
-      .then(({ user }) => user && applyAccount(user))
-      .catch(() => {
-        /* Session restore already handles a bad token; nothing to do here. */
+      .then(({ user }) => {
+        if (user) applyAccount(user);
+        setAccountPlanResolved(true);
+      })
+      .catch((error) => {
+        console.error("[MainPage] Account refresh after login failed:", error);
       });
     // If the user was trying to pick a plan before authenticating, bring them
     // back to the pricing screen to finish choosing.
@@ -451,6 +454,7 @@ export default function MainPage() {
     setUserEmail("");
     setUserName("");
     setCurrentPlan(null);
+    setAccountPlanResolved(true);
     setIsVerified(false);
     setIsSignUpDropdownOpen(false);
     setIsAccountOpen(false);
@@ -478,7 +482,25 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
+          ),
+          layerId,
+        ]);
+        setHealthMetricId(null);
+        setSelectedRaceCensusId("all");
+        setSelectedAgeGroupId(null);
+        setSelectedSexId(null);
+        setShowChoropleth(false);
+      } else {
+        setSelectedLayers((prev) => prev.filter((id) => id !== layerId));
+      }
+      return;
+    }
+    if (ECONOMICS_LAYER_IDS.has(layerId)) {
+      if (checked) {
+        setSelectedLayers((prev) => [
+          ...prev.filter(
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
           ),
           layerId,
         ]);
@@ -496,7 +518,7 @@ export default function MainPage() {
       if (checked) {
         setSelectedLayers((prev) => [
           ...prev.filter(
-            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id)
+            (id) => !HEALTH_ALL_LAYER_IDS.has(id) && !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id)
           ),
           layerId,
         ]);
@@ -571,6 +593,7 @@ export default function MainPage() {
     setSelectedRaceCensusId("all");
     setSelectedSexId(null);
     setShowPoliceKillingData(false);
+    setShowPoliceShootings(false);
     setShowMurderData(false);
     setMurderCategory("victim");
     setMurderAttribute("age");
@@ -582,6 +605,7 @@ export default function MainPage() {
     setHouseDistrictPartyMode("both");
     setSearchQuery("");
     setHealthMetricId(null);
+    setDatasetDates({});
   };
 
   /** Snapshot of the full map setup, saved as a profile's `config`. */
@@ -594,6 +618,7 @@ export default function MainPage() {
     selectedRaceCensusId,
     selectedSexId,
     showPoliceKillingData,
+    showPoliceShootings,
     showMurderData,
     murderCategory,
     murderAttribute,
@@ -621,6 +646,7 @@ export default function MainPage() {
     setSelectedRaceCensusId(c.selectedRaceCensusId ?? "all");
     setSelectedSexId(c.selectedSexId ?? null);
     setShowPoliceKillingData(!!c.showPoliceKillingData);
+    setShowPoliceShootings(!!c.showPoliceShootings);
     setShowMurderData(!!c.showMurderData);
     setMurderCategory(c.murderCategory ?? "victim");
     setMurderAttribute(c.murderAttribute ?? "age");
@@ -639,7 +665,10 @@ export default function MainPage() {
 
   // Restore the logged-in session (and plan) on page load using the stored JWT.
   useEffect(() => {
-    if (!getAuthToken()) return;
+    if (!getAuthToken()) {
+      setAccountPlanResolved(true);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -647,9 +676,14 @@ export default function MainPage() {
         if (cancelled || !user) return;
         applyAccount(user);
         setIsLoggedIn(true);
-      } catch {
-        // Token invalid/expired — clear it so the UI reflects a logged-out state.
-        setAuthToken(null);
+        setAccountPlanResolved(true);
+      } catch (error) {
+        if (error instanceof ApiError && [401, 403].includes(error.status)) {
+          setAuthToken(null);
+          setAccountPlanResolved(true);
+          return;
+        }
+        console.error("[MainPage] Session restore failed:", error);
       }
     })();
     return () => {
@@ -676,7 +710,9 @@ export default function MainPage() {
         prev.filter((id) => !HEALTH_ALL_LAYER_IDS.has(id))
       );
     }
-    setSelectedLayers((prev) => prev.filter((id) => !SPLC_LAYER_IDS.has(id)));
+    setSelectedLayers((prev) =>
+      prev.filter((id) => !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id))
+    );
   }, [selectedRaceCensusId, selectedAgeGroupId, selectedSexId, healthMetricId]);
 
   /** Population choropleth and SPLC are mutually exclusive for the colored layer */
@@ -685,7 +721,7 @@ export default function MainPage() {
       const next = !v;
       if (next) {
         setSelectedLayers((prev) =>
-          prev.filter((id) => !SPLC_LAYER_IDS.has(id))
+          prev.filter((id) => !SPLC_LAYER_IDS.has(id) && !ECONOMICS_LAYER_IDS.has(id))
         );
       }
       return next;
@@ -753,9 +789,9 @@ export default function MainPage() {
                   onClick={toggleSignUpDropdown}
                   className="h-[39px] bg-[#06012a] rounded-[29.09px] border border-[#312b7a] flex items-center gap-2"
                 >
-                  <img 
-                    className="w-[22px] h-[17px]" 
-                    alt="Sign Up" 
+                  <img
+                    className="w-[22px] h-[17px]"
+                    alt="Sign Up"
                     src="/figmaAssets/create-account.svg"
                     style={{ filter: 'brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(119%) contrast(119%)' }}
                   />
@@ -768,7 +804,7 @@ export default function MainPage() {
                     <div className="bg-gray-700 rounded-lg p-4 w-64 text-white shadow-lg">
                       {/* Sign Up Option */}
                       { !isLoggedIn && (
-                      <div 
+                      <div
                         className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                         onClick={handleSignUpClick}
                       >
@@ -811,7 +847,7 @@ export default function MainPage() {
                             <span className="text-[10.5px] text-white">Account Settings</span>
                           </div>
 
-                          <div 
+                          <div
                             className="flex items-center gap-3 mb-4 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
                               handlePricingClick();
@@ -836,7 +872,7 @@ export default function MainPage() {
                             <UserPlusIcon className="w-[16px] h-[16px] text-white" />
                             <span className="text-[10.5px] text-white">My Profiles</span>
                           </div>
-                          
+
                           <div className="flex items-center gap-3 mb-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors">
                             <img
                               className="w-[18px] h-[18px] opacity-100"
@@ -845,8 +881,8 @@ export default function MainPage() {
                             />
                             <span className="text-[10.5px] text-white">Help</span>
                           </div>
-                          
-                          <div 
+
+                          <div
                             className="flex items-center gap-3 p-2 hover:bg-gray-600 rounded cursor-pointer transition-colors"
                             onClick={() => {
                               handleUserLogout();
@@ -868,7 +904,7 @@ export default function MainPage() {
               </div>
               {/* Login Button */}
               { !isLoggedIn &&
-              <Button 
+              <Button
                 onClick={() => setIsLoginOpen(true)}
                 className="h-[39px] bg-[#06012a] rounded-[29.09px] border border-[#312b7a] flex items-center gap-2"
               >
@@ -885,7 +921,7 @@ export default function MainPage() {
                 </div>
               </button>
             </div>
-            
+
 
             {/* Slide-out App Menu (your existing modal/drawer) */}
             <SideBarMenu
@@ -936,7 +972,7 @@ export default function MainPage() {
                 className="absolute top-[42px] z-30 transition-[left] duration-300"
                 style={{ left: sidebarOpen ? 480 : 80 }}
               >
-                <Button 
+                <Button
                   onClick={() => setIsShareOpen(true)}
                   className="h-[39px] bg-white rounded-[29.09px] border border-[#312b7a] flex items-center gap-2 hover:bg-white"
                 >
@@ -950,7 +986,7 @@ export default function MainPage() {
             <section ref={mapSectionRef} className="relative h-screen w-full overflow-hidden">
               {/* Map layer */}
               <div className="absolute inset-0 z-0">
-                <LeafletMap 
+                <LeafletMap
                   loading={isLoading}
                   setLoading={setLoading}
                   sidebarOffsetPx={sidebarOpen ? SIDEBAR_WIDTH_OPEN : 0}
@@ -964,6 +1000,7 @@ export default function MainPage() {
                   showChoropleth={showChoropleth}
 
                   showPoliceKillingData={showPoliceKillingData}
+                  showPoliceShootings={showPoliceShootings}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -977,9 +1014,16 @@ export default function MainPage() {
                   showMassShootings={selectedLayers.includes("mass-shootings")}
 
                   showConsentAgeData={showConsentAgeData}
+                  showArsonData={selectedLayers.includes("arson")}
                   showAlprCameras={selectedLayers.includes("alpr-cameras")}
                   alprFlockOnly={selectedLayers.includes("alpr-flock-only")}
                   showOilSpills={selectedLayers.includes("oil-spills")}
+                  showOilDrillingLocations={selectedLayers.includes("oil-drilling-locations")}
+                  showNaturalDisasterIncidents={selectedLayers.some((id) => id.startsWith("nd-type:")) || selectedLayers.includes("natural-disaster-incidents")}
+                  naturalDisasterIncidentTypes={selectedLayers
+                    .filter((id) => id.startsWith("nd-type:"))
+                    .map((id) => id.replace("nd-type:", ""))}
+                  showHeartDiseaseMortality={selectedLayers.includes("heart-disease")}
                   showNationalRiskIndex={selectedLayers.includes("national-risk-index")}
                   nationalRiskIndexHazard={
                     selectedLayers.find((l) => l.startsWith("nri-hz:"))?.slice("nri-hz:".length) ?? null
@@ -1009,11 +1053,32 @@ export default function MainPage() {
                     return id ? Number(id.slice("dr-cat:".length)) : null;
                   })()}
                   showAirQuality={selectedLayers.includes("air-quality")}
+                  showPovertyRate={selectedLayers.includes("poverty-rate")}
+                  socialPovertyYear={socialPovertyYear}
+                  showMedianIncome={selectedLayers.includes("median-income")}
+                  medianIncomeYear={medianIncomeYear}
+                  showDams={selectedLayers.includes("dams")}
+                  selectedDamHazard={selectedDamHazard}
+                  selectedDamYear={selectedDamYear}
+                  showGroundwaterLevels={selectedLayers.includes("groundwater-levels")}
+                  selectedGroundwaterYear={selectedGroundwaterYear}
+                  showInvasiveSpecies={selectedLayers.includes("invasive-species")}
+                  showInvasivePlants={selectedLayers.includes("invasive-plants")}
+                  showInvasiveInsects={selectedLayers.includes("invasive-insects")}
+                  showInvasiveMammals={selectedLayers.includes("invasive-mammals")}
+                  showInvasiveReptiles={selectedLayers.includes("invasive-reptiles")}
+                  showInvasiveBirds={selectedLayers.includes("invasive-birds")}
+                  showInvasiveAmphibians={selectedLayers.includes("invasive-amphibians")}
+                  selectedInvasiveYear={selectedInvasiveYear}
                   showNoisePollution={selectedLayers.includes("noise-pollution")}
                   showRuralAccess={selectedLayers.includes("rural-access") }
+                  showBreastCancerIncidence={selectedLayers.includes("breast-cancer")}
                   ruralAccessYear={ruralAccessYear}
                   onRuralAccessYearChange={setRuralAccessYear}
-                  
+                  nasaLayerIds={selectedLayers.filter((id) => id.startsWith(NASA_PREFIX))}
+                  datasetRanges={datasetRanges}
+                  datasetColors={stableDatasetColors}
+
                   showGHGEmissions={selectedLayers.includes("ghg-emissions")}
                   showWasteTreatmentDisposal={selectedLayers.includes("waste-treatment-disposal")}
                   showDataCenters={selectedLayers.includes("data-centers")}
@@ -1023,18 +1088,32 @@ export default function MainPage() {
                   politicalLayerIds={politicalLayerIds}
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
+                  showIncome={selectedLayers.includes("income")}
+                  showHighIncomeHouseholds={selectedLayers.includes("high-income-households")}
+                  showUnemployment={selectedLayers.includes("unemployment")}
+                  showPoverty={selectedLayers.includes("poverty-stricken-areas")}
+                  povertyYear={povertyYear}
+                  povertyAvailableYears={povertyAvailableYears}
+                  onPovertyDataMeta={handlePovertyDataMeta}
                   showSplcHateMap={selectedLayers.includes("most-racist")}
                   timelineRange={timelineRange}
                   onDateRangeChange={handleDatasetDateRangeChange}
-                  timelineVisible={Boolean(availableDateRange && timelineRange)}
+                  timelineVisible={timelineTracks.length > 0}
+                  rightRailAd={
+                    railAdActive && !showLanding && !sidebarOpen ? (
+                      <div className="map-rail-ad-card">
+                        <VideoAd showLabel className="rounded-md bg-white/5 p-2" style={{ minHeight: 280 }} />
+                      </div>
+                    ) : undefined
+                  }
                 />
               </div>
 
-              {availableDateRange && timelineRange && (
-                <TimelineRangeControl
-                  availableDateRange={availableDateRange}
-                  selectedRange={timelineRange}
-                  onCommit={setTimelineRange}
+              {timelineTracks.length > 0 && (
+                <MapTimeline
+                  tracks={timelineTracks}
+                  onChange={handleTimelineChange}
+                  className="fixed bottom-5 right-5 z-[3000] w-[min(24rem,calc(100vw-2.5rem))]"
                 />
               )}
 
@@ -1082,8 +1161,9 @@ export default function MainPage() {
                 </>
               )}
 
-              {/* RIGHT-SIDE AD RAIL (visible on landing + when sidebar closed). Hidden for premium. */}
-              {!isPremium && (showLanding || !sidebarOpen) && (
+              {/* RIGHT-SIDE AD RAIL on the landing screen. On the map itself the same unit sits in the
+                  map's right column under the legends (LeafletMap rightRailAd), so they never overlap. */}
+              {railAdActive && showLanding && (
                 <aside
                   aria-label="Sponsored"
                   className={[
@@ -1127,6 +1207,8 @@ export default function MainPage() {
 
                   showPoliceKillingData={showPoliceKillingData}
                   onTogglePoliceKillingData={() => setShowPoliceKillingData((v) => !v)}
+                  showPoliceShootings={showPoliceShootings}
+                  onTogglePoliceShootings={() => setShowPoliceShootings((v) => !v)}
 
                   showMurderData={showMurderData}
                   murderCategory={murderCategory}
@@ -1152,9 +1234,26 @@ export default function MainPage() {
                   onSelectedRaceCensusIdChange={setSelectedRaceCensusId}
                   selectedSexId={selectedSexId}
                   onSelectedSexIdChange={setSelectedSexId}
-                  
+
                   selectedLayers={selectedLayers}
                   onLayerToggle={handleLayerToggle}
+                  selectedDamHazard={selectedDamHazard}
+                  socialPovertyYear={socialPovertyYear}
+                  onSocialPovertyYearChange={setSocialPovertyYear}
+                  medianIncomeYear={medianIncomeYear}
+                  onMedianIncomeYearChange={setMedianIncomeYear}
+                  onSelectedDamHazardChange={setSelectedDamHazard}
+                  selectedDamYear={selectedDamYear}
+                  onSelectedDamYearChange={setSelectedDamYear}
+
+                  selectedInvasiveYear={selectedInvasiveYear}
+                  onSelectedInvasiveYearChange={setSelectedInvasiveYear}
+                  selectedGroundwaterYear={selectedGroundwaterYear}
+                  onSelectedGroundwaterYearChange={setSelectedGroundwaterYear}
+                  povertyYear={povertyYear}
+                  povertyLatestYear={povertyLatestYear}
+                  povertyAvailableYears={povertyAvailableYears}
+                  onPovertyYearChange={setPovertyYear}
                   politicalLayerIds={politicalLayerIds}
                   onPoliticalLayerToggle={handlePoliticalLayerToggle}
                   houseDistrictPartyMode={houseDistrictPartyMode}
@@ -1162,10 +1261,11 @@ export default function MainPage() {
                   onResetAllFilters={handleResetAllFilters}
                 />
                 {/* Sidebar ad slots (banner + video). Hidden for premium users. */}
-                {!isPremium && (
-                  <div className="px-4 pt-4 pb-8 space-y-4 border-t border-white/10 mt-4">
-                    <VideoAd showLabel className="bg-white/5 rounded-md p-2" />
-                  </div>
+                {shouldShowAds && (
+                  <MonetagAd
+                    zoneId="12248955"
+                    scriptSrc="https://n6wxm.com/vignette.min.js"
+                  />
                 )}
               </aside>
 
@@ -1191,9 +1291,13 @@ export default function MainPage() {
             </section>
             {/* ======= END HERO ======= */}
 
-            {/* Fixed bottom banner ad (hidden on landing screen and for premium users). */}
-            {!showLanding && !isPremium && !sidebarOpen && (
-              <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none flex justify-center pb-2 px-4">
+            {/* Fixed bottom banner ad (hidden on landing screen and for premium users). While the
+                timeline is open it ends left of the timeline panel instead of running under it. */}
+            {!showLanding && bannerAdActive && !sidebarOpen && (
+              <div
+                className="fixed bottom-0 left-0 z-30 pointer-events-none flex justify-center pb-2 px-4"
+                style={{ right: timelineTracks.length > 0 ? "calc(min(24rem, 100vw - 2.5rem) + 1.25rem)" : 0 }}
+              >
                 <div className="pointer-events-auto bg-[#0c1022]/85 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl max-w-[900px] w-full p-2">
                   <BannerAd showLabel />
                 </div>
@@ -1238,8 +1342,8 @@ export default function MainPage() {
       )}
 
       {/* Share Popup */}
-      <SharePopup 
-        isOpen={isShareOpen} 
+      <SharePopup
+        isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         mapContainerRef={mapSectionRef}
       />
@@ -1277,7 +1381,7 @@ export default function MainPage() {
 
       {/* Sign Up Modal */}
       {isSignUpOpen && (
-        <SignUp 
+        <SignUp
           isOpen={isSignUpOpen}
           onClose={() => setIsSignUpOpen(false)}
           onLogin={(email, plan, verified) => {
@@ -1299,8 +1403,8 @@ export default function MainPage() {
 
       {/* Login Modal */}
       {isLoginOpen && (
-        <Login 
-          isOpen={isLoginOpen} 
+        <Login
+          isOpen={isLoginOpen}
           onClose={() => {
             setIsLoginOpen(false);
             setPendingPlan(null);
@@ -1316,7 +1420,7 @@ export default function MainPage() {
       {/* Verify Modal */}
       {isVerifyOpen && (
         <Verify
-          isOpen={isVerifyOpen} 
+          isOpen={isVerifyOpen}
           onClose={() => setIsVerifyOpen(false)}
           onLogin={(email) => {
             // Reaching this callback means the email was just verified.
@@ -1328,7 +1432,7 @@ export default function MainPage() {
       {/* Password Reset Modal */}
       {isResetOpen && (
         <Reset
-          isOpen={isResetOpen} 
+          isOpen={isResetOpen}
           onClose={() => setIsResetOpen(false)}
         />
       )}
