@@ -585,6 +585,7 @@ export const NavigationMenuSection = ({
 
   const wiredPoliticalMapIds = new Set([
     "senators",
+    "billionaires",
     "governors",
     "president",
     "vice-president",
@@ -602,7 +603,6 @@ export const NavigationMenuSection = ({
   const collapsedCategories = [
     // { id: "crime", label: "Crime" },
     { id: "health", label: "Health" },
-    { id: "economics", label: "Economics" },
     { id: "social", label: "Social" },
     { id: "politics", label: "Politics" },
   ];
@@ -1117,6 +1117,22 @@ export const NavigationMenuSection = ({
                     )}
                 </div>
               ))}
+              <div className="flex items-center mt-1.5 pb-2">
+                <Checkbox
+                  id="economy-billionaires"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={politicalLayerIds.includes("billionaires")}
+                  onCheckedChange={(checked) =>
+                    onPoliticalLayerToggle("billionaires", checked === true)
+                  }
+                />
+                <label
+                  htmlFor="economy-billionaires"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                >
+                  Billionaires
+                </label>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
