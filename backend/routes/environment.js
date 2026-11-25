@@ -18,6 +18,7 @@ import { getVolcanoes } from "../lib/volcanoes.js";
 import { getTsunamis } from "../lib/tsunamis.js";
 import { getDroughtSummary } from "../lib/drought.js";
 import { getLandslides } from "../lib/landslides.js";
+import { getNasaLayers } from "../lib/nasaGibs.js";
 
 import { getCached } from "../utils/dataCache.js";
 
@@ -29,7 +30,9 @@ let ghgEmissionsCache = null;
 
 // Cache for oil spills data
 let oilSpillsCache = null;
-
+let heartDiseaseMortalityCache = null;
+let heartDiseaseMortalityCacheAt = 0;
+const HEART_DISEASE_MORTALITY_CACHE_MS = 24 * 60 * 60 * 1000;
 
 // Test Command
 router.get('/test', (req, res) => {
@@ -93,8 +96,886 @@ router.get('/airQuality', async (req, res) => {
     }
 });
 
+// Retrieve current pollen risk and species data using latitude/longitude or state centroid
+router.get('/pollen', async (req, res) => {
+    const { lat, long, stateCode } = req.query;
 
-// Retrieve green house gas emissions from factories/mines in different industry sectors 
+    let latitude, longitude;
+
+    if (lat != null && long != null) {
+        latitude = parseFloat(lat);
+        longitude = parseFloat(long);
+
+        if (isNaN(latitude) || isNaN(longitude)) {
+            return res.status(400).json({
+                error: "Latitude and longitude must be numbers"
+            });
+        }
+    } else if (stateCode) {
+        const code = stateCode.toString().trim().toUpperCase();
+        const centroid = US_STATE_CENTROIDS[code];
+
+        if (!centroid) {
+            return res.status(400).json({
+                error: `Unknown state code: ${stateCode}. Use a 2-letter US state code.`
+            });
+        }
+
+        [latitude, longitude] = centroid;
+    } else {
+        return res.status(400).json({
+            error: "Provide either lat & long or stateCode"
+        });
+    }
+
+    const apiKey = process.env.ATMOSPORE_API_KEY;
+
+    if (!apiKey) {
+        return res.status(500).json({
+            error: "ATMOSPORE_API_KEY is not configured. Add it to your .env file."
+        });
+    }
+
+    try {
+        const today = new Date().toISOString().split("T")[0];
+
+        const response = await axios.get(
+            "https://pollenapi.com/v1/pollen",
+            {
+                params: {
+                    lat: latitude,
+                    lon: longitude,
+                    dt: today,
+                    forecast_days: 1,
+                    species: "tree,grass,weed"
+                },
+                headers: {
+                    "x-api-key": apiKey
+                }
+            }
+        );
+
+        const current = response.data?.data?.[0];
+
+        if (!current) {
+            return res.status(404).json({
+                error: "No pollen data available for this location"
+            });
+        }
+
+        const speciesList = Object.values(current.species || {});
+
+const riskRank = {
+    low: 1,
+    moderate: 2,
+    high: 3,
+    "very high": 4,
+    very_high: 4
+};
+
+const summarizeCategory = (category) => {
+    const categorySpecies = speciesList.filter(
+        (item) => item.category === category
+    );
+
+    if (categorySpecies.length === 0) {
+        return {
+            risk: "unknown",
+            maxValue: 0
+        };
+    }
+
+    const highestRiskSpecies = categorySpecies.reduce((highest, currentItem) => {
+        const currentRisk =
+            riskRank[currentItem.risk_level?.toLowerCase()] || 0;
+
+        const highestRisk =
+            riskRank[highest.risk_level?.toLowerCase()] || 0;
+
+        return currentRisk > highestRisk ? currentItem : highest;
+    });
+
+    const maxValue = Math.max(
+        ...categorySpecies.map((item) => Number(item.value) || 0)
+    );
+
+    return {
+        risk: highestRiskSpecies.risk_level,
+        maxValue: Number(maxValue.toFixed(3))
+    };
+};
+
+const topSpecies = speciesList
+    .filter((item) => Number(item.value) > 0)
+    .sort((a, b) => Number(b.value) - Number(a.value))
+    .slice(0, 5)
+    .map((item) => ({
+        name: item.display_name,
+        category: item.category,
+        value: item.value,
+        risk: item.risk_level
+    }));
+
+res.json({
+    location: response.data.meta.location,
+    units: response.data.meta.units,
+    date: current.date,
+    overallRisk: current.overall_risk,
+    categories: {
+        tree: summarizeCategory("tree"),
+        grass: summarizeCategory("grass"),
+        weed: summarizeCategory("weed")
+    },
+    topSpecies
+});
+
+    } catch (error) {
+        console.error(
+            "Pollen API error:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch pollen data"
+        });
+    }
+});
+
+// Retrieve Groundwater Quality Data
+
+
+router.get("/groundwater", async (req, res) => {
+    try {
+        const year = (req.query.year || "").toString().trim();
+
+        let datetime;
+
+        if (year && year !== "all") {
+            datetime = `${year}-01-01T00:00:00Z/${year}-12-31T23:59:59Z`;
+        } else {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setFullYear(endDate.getFullYear() - 1);
+
+            datetime = `${startDate.toISOString()}/${endDate.toISOString()}`;
+        }
+
+       
+
+        
+
+
+
+        
+
+
+        const response = await axios.get(
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements/items",
+            {
+                params: {
+                    parameter_code: "72019",
+                    datetime,
+
+                   
+                    limit: 100,
+                    f: "json",
+                },
+            }
+        );
+
+        const groundwaterData = response.data.features
+            .filter((feature) => {
+                if (!feature.geometry?.coordinates) return false;
+
+                const [longitude, latitude] = feature.geometry.coordinates;
+
+                const continentalUS =
+                    latitude >= 24 &&
+                    latitude <= 50 &&
+                    longitude >= -125 &&
+                    longitude <= -66;
+
+                const alaska =
+                    latitude >= 51 &&
+                    latitude <= 72 &&
+                    longitude >= -170 &&
+                    longitude <= -130;
+
+                const hawaii =
+                    latitude >= 18 &&
+                    latitude <= 23 &&
+                    longitude >= -161 &&
+                    longitude <= -154;
+
+                return continentalUS || alaska || hawaii;
+            })
+            .map((feature) => {
+                const properties = feature.properties;
+                const [longitude, latitude] = feature.geometry.coordinates;
+
+                return {
+                    siteId: properties.monitoring_location_id,
+                    latitude,
+                    longitude,
+                    depth: Number(properties.value),
+                    unit: properties.unit_of_measure,
+                    measurementDate: properties.time,
+                    approvalStatus: properties.approval_status,
+                };
+            });
+
+        res.json({
+            source: "USGS Water Data",
+            parameterCode: "72019",
+            description: "Depth to groundwater below land surface",
+            count: groundwaterData.length,
+            data: groundwaterData,
+        });
+    } catch (error) {
+        console.error(
+            "Groundwater API error:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch groundwater data",
+        });
+    }
+});
+
+// Retrieve invasive species occurrence data from USGS NAS
+router.get("/invasive-species", async (req, res) => {
+    try {
+        const US_STATE_NAMES = new Set([
+            "Alabama", "Alaska", "Arizona", "Arkansas", "California",
+            "Colorado", "Connecticut", "Delaware", "Florida", "Georgia",
+            "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+            "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland",
+            "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri",
+            "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+            "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+            "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+            "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+            "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+            "District of Columbia"
+        ]);
+        const year = (req.query.year || "").toString().trim();
+        const speciesIds = [514, 549, 551, 713, 963];
+
+        const speciesResults = await Promise.all(
+            speciesIds.map((speciesId) =>
+                axios.get(
+                    "https://nas.er.usgs.gov/api/v2/occurrence/search",
+                    {
+                        params: {
+                            species_ID: speciesId,
+                            limit: 100,
+                            ...(year && year !== "all" ? { year } : {}),
+                        },
+                    }
+                )
+            )
+        );
+
+        const invasiveSpeciesData = speciesResults.flatMap((response) =>
+            (response.data.results || [])
+                .filter(
+                    (record) =>
+                        Number.isFinite(Number(record.decimalLatitude)) &&
+                        Number.isFinite(Number(record.decimalLongitude)) &&
+                        US_STATE_NAMES.has(record.state)
+                )
+                .map((record) => ({
+                    occurrenceId: record.key,
+                    speciesId: record.speciesID,
+                    species: record.commonName,
+                    scientificName: record.scientificName,
+                    group: record.group,
+                    latitude: Number(record.decimalLatitude),
+                    longitude: Number(record.decimalLongitude),
+                    state: record.state,
+                    county: record.county,
+                    locality: record.locality,
+                    date: record.date,
+                    year: record.year,
+                    status: record.status,
+                    recordType: record.recordType,
+                }))
+        );
+
+        res.json({
+            source: "USGS Nonindigenous Aquatic Species",
+            count: invasiveSpeciesData.length,
+            data: invasiveSpeciesData,
+        });
+    } catch (error) {
+        console.error(
+            "Invasive Species API error:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch invasive species data",
+        });
+    }
+});
+
+// Retrieve invasive plant occurrence data from EDDMapS
+router.get("/invasive-plants", async (req, res) => {
+    try {
+        const year = (req.query.year || "").toString().trim();
+
+        const whereParts = [
+            "kingdom = 'Plantae'",
+            "countryname = 'United States'"
+        ];
+
+        if (year && year !== "all") {
+            whereParts.push(
+                `obsdate >= TIMESTAMP '${year}-01-01 00:00:00'`
+            );
+            whereParts.push(
+                `obsdate < TIMESTAMP '${Number(year) + 1}-01-01 00:00:00'`
+            );
+        }
+
+        const response = await axios.get(
+            "https://arcgis.eddmaps.org/arcgis/rest/services/Hosted/SirenPro/FeatureServer/0/query",
+            {
+                params: {
+                    where: whereParts.join(" AND "),
+                    outFields:
+                        "eddsid,commonname,kingdom,genus,species,latitude,longitude,statename,countyname,obsdate,status",
+                    returnGeometry: false,
+                    resultRecordCount: 500,
+                    f: "json",
+                },
+            }
+        );
+
+        const plantData = (response.data.features || [])
+            .map((feature) => feature.attributes)
+            .filter(
+                (record) =>
+                    Number.isFinite(Number(record.latitude)) &&
+                    Number.isFinite(Number(record.longitude))
+            )
+            .map((record) => ({
+                occurrenceId: record.eddsid,
+                category: "Plants",
+                species: record.commonname,
+                scientificName: `${record.genus || ""} ${record.species || ""}`.trim(),
+                latitude: Number(record.latitude),
+                longitude: Number(record.longitude),
+                state: record.statename,
+                county: record.countyname,
+                date: record.obsdate
+                    ? new Date(record.obsdate).toISOString().split("T")[0]
+                    : null,
+                year: record.obsdate
+                    ? new Date(record.obsdate).getUTCFullYear()
+                    : null,
+                status: record.status,
+            }));
+
+        res.json({
+            source: "EDDMapS",
+            category: "Plants",
+            count: plantData.length,
+            data: plantData,
+        });
+    } catch (error) {
+        console.error(
+            "EDDMapS invasive plants API error:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch invasive plant data",
+        });
+    }
+});
+
+// Retrieve invasive insect occurrence data from EDDMapS
+router.get("/invasive-insects", async (req, res) => {
+    try {
+        const year = (req.query.year || "").toString().trim();
+
+        const insectSpecies = [
+            "spotted lanternfly",
+            "emerald ash borer",
+            "brown marmorated stink bug",
+            "Asian tiger mosquito",
+            "red imported fire ant",
+        ];
+
+        const speciesResults = await Promise.all(
+            insectSpecies.map((commonName) => {
+                const whereParts = [
+                    `commonname = '${commonName.replace(/'/g, "''")}'`,
+                    "countryname = 'United States'",
+                    "status = 'Positive'",
+                ];
+
+                if (year && year !== "all") {
+                    whereParts.push(
+                        `obsdate >= TIMESTAMP '${year}-01-01 00:00:00'`
+                    );
+                    whereParts.push(
+                        `obsdate < TIMESTAMP '${Number(year) + 1}-01-01 00:00:00'`
+                    );
+                }
+
+                return axios.get(
+                    "https://arcgis.eddmaps.org/arcgis/rest/services/Hosted/SirenPro/FeatureServer/0/query",
+                    {
+                        params: {
+                            where: whereParts.join(" AND "),
+                            outFields:
+                                "eddsid,commonname,kingdom,genus,species,latitude,longitude,statename,countyname,obsdate,status",
+                            returnGeometry: false,
+                            resultRecordCount: 100,
+                            f: "json",
+                        },
+                    }
+                );
+            })
+        );
+
+        const records = speciesResults.flatMap(
+            (response) => response.data?.features || []
+        );
+
+        const data = records
+            .map((feature) => feature.attributes)
+            .filter(
+                (record) =>
+                    record.latitude !== null &&
+                    record.longitude !== null
+            )
+            .map((record) => ({
+                occurrenceId: record.eddsid,
+                category: "Insects",
+                species: record.commonname,
+                scientificName:
+                    `${record.genus || ""} ${record.species || ""}`.trim(),
+                latitude: Number(record.latitude),
+                longitude: Number(record.longitude),
+                state: record.statename,
+                county: record.countyname,
+                date: record.obsdate
+                    ? new Date(record.obsdate)
+                          .toISOString()
+                          .split("T")[0]
+                    : null,
+                year: record.obsdate
+                    ? new Date(record.obsdate).getUTCFullYear()
+                    : null,
+                status: record.status,
+            }));
+
+        res.json({
+            source: "EDDMapS",
+            category: "Insects",
+            count: data.length,
+            data,
+        });
+    } catch (error) {
+        console.error(
+            "Error fetching invasive insect data:",
+            error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch invasive insect data",
+        });
+    }
+});
+
+// Retrieve invasive mammal occurrence data from EDDMapS
+router.get("/invasive-mammals", async (req, res) => {
+    try {
+        const year = (req.query.year || "").toString().trim();
+
+        const mammalSpecies = [
+            "pig (feral), wild boar at large",
+            "nutria",
+            "European rabbit",
+            "rhesus macaque",
+            "black rat",
+        ];
+
+        const speciesResults = await Promise.all(
+            mammalSpecies.map((commonName) => {
+                const whereParts = [
+                    `commonname = '${commonName.replace(/'/g, "''")}'`,
+                    "countryname = 'United States'",
+                    "status = 'Positive'",
+                ];
+
+                if (year && year !== "all") {
+                    whereParts.push(
+                        `obsdate >= TIMESTAMP '${year}-01-01 00:00:00'`
+                    );
+                    whereParts.push(
+                        `obsdate < TIMESTAMP '${Number(year) + 1}-01-01 00:00:00'`
+                    );
+                }
+
+                return axios.get(
+                    "https://arcgis.eddmaps.org/arcgis/rest/services/Hosted/SirenPro/FeatureServer/0/query",
+                    {
+                        params: {
+                            where: whereParts.join(" AND "),
+                            outFields:
+                                "eddsid,commonname,kingdom,genus,species,latitude,longitude,statename,countyname,obsdate,status",
+                            returnGeometry: false,
+                            resultRecordCount: 100,
+                            f: "json",
+                        },
+                    }
+                );
+            })
+        );
+
+        const records = speciesResults.flatMap(
+            (response) => response.data?.features || []
+        );
+
+        const data = records
+            .map((feature) => feature.attributes)
+            .filter(
+                (record) =>
+                    record.latitude !== null &&
+                    record.longitude !== null
+            )
+            .map((record) => ({
+                occurrenceId: record.eddsid,
+                category: "Mammals",
+                species: record.commonname,
+                scientificName:
+                    `${record.genus || ""} ${record.species || ""}`.trim(),
+                latitude: Number(record.latitude),
+                longitude: Number(record.longitude),
+                state: record.statename,
+                county: record.countyname,
+                date: record.obsdate
+                    ? new Date(record.obsdate)
+                        .toISOString()
+                        .split("T")[0]
+                    : null,
+                year: record.obsdate
+                    ? new Date(record.obsdate).getUTCFullYear()
+                    : null,
+                status: record.status,
+            }));
+
+        res.json({
+            source: "EDDMapS",
+            category: "Mammals",
+            count: data.length,
+            data,
+        });
+    } catch (error) {
+        console.error(
+            "Error fetching invasive mammal data:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch invasive mammal data",
+        });
+    }
+});
+
+// Retrieve invasive reptile occurrence data from EDDMapS
+router.get("/invasive-reptiles", async (req, res) => {
+    try {
+        const year = (req.query.year || "").toString().trim();
+
+        const reptileSpecies = [
+            "Burmese python",
+            "green iguana",
+            "Argentine black and white tegu",
+            "brown anole",
+            "Nile monitor",
+        ];
+
+        const speciesResults = await Promise.all(
+            reptileSpecies.map((commonName) => {
+                const whereParts = [
+                    `commonname = '${commonName.replace(/'/g, "''")}'`,
+                    "countryname = 'United States'",
+                    "status = 'Positive'",
+                ];
+
+                if (year && year !== "all") {
+                    whereParts.push(
+                        `obsdate >= TIMESTAMP '${year}-01-01 00:00:00'`
+                    );
+                    whereParts.push(
+                        `obsdate < TIMESTAMP '${Number(year) + 1}-01-01 00:00:00'`
+                    );
+                }
+
+                return axios.get(
+                    "https://arcgis.eddmaps.org/arcgis/rest/services/Hosted/SirenPro/FeatureServer/0/query",
+                    {
+                        params: {
+                            where: whereParts.join(" AND "),
+                            outFields:
+                                "eddsid,commonname,kingdom,genus,species,latitude,longitude,statename,countyname,obsdate,status",
+                            returnGeometry: false,
+                            resultRecordCount: 100,
+                            f: "json",
+                        },
+                    }
+                );
+            })
+        );
+
+        const records = speciesResults.flatMap(
+            (response) => response.data?.features || []
+        );
+
+        const data = records
+            .map((feature) => feature.attributes)
+            .filter(
+                (record) =>
+                    record.latitude !== null &&
+                    record.longitude !== null
+            )
+            .map((record) => ({
+                occurrenceId: record.eddsid,
+                category: "Reptiles",
+                species: record.commonname,
+                scientificName:
+                    `${record.genus || ""} ${record.species || ""}`.trim(),
+                latitude: Number(record.latitude),
+                longitude: Number(record.longitude),
+                state: record.statename,
+                county: record.countyname,
+                date: record.obsdate
+                    ? new Date(record.obsdate)
+                        .toISOString()
+                        .split("T")[0]
+                    : null,
+                year: record.obsdate
+                    ? new Date(record.obsdate).getUTCFullYear()
+                    : null,
+                status: record.status,
+            }));
+
+        res.json({
+            source: "EDDMapS",
+            category: "Reptiles",
+            count: data.length,
+            data,
+        });
+    } catch (error) {
+        console.error(
+            "Error fetching invasive reptile data:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch invasive reptile data",
+        });
+    }
+});
+
+// Retrieve invasive bird occurrence data from EDDMapS
+router.get("/invasive-birds", async (req, res) => {
+    try {
+        const year = (req.query.year || "").toString().trim();
+
+        const birdSpecies = [
+            "european starling",
+            "monk parakeet",
+            "house sparrow",
+            "mute swan",
+            "Eurasian collared-dove",
+        ];
+
+        const speciesResults = await Promise.all(
+            birdSpecies.map((commonName) => {
+                const whereParts = [
+                    `commonname = '${commonName.replace(/'/g, "''")}'`,
+                    "countryname = 'United States'",
+                    "status = 'Positive'",
+                ];
+
+                if (year && year !== "all") {
+                    whereParts.push(
+                        `obsdate >= TIMESTAMP '${year}-01-01 00:00:00'`
+                    );
+                    whereParts.push(
+                        `obsdate < TIMESTAMP '${Number(year) + 1}-01-01 00:00:00'`
+                    );
+                }
+
+                return axios.get(
+                    "https://arcgis.eddmaps.org/arcgis/rest/services/Hosted/SirenPro/FeatureServer/0/query",
+                    {
+                        params: {
+                            where: whereParts.join(" AND "),
+                            outFields:
+                                "eddsid,commonname,kingdom,genus,species,latitude,longitude,statename,countyname,obsdate,status",
+                            returnGeometry: false,
+                            resultRecordCount: 100,
+                            f: "json",
+                        },
+                    }
+                );
+            })
+        );
+
+        const records = speciesResults.flatMap(
+            (response) => response.data?.features || []
+        );
+
+        const data = records
+            .map((feature) => feature.attributes)
+            .filter(
+                (record) =>
+                    record.latitude !== null &&
+                    record.longitude !== null
+            )
+            .map((record) => ({
+                occurrenceId: record.eddsid,
+                category: "Birds",
+                species: record.commonname,
+                scientificName:
+                    `${record.genus || ""} ${record.species || ""}`.trim(),
+                latitude: Number(record.latitude),
+                longitude: Number(record.longitude),
+                state: record.statename,
+                county: record.countyname,
+                date: record.obsdate
+                    ? new Date(record.obsdate)
+                        .toISOString()
+                        .split("T")[0]
+                    : null,
+                year: record.obsdate
+                    ? new Date(record.obsdate).getUTCFullYear()
+                    : null,
+                status: record.status,
+            }));
+
+        res.json({
+            source: "EDDMapS",
+            category: "Birds",
+            count: data.length,
+            data,
+        });
+    } catch (error) {
+        console.error(
+            "Error fetching invasive bird data:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch invasive bird data",
+        });
+    }
+});
+
+// Retrieve invasive amphibian occurrence data from EDDMapS
+router.get("/invasive-amphibians", async (req, res) => {
+    try {
+        const year = (req.query.year || "").toString().trim();
+
+        const amphibianSpecies = [
+            "Cuban treefrog",
+            "cane toad",
+            "American bullfrog",
+            "African clawed frog",
+        ];
+
+        const speciesResults = await Promise.all(
+            amphibianSpecies.map((commonName) => {
+                const whereParts = [
+                    `commonname = '${commonName.replace(/'/g, "''")}'`,
+                    "countryname = 'United States'",
+                    "status = 'Positive'",
+                ];
+
+                if (year && year !== "all") {
+                    whereParts.push(
+                        `obsdate >= TIMESTAMP '${year}-01-01 00:00:00'`
+                    );
+                    whereParts.push(
+                        `obsdate < TIMESTAMP '${Number(year) + 1}-01-01 00:00:00'`
+                    );
+                }
+
+                return axios.get(
+                    "https://arcgis.eddmaps.org/arcgis/rest/services/Hosted/SirenPro/FeatureServer/0/query",
+                    {
+                        params: {
+                            where: whereParts.join(" AND "),
+                            outFields:
+                                "eddsid,commonname,kingdom,genus,species,latitude,longitude,statename,countyname,obsdate,status",
+                            returnGeometry: false,
+                            resultRecordCount: 100,
+                            f: "json",
+                        },
+                    }
+                );
+            })
+        );
+
+        const records = speciesResults.flatMap(
+            (response) => response.data?.features || []
+        );
+
+        const data = records
+            .map((feature) => feature.attributes)
+            .filter(
+                (record) =>
+                    record.latitude !== null &&
+                    record.longitude !== null
+            )
+            .map((record) => ({
+                occurrenceId: record.eddsid,
+                category: "Amphibians",
+                species: record.commonname,
+                scientificName:
+                    `${record.genus || ""} ${record.species || ""}`.trim(),
+                latitude: Number(record.latitude),
+                longitude: Number(record.longitude),
+                state: record.statename,
+                county: record.countyname,
+                date: record.obsdate
+                    ? new Date(record.obsdate)
+                        .toISOString()
+                        .split("T")[0]
+                    : null,
+                year: record.obsdate
+                    ? new Date(record.obsdate).getUTCFullYear()
+                    : null,
+                status: record.status,
+            }));
+
+        res.json({
+            source: "EDDMapS",
+            category: "Amphibians",
+            count: data.length,
+            data,
+        });
+    } catch (error) {
+        console.error(
+            "Error fetching invasive amphibian data:",
+            error.response?.data || error.message
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch invasive amphibian data",
+        });
+    }
+});
+
+// Retrieve green house gas emissions from factories/mines in different industry sectors
 router.get("/ghgEmissions", async (req, res) => {
     try {
       const stateCode = (req.query.stateCode || "").toString().trim().toUpperCase();
@@ -105,26 +986,26 @@ router.get("/ghgEmissions", async (req, res) => {
         return res.status(400).json({ error: "Please provide state code" });
       }
         */
-  
+
       // Download + cache if needed
       if (!ghgEmissionsCache) {
         console.log("Downloading and processing GHG emissions data...");
-  
+
         const response = await axios.get(
           "https://www.epa.gov/system/files/other-files/2024-10/2023_data_summary_spreadsheets.zip",
           { responseType: "arraybuffer" }
         );
-  
+
         const unZip = await JSZip.loadAsync(response.data);
         const fileName = Object.keys(unZip.files).find(
           (name) =>
             name.toLowerCase().includes("ghgp_data_2023") && name.endsWith(".xlsx")
         );
-  
+
         if (!fileName) {
           return res.status(404).json({ error: "File not found" });
         }
-  
+
         const bytes = await unZip.files[fileName].async("arraybuffer");
         const workbook = XLSX.read(bytes, { type: "arraybuffer" });
         const sheetName = workbook.SheetNames[0];
@@ -133,11 +1014,11 @@ router.get("/ghgEmissions", async (req, res) => {
           header: 1,
           defval: "",
         });
-  
+
         const headerRowIndex = 3;
         const headers = rows[headerRowIndex];
         const dataRows = rows.slice(headerRowIndex + 1);
-  
+
         const jsonData = dataRows.map((row) => {
           const obj = {};
           headers.forEach((h, i) => {
@@ -145,21 +1026,21 @@ router.get("/ghgEmissions", async (req, res) => {
           });
           return obj;
         });
-  
+
         ghgEmissionsCache = jsonData;
         console.log("GHG emissions data cached successfully");
       }
-  
-      // Helper to get state abbreviation from a row 
+
+      // Helper to get state abbreviation from a row
       const getRowStateCode = (row) => {
         const fromAbbrev = (row["State abbreviation"] || row["State Abbreviation"] || "").toString().trim().toUpperCase();
         const fromState = (row["State"] || "").toString().trim().toUpperCase();
         return fromAbbrev || fromState;
       };
-  
+
       // Filter rows for this state
       let facilities = ghgEmissionsCache;
-  
+
       // Optional: further filter by facility name if query provided
       if (facilityNameQuery) {
         facilities = facilities.filter((row) => {
@@ -167,11 +1048,11 @@ router.get("/ghgEmissions", async (req, res) => {
           return facilityName.includes(facilityNameQuery);
         });
       }
-  
+
       if (facilities.length === 0) {
         return res.status(404).json({ error: "No facilities found for this state" });
       }
-  
+
       // Map to shape expected by GhgEmissionsMarkers.tsx
       const result = facilities.map((row, idx) => ({
         id: row["Facility ID"] || `${stateCode}-${idx}`,
@@ -184,7 +1065,7 @@ router.get("/ghgEmissions", async (req, res) => {
         latitude: Number(row["Latitude"]),
         longitude: Number(row["Longitude"]),
       }));
-  
+
       res.json({ ghgEmissions: result });
     } catch (error) {
       console.error(error);
@@ -212,19 +1093,19 @@ const facilityCodes = {
 
 // Facility type IDs whose data is updated from 2024+
 const facilityTypeIDs = [
-    1,  // Hazardous Waste Combustion Facilities 
-    3,  // Municipal Solid Waste Landfills 
-    9,  // Publicly Owned Treatment Works 
-    10, // Federally Owned Treatment Works 
-    16, // Electric Arc Furnaces 
-    21, // Commercial Radioactive Waste Disposal Facilities 
-    22, // Federal Radioactive Waste Disposal Facilities 
-    30, // Industrial Waste Landfills 
-    31, // Sewage Sludge Incinerators 
-    34, // Composting 
-    41, // Sewage Treatment Plants 
-    42, // Cement Kilns 
-    43  // Industrial Solid Waste Incineration Units 
+    1,  // Hazardous Waste Combustion Facilities
+    3,  // Municipal Solid Waste Landfills
+    9,  // Publicly Owned Treatment Works
+    10, // Federally Owned Treatment Works
+    16, // Electric Arc Furnaces
+    21, // Commercial Radioactive Waste Disposal Facilities
+    22, // Federal Radioactive Waste Disposal Facilities
+    30, // Industrial Waste Landfills
+    31, // Sewage Sludge Incinerators
+    34, // Composting
+    41, // Sewage Treatment Plants
+    42, // Cement Kilns
+    43  // Industrial Solid Waste Incineration Units
 ]
 
 const US_STATE_ABBREVIATIONS = [
@@ -235,11 +1116,11 @@ const US_STATE_ABBREVIATIONS = [
     "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
 ];
 
-// Return information on the various waste sites 
+// Return information on the various waste sites
 router.get('/wasteTreatmentDisposalSites', async(req, res) => {
 
-    try { 
-        const allFacilities = []; 
+    try {
+        const allFacilities = [];
 
         /*
         if (!stateCode) {
@@ -330,7 +1211,7 @@ router.get('/coalmines', async(req, res) => {
             "sort[0][column]": "period",
             "sort[0][direction]": "desc",
             api_key: process.env.EIA_API_KEY
-        } 
+        }
     })
 
         // Trim response to only include the requested fields
@@ -346,7 +1227,7 @@ router.get('/coalmines', async(req, res) => {
         }))
 
         res.json(trimResponse)
-        
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message })
@@ -355,10 +1236,10 @@ router.get('/coalmines', async(req, res) => {
 
 router.get('/oilSpills', async (req, res) => {
     try {
-        // Check if we have data is already downloaded 
+        // Check if we have data is already downloaded
         if (!oilSpillsCache) {
             console.log("Downloading and processing oil spills data...");
-            
+
             const url = "https://incidentnews.noaa.gov/raw/incidents.csv";
 
             // Fetch CSV as text
@@ -431,8 +1312,8 @@ router.get('/oilSpills', async (req, res) => {
         const waterSystemsData = response.data;
 
         if (!waterSystemsData || waterSystemsData.length === 0) {
-            return res.status(404).json({ 
-                error: `No active public water systems found${countyName ? ` in ${countyName}, ${stateCode}` : ` in ${stateCode}`}` 
+            return res.status(404).json({
+                error: `No active public water systems found${countyName ? ` in ${countyName}, ${stateCode}` : ` in ${stateCode}`}`
             });
         }
 
@@ -453,7 +1334,7 @@ router.get('/oilSpills', async (req, res) => {
         // Process the data to provide clear safety information
         const processedSystems = Object.values(uniqueFacilities).map(system => {
             let violations = system.sdwis_violation || [];
-            
+
             // Sort violations by date (most recent first)
             violations.sort((a, b) => {
                 const dateA = new Date(a.violation_date || 0);
@@ -469,17 +1350,17 @@ router.get('/oilSpills', async (req, res) => {
             });
 
             // Get the most recent violation date
-            const mostRecentDate = validViolations.length > 0 && validViolations[0].violation_date 
-                ? new Date(validViolations[0].violation_date) 
+            const mostRecentDate = validViolations.length > 0 && validViolations[0].violation_date
+                ? new Date(validViolations[0].violation_date)
                 : null;
-            
+
             // Categorize violations by type
             // Compliance status codes: 'O' = Open/Active violation, 'K' = Known violation, 'R' = Resolved
-            const activeViolations = validViolations.filter(v => 
+            const activeViolations = validViolations.filter(v =>
                 v.compliance_status_code === 'O' || v.compliance_status_code === 'K'
             );
-            
-            const resolvedViolations = validViolations.filter(v => 
+
+            const resolvedViolations = validViolations.filter(v =>
                 v.compliance_status_code === 'R'
             );
 
@@ -494,15 +1375,15 @@ router.get('/oilSpills', async (req, res) => {
             // Determine safety status based on active violations and recent past violations
             let safetyStatus = 'safe';
             let safetyMessage = 'No active violations detected';
-            
+
             if (activeViolations.length > 0) {
                 // Check for health-based violations (more serious)
-                const healthViolations = activeViolations.filter(v => 
-                    v.violation_category_code === 'H' || 
+                const healthViolations = activeViolations.filter(v =>
+                    v.violation_category_code === 'H' ||
                     v.violation_category_code === 'M' ||
                     v.contaminant_code // MCL violations
                 );
-                
+
                 if (healthViolations.length > 0) {
                     safetyStatus = 'unsafe';
                     safetyMessage = `Active health-based violations detected. ${activeViolations.length} total active violation(s)`;
@@ -552,7 +1433,7 @@ router.get('/oilSpills', async (req, res) => {
 
         // Calculate overall area safety summary
         const systemsWithViolations = processedSystems.filter(s => s.safetyStatus !== 'safe');
-        const overallStatus = systemsWithViolations.length === 0 ? 'safe' : 
+        const overallStatus = systemsWithViolations.length === 0 ? 'safe' :
                              processedSystems.some(s => s.safetyStatus === 'unsafe') ? 'unsafe' : 'caution';
 
         res.json({
@@ -571,12 +1452,12 @@ router.get('/oilSpills', async (req, res) => {
     } catch (err) {
         console.error(err);
         if (err.response) {
-            return res.status(err.response.status || 500).json({ 
-                error: `Failed to fetch drinking water data: ${err.response.statusText || err.message}` 
+            return res.status(err.response.status || 500).json({
+                error: `Failed to fetch drinking water data: ${err.response.statusText || err.message}`
             });
         }
         res.status(500).json({ error: err.message || "Failed to fetch drinking water data" });
-    }  
+    }
 })*/
 
 // Source: FEMA National Risk Index, county risk ratings for 18 hazards
@@ -879,7 +1760,7 @@ router.get("/noiseTransportation", async (req, res) => {
   try {
     // cache holds the service metadata and legend
     const data = await getCached("environment:noiseTransportation:v2", NOISE_TTL_MS, async () => {
-      const services = await Promise.all( 
+      const services = await Promise.all(
         NOISE_SERVICES.map(async ({ region, name }) => {
           const base = `${NOISE_SERVICE_ROOT}/${name}/MapServer`;
           const info = (await axios.get(base, { params: { f: "json" } })).data;
@@ -917,5 +1798,246 @@ router.get("/noiseTransportation", async (req, res) => {
   }
 });
 
+// NASA GIBS satellite layers: 
+// tile template, available dates and legend for each requested GIBS identifier Read from NASA's WMTS capabilities (cached 6 h). 
+// Tiles are loaded by browser from gibs.earthdata.nasa.gov, no key
+router.get("/nasaLayers", async (req, res) => {
+  try {
+    const ids = String(req.query.ids ?? "").split(",").map((id) => id.trim()).filter(Boolean);
+    if (!ids.length) return res.status(400).json({ error: "ids query parameter is required" });
+    res.json(await getNasaLayers(ids));
+  } catch (err) {
+    console.error("[environment/nasaLayers]", err.message);
+    res.status(502).json({ error: "Failed to fetch NASA GIBS layer metadata" });
+  }
+});
+
+router.get("/heartDiseaseMortality", async (_req, res) => {
+    try {
+        if (
+            !heartDiseaseMortalityCache ||
+            Date.now() - heartDiseaseMortalityCacheAt > HEART_DISEASE_MORTALITY_CACHE_MS
+        ) {
+            const response = await axios.get(
+                "https://data.cdc.gov/resource/55yu-xksw.json",
+                {
+                    params: {
+                        "$select": "year,locationabbr,locationdesc,data_value,data_value_unit,data_value_type,locationid,y_lat,x_lon,georeference",
+                        "$where": "geographiclevel='County' AND stratification1='Overall' AND stratification2='Overall' AND data_value IS NOT NULL",
+                        "$limit": 50000,
+                    },
+                }
+            );
+
+            if (!Array.isArray(response.data)) {
+                throw new Error("Unexpected CDC API response");
+            }
+
+            heartDiseaseMortalityCache = response.data.filter((row) => {
+                const coordinates = row.georeference?.coordinates;
+                return (
+                    Number.isFinite(Number(row.data_value)) &&
+                    Array.isArray(coordinates) &&
+                    coordinates.length === 2
+                );
+            });
+            heartDiseaseMortalityCacheAt = Date.now();
+        }
+
+        res.json(heartDiseaseMortalityCache);
+    } catch (error) {
+        console.error("[environment/heartDiseaseMortality]", error.message);
+        res.status(502).json({ error: "Failed to fetch heart disease mortality data" });
+    }
+});
+
+let breastCancerIncidenceCache = null;
+let breastCancerIncidenceCacheAt = 0;
+const BREAST_CANCER_INCIDENCE_CACHE_MS = 24 * 60 * 60 * 1000;
+
+router.get("/breastCancerIncidence", async (req, res) => {
+    try {
+        const cacheExpired =
+            Date.now() - breastCancerIncidenceCacheAt >
+            BREAST_CANCER_INCIDENCE_CACHE_MS;
+
+        if (!breastCancerIncidenceCache || cacheExpired) {
+            const response = await axios.get(
+                "https://services.arcgis.com/n902V8mYALGk0qHD/arcgis/rest/services/NCI_State_Breast_Cancer_Incidence_Rates/FeatureServer/0/query",
+                {
+                    params: {
+                        where: "1=1",
+                        outFields:
+                            "STATE_NAME,STATE_ABBR,AllAge_F_AA_Rate,AllAge_F_Lower_CI,AllAge_F_Upper_CI,AllAge_F_Average_Count",
+                        returnGeometry: true,
+                        outSR: 4326,
+                        f: "geojson",
+                    },
+                    timeout: 30000,
+                },
+            );
+
+            if (
+                response.data?.type !== "FeatureCollection" ||
+                !Array.isArray(response.data.features)
+            ) {
+                throw new Error("ArcGIS returned an invalid GeoJSON response");
+            }
+
+            breastCancerIncidenceCache = response.data;
+            breastCancerIncidenceCacheAt = Date.now();
+        }
+
+        res.json(breastCancerIncidenceCache);
+    } catch (err) {
+        console.error("[environment/breastCancerIncidence]", err.message);
+        res.status(502).json({
+            error: "Failed to fetch breast cancer incidence data",
+        });
+    }
+});
+
+let oilDrillingLocationsCache = null;
+let oilDrillingLocationsCacheAt = 0;
+const OIL_DRILLING_LOCATIONS_CACHE_MS = 24 * 60 * 60 * 1000;
+
+router.get("/oilDrillingLocations", async (_req, res) => {
+    try {
+        if (
+            !oilDrillingLocationsCache ||
+            Date.now() - oilDrillingLocationsCacheAt > OIL_DRILLING_LOCATIONS_CACHE_MS
+        ) {
+            const url = "https://gis.boem.gov/server/rest/services/BOEM_BSEE/MMC_Layers/MapServer/1/query";
+            const pageSize = 10000;
+            const features = [];
+            let offset = 0;
+
+            while (true) {
+                const response = await axios.get(url, {
+                    params: {
+                        where: "1=1",
+                        outFields: "OBJECTID,API_NUMBER,OPERATOR,WELL_NAME,SPUD_DATE,TYPE_CODE_DESC,STATUS_DESCRIPTION,DEPTH",
+                        returnGeometry: true,
+                        outSR: 4326,
+                        resultOffset: offset,
+                        resultRecordCount: pageSize,
+                        f: "geojson",
+                    },
+                    timeout: 60000,
+                });
+                const data = response.data;
+
+                if (data.error) {
+                    throw new Error(data.error.message || "BOEM query failed");
+                }
+                if (!Array.isArray(data.features)) {
+                    throw new Error("BOEM returned an unexpected response");
+                }
+
+                features.push(...data.features);
+                const hasMore =
+                    data.exceededTransferLimit === true ||
+                    data.properties?.exceededTransferLimit === true;
+                if (
+                    data.features.length === 0 ||
+                    (!hasMore && data.features.length < pageSize)
+                ) {
+                    break;
+                }
+                offset += data.features.length;
+            }
+
+            oilDrillingLocationsCache = { type: "FeatureCollection", features };
+            oilDrillingLocationsCacheAt = Date.now();
+        }
+
+        res.json(oilDrillingLocationsCache);
+    } catch (error) {
+        console.error("Oil drilling locations route error:", error);
+        res.status(502).json({ error: "Failed to fetch BOEM well locations" });
+    }
+});
+
+// Retreive Dam Data
+router.get("/dams", async (req, res) => {
+    try {
+        const hazard = (req.query.hazard || "all").toString().trim();
+
+        const allowedHazards = ["all", "High", "Significant", "Low"];
+        const selectedHazard = allowedHazards.includes(hazard) ? hazard : "all";
+
+        const yearRaw = (req.query.year || "all").toString().trim();
+        const parsedYear = Number.parseInt(yearRaw, 10);
+
+        const selectedYear =
+            yearRaw === "all" || !Number.isInteger(parsedYear)
+                ? "all"
+                : parsedYear;
+
+        let where =
+            selectedHazard === "all"
+                ? "HAZARD_POTENTIAL IN ('High','Significant','Low')"
+                : `HAZARD_POTENTIAL='${selectedHazard}'`;
+
+        if (selectedYear !== "all") {
+            where += ` AND YEAR_COMPLETED=${selectedYear}`;
+        }
+
+        const response = await axios.get(
+            "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query",
+            {
+                params: {
+                    where,
+                    outFields:
+                        "NIDID,NAME,LATITUDE,LONGITUDE,STATE,CITY,RIVER_OR_STREAM,PRIMARY_PURPOSE,DAM_HEIGHT,YEAR_COMPLETED,HAZARD_POTENTIAL,CONDITION_ASSESSMENT,OPERATIONAL_STATUS",
+                    returnGeometry: true,
+                    f: "geojson",
+                    resultRecordCount: 2000,
+                },
+            }
+        );
+
+        const damData = (response.data.features || [])
+            .map((feature) => {
+                const props = feature.properties || {};
+                const coords = feature.geometry?.coordinates || [];
+
+                return {
+                    id: props.NIDID,
+                    name: props.NAME,
+                    latitude: props.LATITUDE ?? coords[1],
+                    longitude: props.LONGITUDE ?? coords[0],
+                    state: props.STATE,
+                    city: props.CITY,
+                    river: props.RIVER_OR_STREAM,
+                    primaryPurpose: props.PRIMARY_PURPOSE,
+                    damHeight: props.DAM_HEIGHT,
+                    yearCompleted: props.YEAR_COMPLETED,
+                    hazardPotential: props.HAZARD_POTENTIAL,
+                    conditionAssessment: props.CONDITION_ASSESSMENT,
+                    operationalStatus: props.OPERATIONAL_STATUS,
+                };
+            })
+            .filter(
+                (item) =>
+                    Number.isFinite(item.latitude) &&
+                    Number.isFinite(item.longitude)
+            );
+
+        res.json({
+            description: "USACE National Inventory of Dams",
+            hazard: selectedHazard,
+            year: selectedYear,
+            count: damData.length,
+            data: damData,
+        });
+    } catch (error) {
+        console.error("Dam API error:", error.message);
+
+        res.status(500).json({
+            error: "Failed to fetch dam data",
+        });
+    }
+});
 
 export default router;

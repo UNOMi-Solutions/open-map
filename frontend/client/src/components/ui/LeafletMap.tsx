@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import BreastCancerIncidenceChoropleth from "./BreastCancerIncidenceChoropleth";
 import {
   MapContainer,
   GeoJSON,
@@ -25,7 +26,7 @@ import type { Topology } from "topojson-specification";
 import { feature as topojsonFeature } from "topojson-client";
 import { patchLeafletIcons } from "@/lib/leaflet-icons";
 import { cachedApiGet, CACHE_TTL } from "@/lib/apiCache";
-import type { TimelineDateRange } from "@/lib/timeline";
+import type { TimelineDatasetMeta, TimelineDateRange } from "@/lib/timeline";
 import { CENSUS_AGE_GROUPS } from "@/lib/census-age-groups";
 import {
   getHealthChoroplethColors,
@@ -45,27 +46,61 @@ import HomicideMarkers from "./HomicideMarkers";
 
 // Oil spill incidents data
 import OilSpillMarkers from "./OilSpillMarkers";
+import OilDrillingMarkers from "./OilDrillingMarkers";
 import MassShootingMarkers from "./MassShootingMarkers";
-
+import HeartDiseaseMortalityMarkers from "./HeartDiseaseMortalityMarkers";
 // Air quality data
 import AirQualityMarkers from "./AirQualityMarkers";
 
+//Groundwater levels data
+import PovertyRateLayer from "./PovertyRateLayer";
+import MedianIncomeLayer from "./MedianIncomeLayer";
+import GroundwaterMarkers from "./GroundwaterMarkers";
+
+//Invasive Species data
+import InvasiveSpeciesMarkers from "./InvasiveSpeciesMarkers";
 // Noise pollution data
 import NoisePollutionLayer from "./NoisePollutionLayer";
+
+import DamMarkers from "./DamMarkers";
 
 // Rural access to intercity transportation (BTS)
 import RuralAccessChoropleth from "./RuralAccessChoropleth";
 
+// NASA satellite layers (GIBS) – one component for every NASA layer
+import NasaLayers from "./NasaLayers";
+import MapRail from "./MapRail";
+
 // Waste treatment/disposal sites data
 import WasteTreatmentDisposalMarkers from "./WasteTreatmentDisposalMarkers";
 
+//Invasive Plants data
+import InvasivePlantMarkers from "./InvasivePlantMarkers";
+
+//Invasive Insects data
+import InvasiveInsectMarkers from "./InvasiveInsectMarkers";
+
+//Invasive Mammal data
+import InvasiveMammalMarkers from "./InvasiveMammalMarkers";
+
+//Invasive Reptile data
+import InvasiveReptileMarkers from "./InvasiveReptileMarkers";
+
+//Invasive Bird data
+import InvasiveBirdMarkers from "./InvasiveBirdMarkers";
+
+//Invasive Amphibians data
+import InvasiveAmphibianMarkers from "./InvasiveAmphibianMarkers";
+
 // Police Killing Data
 import PoliceKillings from "./PoliceKillings";
+import PoliceShootings from "./PoliceShootings";
 
 // State markers with arrest data
 import ArrestMarkers from "./ArrestMarkers";
 import MissingPersons from "./MissingPersons";
 import ConsentAge from "./ConsentAge";
+import ArsonMap from "./ArsonMap";
 
 // GHG emissions facilities data
 import GhgEmissionsMarkers from "./GhgEmissionsMarkers";
@@ -139,7 +174,7 @@ function isState(
 }
 
 /*This object is utilized by getStateCode function.  When a user clicks on a state
-on the map, the function gets the state code so the backend route can fetch the 
+on the map, the function gets the state code so the backend route can fetch the
 corresponding data for that state*/
 const STATE_NAME_TO_CODE: Record<string, string> = {
   Alabama: "AL", Alaska: "AK", Arizona: "AZ", Arkansas: "AR", California: "CA", Colorado: "CO",
@@ -246,6 +281,27 @@ const ACS_ECONOMIC_FIRST_YEAR = 2009;
 const ACS_ECONOMIC_LATEST_YEAR = 2024;
 const UNEMPLOYMENT_FIRST_YEAR = 1990;
 
+/** Jan 1 of each given year, as UTC timestamps (annual datasets on the timeline). */
+const yearStarts = (years: number[]) => [...years].sort((a, b) => a - b).map((y) => Date.UTC(y, 0, 1));
+const ACS_YEAR_DATES = yearStarts(
+  Array.from({ length: ACS_ECONOMIC_LATEST_YEAR - ACS_ECONOMIC_FIRST_YEAR + 1 }, (_, i) => ACS_ECONOMIC_FIRST_YEAR + i),
+);
+/** The first of every month from `start` through `end` (monthly datasets on the timeline). */
+function monthStarts(start: number, end: number) {
+  const out: number[] = [];
+  const d = new Date(start);
+  for (let t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1); t <= end; ) {
+    out.push(t);
+    const next = new Date(t);
+    t = Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 1);
+  }
+  return out;
+}
+/** Same object until start or end changes, so effects that depend on it do not refetch. */
+function useStableRange(range: TimelineDateRange | null) {
+  return useMemo(() => range, [range?.start, range?.end]);
+}
+
 /** Approximate US national totals (2020 Census) for choropleth summary popup */
 const US_TOTAL_POPULATION = 331_900_000;
 const US_NATIONAL_CHOROPLETH_TOTALS: Partial<
@@ -322,14 +378,14 @@ function geometryContainsPoint(
   point: [number, number]
 ): boolean {
   if (!geometry) return false;
-  
+
   // Turf expects [lng, lat] format for points
   const turfPoint = turf.point([point[0], point[1]]);
-  
+
   try {
     // Convert geometry to Turf feature
     const feature = turf.feature(geometry);
-    
+
     // Use Turf's booleanPointInPolygon for accurate point-in-polygon testing
     // Cast to any to handle all geometry types (Turf handles this internally)
     return turf.booleanPointInPolygon(turfPoint, feature as any, {
@@ -384,6 +440,7 @@ export default function LeafletMap({
   showChoropleth = true,
 
   showPoliceKillingData = false,
+  showPoliceShootings = false,
 
   showMurderData = false,
   murderCategory = "victim",
@@ -397,16 +454,40 @@ export default function LeafletMap({
   showMassShootings = false,
 
   showConsentAgeData = false,
+  showArsonData = false,
   showAlprCameras = false,
   alprFlockOnly = false,
 
   /*toggle environmental information */
-  showOilSpills = false,  
+  showOilSpills = false,
+  showOilDrillingLocations = false,
+  showHeartDiseaseMortality = false,
   showAirQuality = false,
+  showDams = false,
+  selectedDamHazard = "all",
+  selectedDamYear = "all",
+  showPovertyRate = false,
+  socialPovertyYear = 2024,
+  showMedianIncome = false,
+  medianIncomeYear = 2024,
+  showGroundwaterLevels = false,
+  selectedGroundwaterYear = "all",
+  showInvasiveSpecies = false,
+  showInvasivePlants = false,
+  showInvasiveInsects = false,
+  showInvasiveMammals = false,
+  showInvasiveReptiles = false,
+  showInvasiveBirds = false,
+  showInvasiveAmphibians = false,
+  selectedInvasiveYear = "all",
   showNoisePollution = false,
   showRuralAccess = false,
+  showBreastCancerIncidence = false,
   ruralAccessYear = 2021,
   onRuralAccessYearChange,
+  nasaLayerIds = [],
+  datasetRanges,
+  datasetColors,
   showGHGEmissions = false,
   showWasteTreatmentDisposal = false,
   showEarthquakes = false,
@@ -443,6 +524,7 @@ export default function LeafletMap({
   timelineRange = null,
   onDateRangeChange,
   timelineVisible = false,
+  rightRailAd,
 }: {
   loading?: boolean;
   // Required: marker children call this unconditionally, and every code path
@@ -458,7 +540,8 @@ export default function LeafletMap({
   showChoropleth?: boolean;
 
   showPoliceKillingData?: boolean;
-  
+  showPoliceShootings?: boolean;
+
   showMurderData?: boolean;
   murderCategory?: string;
   murderAttribute?: string;
@@ -467,22 +550,50 @@ export default function LeafletMap({
   showArrestData?: boolean;
 
   showMissingPersonsData?: boolean;
+  missingPersonQ?: string;
+  missingPersonYear?: any;
 
   /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
   showMassShootings?: boolean;
-
   showConsentAgeData?: boolean;
+  showArsonData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
   showAlprCameras?: boolean;
   alprFlockOnly?: boolean;
   showOilSpills?: boolean;
+  showOilDrillingLocations?: boolean;
+  showHeartDiseaseMortality?: boolean;
   showAirQuality?: boolean;
+  showDams?: boolean;
+  selectedDamHazard?: string;
+  selectedDamYear?: string;
+  showPovertyRate?: boolean;
+  socialPovertyYear?: number;
+  showMedianIncome?: boolean;
+  medianIncomeYear?: number;
+  showGroundwaterLevels?: boolean;
+  selectedGroundwaterYear: string;
+  showInvasiveSpecies?: boolean;
+  showInvasivePlants?: boolean;
+  showInvasiveInsects?: boolean;
+  showInvasiveMammals?: boolean;
+  showInvasiveReptiles?: boolean;
+  showInvasiveBirds?: boolean;
+  showInvasiveAmphibians?: boolean;
+  selectedInvasiveYear?: string;
   showGHGEmissions?: boolean;
   showNoisePollution?: boolean;
-  showRuralAccess?: boolean;  
+  showRuralAccess?: boolean;
+  showBreastCancerIncidence?: boolean;
   ruralAccessYear?: number;
   onRuralAccessYearChange?: (year: number) => void;
-  
+  /** Sidebar ids of the selected NASA satellite layers ("nasa:<id>") */
+  nasaLayerIds?: string[];
+  /** Day picked on the timeline for each single-date dataset (economics, NASA), keyed by dataset id */
+  datasetRanges?: Record<string, TimelineDateRange>;
+  /** Timeline colour of each single-date dataset, used to outline its legend */
+  datasetColors?: Record<string, string>;
+
   showWasteTreatmentDisposal?: boolean;
   showEarthquakes?: boolean;
   earthquakeMinMagnitude?: number | null;
@@ -523,8 +634,10 @@ export default function LeafletMap({
   showSplcHateMap?: boolean;
 
   timelineRange?: TimelineDateRange | null;
-  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null) => void;
+  onDateRangeChange: (datasetId: string, range: TimelineDateRange | null, meta?: TimelineDatasetMeta) => void;
   timelineVisible?: boolean;
+  /** Sponsored unit shown under the legends in the map's right column */
+  rightRailAd?: ReactNode;
 }) {
   const politicalDistrictsActive =
     politicalLayerIds.includes("red-blue-district") ||
@@ -587,6 +700,8 @@ export default function LeafletMap({
     Record<string, number> | null
   >(null);
   const [incomeDataYear, setIncomeDataYear] = useState<number | null>(null);
+  /** Newest month BLS actually has (data lags a couple of months); null until the first response */
+  const [unemploymentLatestMonth, setUnemploymentLatestMonth] = useState<number | null>(null);
   const [highIncomeHouseholdValueByGeoid, setHighIncomeHouseholdValueByGeoid] = useState<
     Record<string, number> | null
   >(null);
@@ -615,10 +730,12 @@ export default function LeafletMap({
   const [zoom, setZoom] = useState<number | null>(null);
 
   const mapSectionRef = useRef<HTMLDivElement>(null);
-  const markerTimelineRange =
-    showIncome || showHighIncomeHouseholds || showUnemployment || showPoverty
-    ? null
-    : timelineRange;
+  // Span datasets use the shared range; each economic layer uses its own day from the timeline
+  const markerTimelineRange = timelineRange;
+  const incomeRange = useStableRange(datasetRanges?.["economics-income"] ?? null);
+  const highIncomeRange = useStableRange(datasetRanges?.["economics-high-income"] ?? null);
+  const unemploymentRange = useStableRange(datasetRanges?.["economics-unemployment"] ?? null);
+  const povertyRange = useStableRange(datasetRanges?.["economics-poverty"] ?? null);
 
   // Bradyn, again this line is breaking my pins
   // Please let me know if it is required but I will comment
@@ -964,13 +1081,15 @@ export default function LeafletMap({
     onDateRangeChange("economics-income", {
       start: Date.UTC(ACS_ECONOMIC_FIRST_YEAR, 0, 1),
       end: Date.UTC(ACS_ECONOMIC_LATEST_YEAR, 11, 31),
-    });
-    const timelineYear = timelineRange
-      ? new Date(timelineRange.end).getUTCFullYear()
+    }, { label: "Median Household Income", single: true, availableDates: ACS_YEAR_DATES });
+    // With a timeline, wait one render for this layer's day (saved or newest) before fetching
+    if (datasetRanges && !incomeRange) return;
+    const timelineYear = incomeRange
+      ? new Date(incomeRange.end).getUTCFullYear()
       : ACS_ECONOMIC_LATEST_YEAR;
     const year = Math.min(timelineYear, ACS_ECONOMIC_LATEST_YEAR);
-    const timelineStartYear = timelineRange
-      ? new Date(timelineRange.start).getUTCFullYear()
+    const timelineStartYear = incomeRange
+      ? new Date(incomeRange.start).getUTCFullYear()
       : ACS_ECONOMIC_FIRST_YEAR;
     if (year < ACS_ECONOMIC_FIRST_YEAR || timelineStartYear > year) {
       setIncomeValueByGeoid(null);
@@ -1013,7 +1132,7 @@ export default function LeafletMap({
       cancelled = true;
       setLoading(false);
     };
-  }, [showIncome, timelineRange, onDateRangeChange]);
+  }, [showIncome, incomeRange, onDateRangeChange]);
 
   /** ACS share of households earning $200,000 or more for the selected year */
   useEffect(() => {
@@ -1026,13 +1145,15 @@ export default function LeafletMap({
     onDateRangeChange("economics-high-income", {
       start: Date.UTC(ACS_ECONOMIC_FIRST_YEAR, 0, 1),
       end: Date.UTC(ACS_ECONOMIC_LATEST_YEAR, 11, 31),
-    });
-    const timelineYear = timelineRange
-      ? new Date(timelineRange.end).getUTCFullYear()
+    }, { label: "High-Income Households", single: true, availableDates: ACS_YEAR_DATES });
+    // With a timeline, wait one render for this layer's day (saved or newest) before fetching
+    if (datasetRanges && !highIncomeRange) return;
+    const timelineYear = highIncomeRange
+      ? new Date(highIncomeRange.end).getUTCFullYear()
       : ACS_ECONOMIC_LATEST_YEAR;
     const year = Math.min(timelineYear, ACS_ECONOMIC_LATEST_YEAR);
-    const timelineStartYear = timelineRange
-      ? new Date(timelineRange.start).getUTCFullYear()
+    const timelineStartYear = highIncomeRange
+      ? new Date(highIncomeRange.start).getUTCFullYear()
       : ACS_ECONOMIC_FIRST_YEAR;
     if (year < ACS_ECONOMIC_FIRST_YEAR || timelineStartYear > year) {
       setHighIncomeHouseholdValueByGeoid(null);
@@ -1075,7 +1196,7 @@ export default function LeafletMap({
       cancelled = true;
       setLoading(false);
     };
-  }, [showHighIncomeHouseholds, timelineRange, onDateRangeChange]);
+  }, [showHighIncomeHouseholds, highIncomeRange, onDateRangeChange]);
 
   /** BLS Local Area Unemployment Statistics for the selected timeline month */
   useEffect(() => {
@@ -1086,13 +1207,17 @@ export default function LeafletMap({
       return;
     }
     const now = new Date();
-    const latestMonth = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1);
+    const currentMonth = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1);
+    // Offer months up to the newest one with data once known, so the timeline matches the map
+    const latestMonth = unemploymentLatestMonth ?? currentMonth;
     onDateRangeChange("economics-unemployment", {
       start: Date.UTC(UNEMPLOYMENT_FIRST_YEAR, 0, 1),
       end: latestMonth,
-    });
+    }, { label: "Unemployment", single: true, availableDates: monthStarts(Date.UTC(UNEMPLOYMENT_FIRST_YEAR, 0, 1), latestMonth) });
+    // With a timeline, wait one render for this layer's day (saved or newest) before fetching
+    if (datasetRanges && !unemploymentRange) return;
     const selectedDate = new Date(
-      Math.min(timelineRange?.end ?? now.getTime(), now.getTime()),
+      Math.min(unemploymentRange?.end ?? now.getTime(), now.getTime()),
     );
     const selectedYear = selectedDate.getUTCFullYear();
     if (selectedYear != null && selectedYear < UNEMPLOYMENT_FIRST_YEAR) {
@@ -1125,8 +1250,13 @@ export default function LeafletMap({
         if (cancelled) return;
         const availableMonths = response.months?.filter((month) => month.counties.length);
         const selectedPeriod = availableMonths?.[availableMonths.length - 1];
-        if (selectedPeriod && timelineRange) {
-          const rangeStart = new Date(timelineRange.start);
+        // Asked up to the current month: the newest month returned is the newest that exists
+        if (selectedPeriod && selectedMonth >= `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`) {
+          setUnemploymentLatestMonth(Date.UTC(selectedPeriod.year, Number(selectedPeriod.period.slice(1)) - 1, 1));
+        }
+        // A single picked day shows the latest month on or before it; a span keeps months inside it
+        if (selectedPeriod && unemploymentRange && unemploymentRange.start !== unemploymentRange.end) {
+          const rangeStart = new Date(unemploymentRange.start);
           const rangeStartMonth = rangeStart.getUTCFullYear() * 100
             + rangeStart.getUTCMonth() + 1;
           const monthNumber = Number(selectedPeriod.period.slice(1));
@@ -1169,7 +1299,7 @@ export default function LeafletMap({
       cancelled = true;
       setLoading(false);
     };
-  }, [showUnemployment, timelineRange, onDateRangeChange]);
+  }, [showUnemployment, unemploymentRange, unemploymentLatestMonth, onDateRangeChange]);
 
   /** Latest available SAIPE poverty rate by county GEOID */
   useEffect(() => {
@@ -1183,13 +1313,14 @@ export default function LeafletMap({
       onDateRangeChange("economics-poverty", {
         start: Date.UTC(Math.min(...povertyAvailableYears), 0, 1),
         end: Date.UTC(Math.max(...povertyAvailableYears), 11, 31),
-      });
+      }, { label: "Poverty", single: true, availableDates: yearStarts(povertyAvailableYears) });
     }
-    const timelineYear = timelineRange
-      ? new Date(timelineRange.end).getUTCFullYear()
+    if (datasetRanges && povertyAvailableYears.length && !povertyRange && povertyYear == null) return;
+    const timelineYear = povertyRange
+      ? new Date(povertyRange.end).getUTCFullYear()
       : null;
-    const timelineStartYear = timelineRange
-      ? new Date(timelineRange.start).getUTCFullYear()
+    const timelineStartYear = povertyRange
+      ? new Date(povertyRange.start).getUTCFullYear()
       : null;
     const timelinePovertyYear = timelineYear == null
       ? null
@@ -1237,7 +1368,7 @@ export default function LeafletMap({
         onDateRangeChange("economics-poverty", {
           start: Date.UTC(Math.min(...response.availableYears), 0, 1),
           end: Date.UTC(Math.max(...response.availableYears), 11, 31),
-        });
+        }, { label: "Poverty", single: true, availableDates: yearStarts(response.availableYears) });
         onPovertyDataMeta?.(response.latestYear, response.availableYears);
       })
       .catch((error) => {
@@ -1258,7 +1389,7 @@ export default function LeafletMap({
     showPoverty,
     povertyYear,
     povertyAvailableYears,
-    timelineRange,
+    povertyRange,
     onPovertyDataMeta,
     onDateRangeChange,
   ]);
@@ -1872,7 +2003,11 @@ export default function LeafletMap({
   useEffect(() => {
     const el = choroplethLegendElRef.current;
     if (!el) return;
-    if (!choroplethVisible || !choroplethLegendItems.length) {
+    if (
+      !choroplethVisible ||
+      !choroplethLegendItems.length ||
+      showBreastCancerIncidence
+    ) {
       el.style.display = "none";
       return;
     }
@@ -2006,6 +2141,7 @@ export default function LeafletMap({
     unemploymentPeriod,
     activeChoroplethColors,
     showSplcHateMap,
+    showBreastCancerIncidence,
   ]);
 
   /** base map threshold for zoom/clickl */
@@ -2100,7 +2236,7 @@ export default function LeafletMap({
       });
     });
   };
-  
+
   return (
     <div
       ref={mapSectionRef}
@@ -2211,6 +2347,12 @@ export default function LeafletMap({
             onDateRangeChange={onDateRangeChange}
           />
         )}
+        {showOilDrillingLocations && (
+          <OilDrillingMarkers setLoading={setLoading} />
+        )}
+        {showHeartDiseaseMortality && (
+          <HeartDiseaseMortalityMarkers setLoading={setLoading} />
+       )}
 
         {/* FEMA National Risk Index – county risk ratings, overall or for one hazard */}
         {showNationalRiskIndex && (
@@ -2298,8 +2440,28 @@ export default function LeafletMap({
           />
         )}
 
+        {/* Dams */}
+        {showDams && (
+          <DamMarkers
+            setLoading={setLoading}
+            selectedHazard={selectedDamHazard}
+            selectedYear={selectedDamYear}
+          />
+        )}
+
         {/* Noise pollution - loads image tile map for selected area */}
         {showNoisePollution && <NoisePollutionLayer/>}
+
+        {/* NASA satellite layers – raster tiles straight from NASA GIBS */}
+        {nasaLayerIds.length > 0 && (
+          <NasaLayers
+            layerIds={nasaLayerIds}
+            dateRanges={datasetRanges}
+            colors={datasetColors}
+            onDateRangeChange={onDateRangeChange}
+            setLoading={setLoading}
+          />
+        )}
 
         {/* Rural access to intercity transportation – county choropleth */}
         {showRuralAccess && (
@@ -2308,11 +2470,84 @@ export default function LeafletMap({
             onYearChange={onRuralAccessYearChange}
             setLoading={setLoading}
           />
-        )}        
-        
+        )}
+        {showBreastCancerIncidence && (
+        <BreastCancerIncidenceChoropleth />
+        )}
         {/* Waste treatment/disposal sites – fetches only for the state selected */}
         {showWasteTreatmentDisposal && (
           <WasteTreatmentDisposalMarkers selectedStateCode={clickedStateCode} setLoading={setLoading} />
+        )}
+
+        {/* Social: Poverty Rate */}
+        {showPovertyRate && (
+          <PovertyRateLayer
+            year={socialPovertyYear}
+            setLoading={setLoading}
+          />
+        )}
+
+        {/* Social: Median Household Income */}
+        {showMedianIncome && (
+          <MedianIncomeLayer
+            year={medianIncomeYear}
+            setLoading={setLoading}
+          />
+        )}
+
+        {/* Groundwater levels */}
+        {showGroundwaterLevels && (
+          <GroundwaterMarkers
+            setLoading={setLoading}
+            selectedYear={selectedGroundwaterYear}
+          />
+        )}
+
+        {/* Invasive species */}
+        {showInvasiveSpecies && (
+          <InvasiveSpeciesMarkers setLoading={setLoading} selectedYear={selectedInvasiveYear}/>
+        )}
+
+        {showInvasivePlants && (
+          <InvasivePlantMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveInsects && (
+          <InvasiveInsectMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveMammals && (
+          <InvasiveMammalMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveReptiles && (
+          <InvasiveReptileMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveBirds && (
+          <InvasiveBirdMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
+        )}
+
+        {showInvasiveAmphibians && (
+          <InvasiveAmphibianMarkers
+            setLoading={setLoading}
+            selectedYear={selectedInvasiveYear}
+          />
         )}
 
         {/* GHG emissions – shown when GHG Emissions is selected in sidebar */}
@@ -2345,6 +2580,7 @@ export default function LeafletMap({
           timelineRange={markerTimelineRange}
           onDateRangeChange={onDateRangeChange}
         />
+        <PoliceShootings show={showPoliceShootings} setLoading={setLoading} />
 
         {showAlprCameras && (
           <AlprCameraMarkers flockOnly={alprFlockOnly} setLoading={setLoading} />
@@ -2353,7 +2589,7 @@ export default function LeafletMap({
         {/* TESTING - State markers with arrest data */}
         <ArrestMarkers arrestCategory={arrestCategory} showArrestData={showArrestData}></ArrestMarkers>
 
-        <MissingPersons 
+        <MissingPersons
           showMissingPersonsData={showMissingPersonsData}
           timelineRange={markerTimelineRange}
           onDateRangeChange={onDateRangeChange}
@@ -2368,8 +2604,11 @@ export default function LeafletMap({
         )}
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
+        {showArsonData && <ArsonMap arrestCategory={arrestCategory} />}
 
         <ZoomControl position="topright" />
+        {/* right column under the zoom buttons: legends, then the sponsored unit */}
+        <MapRail ad={rightRailAd} />
       </MapContainer>
 
       {/* Boxes made for Hawaii and Alaska in bottom left corner - locked to map container */}

@@ -173,6 +173,7 @@ All data routes require an `x-api-key` header matching `API_DEV_KEY`.
 | `GET /api/v1/crime/arrestsByState` | Arrest data by state and offense |
 | `GET /api/v1/crime/missingPersons` | NamUs open missing persons cases (`npm run seed:missing-persons` refreshes the bundled snapshot) |
 | `GET /api/v1/environment/*` | Environmental data (disasters, emissions, air quality) |
+| `GET /api/v1/environment/nasaLayers?ids=...` | NASA GIBS satellite layer metadata (tile template, available dates, legend) for the given GIBS identifiers |
 | `GET /api/v1/lawEnforcement/*` | Law enforcement statistics |
 | `GET /api/v1/census/*` | Census data |
 | `GET /api/v1/economics/*` | Economic data |
@@ -251,3 +252,5 @@ Auth routes (no API key needed):
 - **MongoDB Atlas** network access is set to `0.0.0.0/0` because Cloud Run uses dynamic IPs. This is intentional.
 - **API keys** should be rotated periodically. Priority: Stripe, OpenAI, MongoDB password, Mailchimp.
 - The `frontend/server/` directory is legacy code from the original Replit setup and is not used in production. Do not delete it without auditing imports first.
+
+---
