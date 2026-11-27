@@ -1133,6 +1133,22 @@ export const NavigationMenuSection = ({
                   Billionaires
                 </label>
               </div>
+              <div className="mt-1.5 flex items-center pb-2">
+                <Checkbox
+                  id="economics-sp500"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={selectedLayers.includes("sp500")}
+                  onCheckedChange={(checked) =>
+                    onLayerToggle?.("sp500", checked === true)
+                  }
+                />
+                <label
+                  htmlFor="economics-sp500"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                >
+                  S&amp;P 500 Companies
+                </label>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>

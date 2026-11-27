@@ -641,13 +641,14 @@ export default function MainPage() {
       ? c.politicalLayerIds
       : [];
     const savedLayerIds = Array.isArray(c.selectedLayers) ? c.selectedLayers : [];
+    const migratedEconomicLayerIds = [...savedLayerIds];
+    for (const id of ["billionaires", "sp500"]) {
+      if (savedPoliticalLayerIds.includes(id) && !migratedEconomicLayerIds.includes(id)) {
+        migratedEconomicLayerIds.push(id);
+      }
+    }
     setSelectedLayers(
-      migrateIncidentLayers(
-        savedPoliticalLayerIds.includes("billionaires") &&
-          !savedLayerIds.includes("billionaires")
-          ? [...savedLayerIds, "billionaires"]
-          : savedLayerIds
-      )
+      migrateIncidentLayers(migratedEconomicLayerIds)
     );
     setChoroplethMetric(c.choroplethMetric ?? "pct_white");
     setShowChoropleth(!!c.showChoropleth);
@@ -664,7 +665,9 @@ export default function MainPage() {
     setShowMissingPersonsData(!!c.showMissingPersonsData);
     setShowConsentAgeData(!!c.showConsentAgeData);
     setPoliticalLayerIds(
-      savedPoliticalLayerIds.filter((id: string) => id !== "billionaires")
+      savedPoliticalLayerIds.filter(
+        (id: string) => id !== "billionaires" && id !== "sp500"
+      )
     );
     setHouseDistrictPartyMode(c.houseDistrictPartyMode ?? "both");
     setHealthMetricId(c.healthMetricId ?? null);
@@ -1100,6 +1103,7 @@ export default function MainPage() {
                   houseDistrictPartyMode={houseDistrictPartyMode}
                   healthMetricId={healthMetricId}
                   showBillionaires={selectedLayers.includes("billionaires")}
+                  showSP500={selectedLayers.includes("sp500")}
                   showIncome={selectedLayers.includes("income")}
                   showHighIncomeHouseholds={selectedLayers.includes("high-income-households")}
                   showUnemployment={selectedLayers.includes("unemployment")}
