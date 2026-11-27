@@ -249,7 +249,10 @@ const offenseCodes = {
   "230": "Weapons: Carrying, Possessing, Etc."
 };
 
-async function respondWithArrests(req, res, endpoint, fixedOffenseCode = null) {
+// Get general arrest data for all states
+// Takes in year as optional parameter, will output current year by default
+// Takes in offenseCode as optional parameter, will output all offenses if blank or invalid
+router.get('/arrestsByState', async (req, res) => {
     if (!hasValidFbiKey()) {
         return res.status(503).json({
             success: false,
@@ -267,7 +270,7 @@ async function respondWithArrests(req, res, endpoint, fixedOffenseCode = null) {
         });
     }
 
-    let offenseCode = fixedOffenseCode || req.query.offenseCode || "all";
+    let offenseCode = req.query.offenseCode || "all";
     if (offenseCodes[offenseCode] == undefined) {
         offenseCode = "all";
     }
@@ -288,7 +291,7 @@ async function respondWithArrests(req, res, endpoint, fixedOffenseCode = null) {
         res.json({
             success: true,
             source: "FBI Crime Data API",
-            endpoint,
+            endpoint: "arrestsByState",
             year,
             state: requestedState || "all",
             offenseCode,
@@ -296,19 +299,9 @@ async function respondWithArrests(req, res, endpoint, fixedOffenseCode = null) {
             data: arrestsJSON,
         });
     } catch (error) {
-        handleFbiRouteError(res, error, endpoint);
+        handleFbiRouteError(res, error, "arrestsByState");
     }
-}
-
-// Get arrest data by state, year, and optional offense code.
-router.get('/arrestsByState', (req, res) =>
-    respondWithArrests(req, res, "arrestsByState"),
-);
-
-// Get arson arrest data by state and year (FBI offense code 110).
-router.get('/arsonByState', (req, res) =>
-    respondWithArrests(req, res, "arsonByState", "110"),
-);
+});
 
 // Get open US missing persons cases
 // Taken from NamUs: https://www.namus.gov/MissingPersons/Search
