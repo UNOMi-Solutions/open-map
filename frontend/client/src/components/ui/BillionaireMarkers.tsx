@@ -85,7 +85,7 @@ type BillionaireProfile = {
 
 type BillionairesResponse = {
   count: number;
-  profiles: BillionaireProfile[];
+  profiles: Array<BillionaireProfile | null>;
 };
 
 function formatList(values?: string[]) {
@@ -232,7 +232,13 @@ export default function BillionaireMarkers({ setLoading }: BillionaireMarkersPro
         if (!Array.isArray(data.profiles)) {
           throw new Error("Unexpected response while loading billionaire profiles");
         }
-        if (!cancelled) setProfiles(data.profiles);
+        if (!cancelled) {
+          setProfiles(
+            data.profiles.filter(
+              (profile): profile is BillionaireProfile => profile != null,
+            ),
+          );
+        }
       })
       .catch((error: unknown) => {
         console.error(
