@@ -249,10 +249,7 @@ const offenseCodes = {
   "230": "Weapons: Carrying, Possessing, Etc."
 };
 
-// Get general arrest data for all states
-// Takes in year as optional parameter, will output current year by default
-// Takes in offenseCode as optional parameter, will output all offenses if blank or invalid
-router.get('/arrestsByState', async (req, res) => {
+async function respondWithArrests(req, res, endpoint, fixedOffenseCode = null) {
     if (!hasValidFbiKey()) {
         return res.status(503).json({
             success: false,
@@ -270,7 +267,7 @@ router.get('/arrestsByState', async (req, res) => {
         });
     }
 
-    let offenseCode = req.query.offenseCode || "all";
+    let offenseCode = fixedOffenseCode || req.query.offenseCode || "all";
     if (offenseCodes[offenseCode] == undefined) {
         offenseCode = "all";
     }
@@ -291,7 +288,7 @@ router.get('/arrestsByState', async (req, res) => {
         res.json({
             success: true,
             source: "FBI Crime Data API",
-            endpoint: "arrestsByState",
+            endpoint,
             year,
             state: requestedState || "all",
             offenseCode,
@@ -299,9 +296,25 @@ router.get('/arrestsByState', async (req, res) => {
             data: arrestsJSON,
         });
     } catch (error) {
-        handleFbiRouteError(res, error, "arrestsByState");
+        handleFbiRouteError(res, error, endpoint);
     }
-});
+}
+
+// Get arrest data by state, year, and optional offense code.
+router.get('/arrestsByState', (req, res) =>
+    respondWithArrests(req, res, "arrestsByState"),
+);
+
+// Get arson arrest data by state and year (FBI offense code 110).
+router.get('/arsonByState', (req, res, next) => {
+    // This client expects JSON, so avoid Express returning a body-less 304 for cached validators.
+    res.set("Cache-Control", "no-store");
+    delete req.headers["if-none-match"];
+    delete req.headers["if-modified-since"];
+    next();
+}, (req, res) =>
+    respondWithArrests(req, res, "arsonByState", "110"),
+);
 
 // Get open US missing persons cases
 // Taken from NamUs: https://www.namus.gov/MissingPersons/Search

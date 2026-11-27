@@ -100,6 +100,7 @@ import PoliceShootings from "./PoliceShootings";
 import ArrestMarkers from "./ArrestMarkers";
 import MissingPersons from "./MissingPersons";
 import ConsentAge from "./ConsentAge";
+import ArsonMap from "./ArsonMap";
 
 // GHG emissions facilities data
 import GhgEmissionsMarkers from "./GhgEmissionsMarkers";
@@ -451,6 +452,7 @@ export default function LeafletMap({
   showMassShootings = false,
 
   showConsentAgeData = false,
+  showArsonData = false,
   showAlprCameras = false,
   alprFlockOnly = false,
 
@@ -552,6 +554,7 @@ export default function LeafletMap({
   /** Gun Violence Archive mass shootings, via The Trace's Data Hub */
   showMassShootings?: boolean;
   showConsentAgeData?: boolean;
+  showArsonData?: boolean;
   /** OpenStreetMap ALPR cameras, including Flock Safety */
   showAlprCameras?: boolean;
   alprFlockOnly?: boolean;
@@ -2597,6 +2600,7 @@ export default function LeafletMap({
         )}
 
         <ConsentAge showConsentAgeData={showConsentAgeData}></ConsentAge>
+        {showArsonData && <ArsonMap arrestCategory={arrestCategory} />}
 
         <ZoomControl position="topright" />
         {/* right column under the zoom buttons: legends, then the sponsored unit */}
