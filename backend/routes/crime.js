@@ -306,7 +306,13 @@ router.get('/arrestsByState', (req, res) =>
 );
 
 // Get arson arrest data by state and year (FBI offense code 110).
-router.get('/arsonByState', (req, res) =>
+router.get('/arsonByState', (req, res, next) => {
+    // This client expects JSON, so avoid Express returning a body-less 304 for cached validators.
+    res.set("Cache-Control", "no-store");
+    delete req.headers["if-none-match"];
+    delete req.headers["if-modified-since"];
+    next();
+}, (req, res) =>
     respondWithArrests(req, res, "arsonByState", "110"),
 );
 
