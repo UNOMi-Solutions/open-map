@@ -77,19 +77,25 @@ function writeCache<T>(key: string, data: T): void {
  * @param cacheKey Stable identifier (e.g. `crime:murderByState`, `env:ghg:CA`)
  * @param path API path including query string if needed
  * @param ttlMs Max age before refetching
+ * @param options.forceRefresh Skip a fresh cache entry and fetch again
+ * @param options.timeoutMs Abort the API request after this many milliseconds
  */
 export async function cachedApiGet<T>(
   cacheKey: string,
   path: string,
   ttlMs: number,
-  options?: { forceRefresh?: boolean },
+  options?: { forceRefresh?: boolean; timeoutMs?: number },
 ): Promise<T> {
   if (!options?.forceRefresh) {
     const cached = readCache<T>(cacheKey, ttlMs);
     if (cached !== null) return cached;
   }
 
-  const data = await apiGet<T>(path);
+  const requestOptions =
+    options?.timeoutMs === undefined
+      ? undefined
+      : { signal: AbortSignal.timeout(options.timeoutMs) };
+  const data = await apiGet<T>(path, requestOptions);
   writeCache(cacheKey, data);
   return data;
 }

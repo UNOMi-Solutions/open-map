@@ -118,6 +118,7 @@ import VolcanoMarkers from "./VolcanoMarkers";
 import TsunamiMarkers from "./TsunamiMarkers";
 import DroughtLayer from "./DroughtLayer";
 import SenatorMarkers from "./SenatorMarkers";
+import BillionaireMarkers from "./BillionaireMarkers";
 import GovernorMarkers from "./GovernorMarkers";
 import GerrymanderingMarkers from "./GerrymanderingMarkers";
 import PresidentMarker from "./PresidentMarker";
@@ -510,6 +511,7 @@ export default function LeafletMap({
   politicalLayerIds = [],
   houseDistrictPartyMode = "both",
   healthMetricId = null,
+  showBillionaires = false,
   showIncome = false,
   showHighIncomeHouseholds = false,
   showUnemployment = false,
@@ -621,6 +623,7 @@ export default function LeafletMap({
   houseDistrictPartyMode?: HouseDistrictPartyMode;
   /** CDC PLACES county health layer id from sidebar */
   healthMetricId?: string | null;
+  showBillionaires?: boolean;
   showIncome?: boolean;
   showHighIncomeHouseholds?: boolean;
   showUnemployment?: boolean;
@@ -2555,6 +2558,7 @@ export default function LeafletMap({
 
         {/* Data centers – shown when Data Centers is selected in sidebar */}
         {showDataCenters && <DataCenterMarkers setLoading={setLoading}/>}
+        {showBillionaires && <BillionaireMarkers setLoading={setLoading}/>}
 
         {politicalLayerIds.includes("senators") && <SenatorMarkers setLoading={setLoading}/>}
         {politicalLayerIds.includes("governors") && <GovernorMarkers />}
