@@ -1117,6 +1117,22 @@ export const NavigationMenuSection = ({
                     )}
                 </div>
               ))}
+              <div className="mt-1.5 flex items-center">
+                <Checkbox
+                  id="economics-billionaires"
+                  className="h-4 w-4 border border-white/70 bg-white/10 text-white"
+                  checked={selectedLayers.includes("billionaires")}
+                  onCheckedChange={(checked) =>
+                    onLayerToggle?.("billionaires", checked === true)
+                  }
+                />
+                <label
+                  htmlFor="economics-billionaires"
+                  className="ml-[15px] text-white text-[12px] font-normal leading-[100%] [font-family:'Futura PT']"
+                >
+                  Billionaires
+                </label>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
