@@ -119,6 +119,7 @@ import TsunamiMarkers from "./TsunamiMarkers";
 import DroughtLayer from "./DroughtLayer";
 import SenatorMarkers from "./SenatorMarkers";
 import BillionaireMarkers from "./BillionaireMarkers";
+import SP500Markers from "./SP500Markers";
 import GovernorMarkers from "./GovernorMarkers";
 import GerrymanderingMarkers from "./GerrymanderingMarkers";
 import PresidentMarker from "./PresidentMarker";
@@ -512,6 +513,7 @@ export default function LeafletMap({
   houseDistrictPartyMode = "both",
   healthMetricId = null,
   showBillionaires = false,
+  showSP500 = false,
   showIncome = false,
   showHighIncomeHouseholds = false,
   showUnemployment = false,
@@ -624,6 +626,7 @@ export default function LeafletMap({
   /** CDC PLACES county health layer id from sidebar */
   healthMetricId?: string | null;
   showBillionaires?: boolean;
+  showSP500?: boolean;
   showIncome?: boolean;
   showHighIncomeHouseholds?: boolean;
   showUnemployment?: boolean;
@@ -2559,6 +2562,7 @@ export default function LeafletMap({
         {/* Data centers – shown when Data Centers is selected in sidebar */}
         {showDataCenters && <DataCenterMarkers setLoading={setLoading}/>}
         {showBillionaires && <BillionaireMarkers setLoading={setLoading}/>}
+        {showSP500 && <SP500Markers setLoading={setLoading}/>}
 
         {politicalLayerIds.includes("senators") && <SenatorMarkers setLoading={setLoading}/>}
         {politicalLayerIds.includes("governors") && <GovernorMarkers />}
